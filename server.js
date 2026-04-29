@@ -37,6 +37,7 @@ console.log(`[NEO4J] Mode: ${isCloud ? '☁️  Cloud (AuraDB)' : '🖥️  Loca
 // ==========================================
 const SARVAM_API_KEY = process.env.SARVAM_API_KEY || 'sk_v9tiidlu_SUEXI3slP6thUJCk0F7DMDc8';
 const SARVAM_MODEL = 'sarvam-105b';
+const NEWSDATA_API_KEY = 'pub_55a94899cf9a4c72b211d2348be9e955'; // NewsData.io (works from cloud servers)
 const SARVAM_URL = 'https://api.sarvam.ai/v1/chat/completions';
 
 
@@ -187,13 +188,12 @@ const getCachedNews = async (query) => {
     
     try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 3000); // 3s max for news
-        const rssRes = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(query)}+India+news&hl=en-IN&gl=IN&ceid=IN:en`, { signal: controller.signal });
+        const timeout = setTimeout(() => controller.abort(), 8000);
+        const res = await fetch(`https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&q=${encodeURIComponent(query)}&country=in&language=en&size=5`, { signal: controller.signal });
         clearTimeout(timeout);
-        
-        if (!rssRes.ok) return "";
-        const rssXml = await rssRes.text();
-        const headlines = [...rssXml.matchAll(/<title>(.*?)<\/title>/gi)].slice(1, 4).map(m => m[1]).join(" | ");
+        if (!res.ok) return "";
+        const data = await res.json();
+        const headlines = (data.results || []).slice(0, 3).map(a => a.title).join(" | ");
         newsCache.set(query, { data: headlines, timestamp: now });
         return headlines;
     } catch (e) {
@@ -641,9 +641,14 @@ app.post('/api/search', async (req, res) => {
     try {
         let webContext = "";
         try {
-            const rssRes = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(query)}+India+when:7d&hl=en-IN&gl=IN&ceid=IN:en`);
-            const rssXml = await rssRes.text();
-            webContext = [...rssXml.matchAll(/<title>(.*?)<\/title>/gi)].slice(1, 8).map(m => m[1]).join("\n");
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000);
+            const res = await fetch(`https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&q=${encodeURIComponent(query)}&country=in&language=en&size=8`, { signal: controller.signal });
+            clearTimeout(timeout);
+            if (res.ok) {
+                const data = await res.json();
+                webContext = (data.results || []).slice(0, 6).map(a => a.title).join('\n');
+            }
         } catch (e) {}
 
         const prompt = `Assistant: You have access to real-time Indian news. 
@@ -817,29 +822,21 @@ app.get('/api/up/district/:name', async (req, res) => {
         console.warn(`[DISTRICT] DB lookup failed: ${dbErr.message}`);
     }
 
-    // Step 2: Fetch real-time news for this district
+    // Step 2: Fetch real-time news for this district (via NewsData.io — works from cloud)
     let headlines = [];
     try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000);
-        const rssRes = await fetch(
-            `https://news.google.com/rss/search?q=${encodeURIComponent(districtName + ' Uttar Pradesh')}&hl=en-IN&gl=IN&ceid=IN:en&when:7d`,
+        const timeout = setTimeout(() => controller.abort(), 8000);
+        const res = await fetch(
+            `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&q=${encodeURIComponent(districtName + ' Uttar Pradesh')}&country=in&language=en&size=5`,
             { signal: controller.signal }
         );
         clearTimeout(timeout);
-        if (rssRes.ok) {
-            const xml = await rssRes.text();
-            headlines = [...xml.matchAll(/<title>(.*?)<\/title>/gi)]
-                .slice(1, 6)
-                .map(m => m[1]
-                    .replace(/<[^>]*>/g, '')
-                    .replace(/&amp;/g, '&')
-                    .replace(/&quot;/g, '"')
-                    .replace(/&#39;/g, "'")
-                    .replace(/\s+/g, ' ')
-                    .trim()
-                )
-                .filter(h => h.length > 10 && !h.toLowerCase().includes('href'));
+        if (res.ok) {
+            const data = await res.json();
+            headlines = (data.results || []).slice(0, 5)
+                .map(a => (a.title || '').trim())
+                .filter(h => h.length > 10);
         }
     } catch (e) { /* silent */ }
 
@@ -1093,50 +1090,35 @@ app.get('/api/up/weather', async (req, res) => {
 });// UP Dashboard: Fetch Schemes (Real-Time News Extraction)
 app.get('/api/up/schemes', async (req, res) => {
     try {
-        const rssResponse = await fetch('https://news.google.com/rss/search?q=Uttar+Pradesh+Government+Schemes+Yojana+when:1d&hl=en-IN&gl=IN&ceid=IN:en');
-        const rssXml = await rssResponse.text();
-        
-        // Advanced Extraction: Extract Title and Description (Snippet) from RSS
-        const items = [...rssXml.matchAll(/<item>([\s\S]*?)<\/item>/gi)];
-        const processItem = (item) => {
-            let rawTitle = (item.match(/<title>(.*?)<\/title>/) || ["","Unknown Scheme"])[1];
-            let rawDesc = (item.match(/<description>(.*?)<\/description>/) || ["","No details available."])[1];
-            const rawLink = (item.match(/<link>(.*?)<\/link>/) || ["","#"])[1];
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+        const response = await fetch(
+            `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&q=Uttar+Pradesh+Government+Scheme+Yojana&country=in&language=en&size=8`,
+            { signal: controller.signal }
+        );
+        clearTimeout(timeout);
+        if (!response.ok) throw new Error('NewsData fetch failed');
+        const data = await response.json();
 
-            // SMART CLEAN: Remove HTML and encoded tags first
-            const smartClean = (str) => {
-                if (!str) return "";
-                // Remove <...> and &lt;...&gt; blocks completely
-                let clean = str.replace(/<[^>]*>?/gm, '').replace(/&lt;.*?&gt;/g, '').replace(/&[a-z0-9#]+;/gi, '');
-                // Character Whitelist
-                clean = clean.replace(/[^a-zA-Z0-9\s.,!?-]/g, ' ');
-                // Kill Standalone Code Words
-                const words = clean.split(/\s+/);
-                const safeWords = words.filter(w => {
-                    const low = w.toLowerCase();
-                    return !low.includes("href") && !low.includes("http") && !low.includes("target") && !low.includes("blank");
-                });
-                return safeWords.join(' ').trim();
-            };
-
-            const title = smartClean(rawTitle).split(' - ')[0] || "Government Policy Update";
-            const description = smartClean(rawDesc).substring(0, 160) + "...";
-            
-            let announcer = "UP Government Official";
-            const lowerTitle = rawTitle.toLowerCase();
-            if (lowerTitle.includes("yogi")) announcer = "CM Yogi Adityanath";
-            else if (lowerTitle.includes("modi") || lowerTitle.includes("pm")) announcer = "PM Narendra Modi";
-
-            return { title, politician: announcer, description, url: rawLink };
+        const processArticle = (article) => {
+            const title = (article.title || 'Government Policy Update').replace(/<[^>]*>/g, '').substring(0, 120);
+            const description = (article.description || article.content || 'No details available.')
+                .replace(/<[^>]*>/g, '').substring(0, 160) + '...';
+            const url = article.link || '#';
+            let announcer = 'UP Government Official';
+            const lower = title.toLowerCase();
+            if (lower.includes('yogi')) announcer = 'CM Yogi Adityanath';
+            else if (lower.includes('modi') || lower.includes(' pm ')) announcer = 'PM Narendra Modi';
+            return { title, politician: announcer, description, url };
         };
 
-        const schemes = {
-            recent: items.map(i => processItem(i[1])).filter(i => i !== null).slice(0, 2),
-            future: items.map(i => processItem(i[1])).filter(i => i !== null).slice(2, 4)
-        };
-        
-        res.json(schemes);
+        const articles = (data.results || []).map(processArticle);
+        res.json({
+            recent: articles.slice(0, 2),
+            future: articles.slice(2, 4)
+        });
     } catch (error) {
+        console.error('[SCHEMES] Fetch failed:', error.message);
         res.json({ recent: [], future: [] });
     }
 });
@@ -1161,45 +1143,31 @@ app.get('/api/state-info/:state', async (req, res) => {
         if (fs.existsSync(dataPath)) {
             const rawData = fs.readFileSync(dataPath, 'utf8');
             const parsedData = JSON.parse(rawData);
-            // Fallback to "Default" if the specific state isn't in our mock file yet
             stateData = parsedData[stateName] || parsedData["Default"];
         }
     } catch (e) {
         console.error("Error reading JSON:", e.message);
     }
 
-    // 2. Fetch Top 5 Headlines using Google News RSS (Free, Real-time, No API Key needed)
+    // 2. Fetch Top 5 Headlines via NewsData.io (works from cloud servers)
     let news = [];
     try {
-        const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(stateName + " politics")}&hl=en-IN&gl=IN&ceid=IN:en`;
-        const rssResp = await fetch(rssUrl);
-        
-        if (rssResp.ok) {
-            const rssText = await rssResp.text();
-            
-            // Extract the first 5 <item> blocks from the XML
-            const items = rssText.match(/<item>[\s\S]*?<\/item>/g) || [];
-            
-            for (let i = 0; i < Math.min(5, items.length); i++) {
-                const titleMatch = items[i].match(/<title>(.*?)<\/title>/);
-                const linkMatch = items[i].match(/<link>(.*?)<\/link>/);
-                
-                if (titleMatch && linkMatch) {
-                    // Clean up potential CDATA tags
-                    const cleanTitle = titleMatch[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1');
-                    news.push({
-                        title: cleanTitle,
-                        url: linkMatch[1]
-                    });
-                }
-            }
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000);
+        const res = await fetch(
+            `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&q=${encodeURIComponent(stateName + ' politics')}&country=in&language=en&size=5`,
+            { signal: controller.signal }
+        );
+        clearTimeout(timeout);
+        if (res.ok) {
+            const data = await res.json();
+            news = (data.results || []).slice(0, 5)
+                .map(a => ({ title: a.title || '', url: a.link || '#' }))
+                .filter(n => n.title.length > 5);
         }
-        
-        // Fallback if no news found
         if (news.length === 0) {
-            news = [{ title: `No recent news found for ${stateName}.`, url: "#" }];
+            news = [{ title: `No recent news found for ${stateName}.`, url: '#' }];
         }
-        
     } catch (e) {
         console.error("News Fetch Error:", e.message);
         news = [{ title: "Unable to load real-time news at this time.", url: "#" }];
