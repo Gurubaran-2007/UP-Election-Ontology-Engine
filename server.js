@@ -51,7 +51,7 @@ console.log(`[NEO4J] Mode: ${isCloud ? '☁️  Cloud (AuraDB)' : '🖥️  Loca
 // ==========================================
 const SARVAM_API_KEY = process.env.SARVAM_API_KEY || 'sk_v9tiidlu_SUEXI3slP6thUJCk0F7DMDc8';
 const SARVAM_MODEL = 'sarvam-105b';
-const NEWSDATA_API_KEY = 'pub_55a94899cf9a4c72b211d2348be9e955'; // NewsData.io (works from cloud servers)
+const NEWSDATA_API_KEY = 'pub_ee985f10a11e450798c1ad7e01c9fbc4'; // NewsData.io (works from cloud servers)
 const SARVAM_URL = 'https://api.sarvam.ai/v1/chat/completions';
 
 
@@ -190,32 +190,49 @@ const extractAndRepairJSON = (text) => {
 // ==========================================
 // 5. Intelligence Cache
 // ==========================================
-const newsCache = new Map();          // per-query news cache
-const stateNewsCache = new Map();     // per-state news cache
-const schemesCache = { data: null, ts: 0 }; // UP schemes cache
-const CACHE_DURATION      = 10 * 60 * 1000; // 10 minutes
-const SCHEMES_CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+const newsCache = new Map();           // per-query news cache
+const stateNewsCache = new Map();      // per-state news cache
+const districtNewsCache = new Map();   // per-district news cache
+const schemesCache = { data: null, ts: 0 };
+const CACHE_DURATION         = 6 * 60 * 60 * 1000;  // 6 hours (saves API quota)
+const SCHEMES_CACHE_DURATION = 6 * 60 * 60 * 1000;  // 6 hours
+const STATE_CACHE_DURATION   = 6 * 60 * 60 * 1000;  // 6 hours per state
+const DIST_CACHE_DURATION    = 6 * 60 * 60 * 1000;  // 6 hours per district
 
-const getCachedNews = async (query) => {
+// Shared NewsData.io fetch helper — handles rate limits & caching
+const fetchNewsData = async (query, cacheMap, cacheKey, duration, maxResults = 5) => {
     const now = Date.now();
-    if (newsCache.has(query)) {
-        const cached = newsCache.get(query);
-        if (now - cached.timestamp < CACHE_DURATION) return cached.data;
+    const cached = cacheMap.get(cacheKey);
+    if (cached && now - cached.ts < duration) {
+        console.log(`[NEWS CACHE] Hit for: ${cacheKey}`);
+        return cached.data;
     }
-    
     try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 8000);
-        const res = await fetch(`https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&q=${encodeURIComponent(query)}&country=in&language=en&size=5`, { signal: controller.signal });
+        const res = await fetch(
+            `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&q=${encodeURIComponent(query)}&country=in&language=en&size=${maxResults}`,
+            { signal: controller.signal }
+        );
         clearTimeout(timeout);
-        if (!res.ok) return "";
+        if (res.status === 429) {
+            console.warn('[NEWS] Rate limit hit — serving stale cache or empty');
+            return cached ? cached.data : null; // serve stale if available
+        }
+        if (!res.ok) return cached ? cached.data : null;
         const data = await res.json();
-        const headlines = (data.results || []).slice(0, 3).map(a => a.title).join(" | ");
-        newsCache.set(query, { data: headlines, timestamp: now });
-        return headlines;
+        if (data.status === 'error') return cached ? cached.data : null;
+        cacheMap.set(cacheKey, { data: data.results || [], ts: now });
+        return data.results || [];
     } catch (e) {
-        return ""; // Silent fallback
+        console.warn(`[NEWS] Fetch failed for "${cacheKey}":`, e.message);
+        return cached ? cached.data : [];
     }
+};
+
+const getCachedNews = async (query) => {
+    const results = await fetchNewsData(query, newsCache, query, CACHE_DURATION, 5);
+    return (results || []).slice(0, 3).map(a => a.title).join(' | ');
 };
 
 // ==========================================

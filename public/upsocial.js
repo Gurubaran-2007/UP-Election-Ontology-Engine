@@ -4,7 +4,7 @@
 
 (function () {
 
-    const NEWS_API_KEY = 'pub_55a94899cf9a4c72b211d2348be9e955';
+    const NEWS_API_KEY = 'pub_ee985f10a11e450798c1ad7e01c9fbc4';
     // Use exact phrase "uttar pradesh" + category filter to ensure UP-only news
     const NEWS_API_URL = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}&q=%22uttar+pradesh%22&country=in&language=en,hi&size=10`;
 
