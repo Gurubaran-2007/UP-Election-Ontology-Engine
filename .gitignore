@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Environment secrets - NEVER push to GitHub
+.env
+
+# Large CSV data files - not needed on server
+*.csv
+import_data.js
+import_remaining_data.js
+migrate_to_cloud.js
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+*.swp

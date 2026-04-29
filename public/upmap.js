@@ -1,0 +1,340 @@
+// ============================================================
+// UP DISTRICT MAP MODULE
+// ============================================================
+
+(function () {
+
+    // ── 1. Inject nav link after "Interactive India Map" ────────────
+    function injectNavLink() {
+        const links = document.querySelectorAll('.tab-link');
+        let indiaLink = null;
+        links.forEach(l => { if (l.dataset.target === 'india-map-tab') indiaLink = l; });
+        if (indiaLink && !document.querySelector('[data-target="up-map-tab"]')) {
+            const li = document.createElement('li');
+            li.innerHTML = `<a href="#" data-target="up-map-tab" class="tab-link">UP District Map</a>`;
+            indiaLink.closest('li').insertAdjacentElement('afterend', li);
+        }
+    }
+
+    // ── 2. Inject tab section HTML ─────────────────────────────────
+    function injectTabSection() {
+        if (document.getElementById('up-map-tab')) return;
+        const main = document.querySelector('.content-area');
+        const section = document.createElement('section');
+        section.id = 'up-map-tab';
+        section.className = 'tab-content fade-in';
+        section.style.display = 'none';
+        section.innerHTML = `
+        <div class="card" style="padding:0;overflow:hidden;position:relative;">
+            <div style="padding:1.5rem 2rem;background:linear-gradient(135deg,rgba(255,153,51,.15),rgba(19,78,74,.2));border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <h2 style="margin:0;font-size:1.8rem;">🗺️ Uttar Pradesh District Map</h2>
+                    <p style="margin:.3rem 0 0;color:var(--text-muted);font-size:.9rem;">Click any district to view political, demographic &amp; news intelligence</p>
+                </div>
+                <div id="up-map-selected-label" style="font-size:.85rem;color:var(--secondary);font-weight:600;background:rgba(255,153,51,.1);padding:6px 14px;border-radius:20px;border:1px solid var(--secondary);">No district selected</div>
+            </div>
+            <div style="display:flex;height:85vh;min-height:600px;">
+                <div id="up-district-map" style="flex:1;position:relative;background:var(--bg-dark);overflow:hidden;">
+                    <div id="up-map-loader" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+                        <div class="loading-spinner"></div>
+                        <p style="color:var(--text-muted);margin-top:1rem;">Loading UP District Map...</p>
+                    </div>
+                </div>
+                <div id="up-district-panel" style="width:0;overflow:hidden;transition:width .35s cubic-bezier(.4,0,.2,1);background:var(--bg-card);border-left:1px solid var(--border);position:relative;">
+                    <div id="up-district-panel-inner" style="width:420px;padding:1.5rem;height:100%;overflow-y:auto;box-sizing:border-box;">
+                        <button onclick="window._upMapClosePanel()" style="position:absolute;top:1rem;right:1rem;background:transparent;border:1px solid var(--border);color:var(--text);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:1rem;line-height:1;">✕</button>
+                        <h3 id="up-dist-name" style="color:var(--primary);font-size:1.4rem;margin:0 0 .3rem;padding-right:2rem;">District</h3>
+                        <p style="color:var(--text-muted);font-size:.8rem;margin:0 0 1.5rem;">Uttar Pradesh, India</p>
+                        <div id="up-dist-loader" style="text-align:center;padding:2rem 0;">
+                            <div class="loading-spinner"></div>
+                            <p style="color:var(--text-muted);margin-top:1rem;font-size:.85rem;">Fetching intelligence from AI &amp; Database...</p>
+                        </div>
+                        <div id="up-dist-content" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        main.insertBefore(section, main.firstChild.nextSibling);
+    }
+
+    // ── 3. Close panel ─────────────────────────────────────────────
+    window._upMapClosePanel = function () {
+        document.getElementById('up-district-panel').style.width = '0';
+        document.getElementById('up-map-selected-label').textContent = 'No district selected';
+        if (window._upLastSelected) {
+            window._upLastSelected.style('fill', '');
+        }
+    };
+
+    function upDistrictColor(d) {
+        const hash = (d.properties.NAME_2 || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+        const hues = [200, 220, 240, 180, 195, 210, 230, 215];
+        return `hsl(${hues[hash % hues.length]}, 55%, 28%)`;
+    }
+
+    // ── 4. Render D3 Map ────────────────────────────────────────────
+    function renderUPMap(geojson) {
+        const container = document.getElementById('up-district-map');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const width  = container.clientWidth  || 700;
+        const height = container.clientHeight || 600;
+
+        const svg = d3.select('#up-district-map')
+            .append('svg')
+            .attr('width', '100%')
+            .attr('height', '100%')
+            .attr('viewBox', `0 0 ${width} ${height}`);
+
+        const mapGroup = svg.append('g');
+
+        const projection = d3.geoIdentity()
+            .reflectY(true)
+            .fitSize([width, height], geojson);
+
+        const pathGenerator = d3.geoPath().projection(projection);
+
+        const zoom = d3.zoom()
+            .scaleExtent([1, 10])
+            .on('zoom', event => mapGroup.attr('transform', event.transform));
+        svg.call(zoom);
+
+        mapGroup.selectAll('path')
+            .data(geojson.features)
+            .enter()
+            .append('path')
+            .attr('d', pathGenerator)
+            .attr('class', 'state-path')
+            .style('cursor', 'pointer')
+            .on('mouseover', function () {
+                if (window._upLastSelected && window._upLastSelected.node() === this) return;
+                d3.select(this).style('fill', 'rgba(255,153,51,0.5)');
+            })
+            .on('mouseout', function () {
+                if (window._upLastSelected && window._upLastSelected.node() === this) return;
+                d3.select(this).style('fill', '');
+            })
+            .on('click', function (event, d) {
+                if (window._upLastSelected) {
+                    window._upLastSelected.style('fill', '');
+                }
+                window._upLastSelected = d3.select(this);
+                d3.select(this).style('fill', 'var(--primary)');
+
+                const name = d.properties.NAME_2
+                    || d.properties.district
+                    || d.properties.name
+                    || d.properties.DISTRICT
+                    || 'Unknown';
+                openDistrictPanel(name);
+            });
+
+        mapGroup.selectAll('text')
+            .data(geojson.features)
+            .enter()
+            .append('text')
+            .attr('class', 'state-label')
+            .attr('x', d => pathGenerator.centroid(d)[0] || 0)
+            .attr('y', d => pathGenerator.centroid(d)[1] || 0)
+            .attr('text-anchor', 'middle')
+            .attr('dy', '.35em')
+            .style('pointer-events', 'none')
+            .text(d =>
+                d.properties.NAME_2
+                || d.properties.district
+                || d.properties.name
+                || d.properties.DISTRICT
+                || ''
+            );
+    }
+
+    // ── 5. Open District Panel ─────────────────────────────────────
+    function openDistrictPanel(districtName) {
+        document.getElementById('up-map-selected-label').textContent = districtName;
+        document.getElementById('up-dist-name').textContent = districtName;
+        document.getElementById('up-dist-loader').style.display = 'block';
+        document.getElementById('up-dist-content').style.display = 'none';
+        document.getElementById('up-district-panel').style.width = '420px';
+        fetchDistrictData(districtName);
+    }
+
+    // ── 6. Fetch district data from server ──────────────────────────
+    async function fetchDistrictData(name) {
+        try {
+            const res = await fetch(`/api/up/district/${encodeURIComponent(name)}`);
+            const data = await res.json();
+            renderDistrictPanel(data);
+        } catch (e) {
+            document.getElementById('up-dist-content').innerHTML = `<p style="color:var(--negative)">Failed to load district data. Please retry.</p>`;
+            document.getElementById('up-dist-loader').style.display = 'none';
+            document.getElementById('up-dist-content').style.display = 'block';
+        }
+    }
+
+    // ── 7. Render panel data ────────────────────────────────────────
+    function renderDistrictPanel(d) {
+        const leader  = d.leader   || {};
+        const pop     = d.population || {};
+        const demo    = d.demographics || [];
+        const news    = d.headlines   || [];
+        const census  = d.census      || {};
+
+        // ── stat box helper ───────────────────────────────────────────────
+        const statBox = (value, label, color) => `
+            <div style="background:rgba(15,15,25,0.85);border:1.5px solid ${color}40;border-radius:10px;padding:.9rem .7rem;text-align:center;backdrop-filter:blur(4px);">
+                <div style="font-size:1.2rem;font-weight:800;color:${color};letter-spacing:.3px;">${value || '<span style="color:#6b7280;font-size:1rem;">—</span>'}</div>
+                <div style="font-size:.75rem;color:#cbd5e1;margin-top:.35rem;font-weight:600;letter-spacing:.4px;text-transform:uppercase;">${label}</div>
+            </div>`;
+
+        // ── Population section ───────────────────────────────────
+        const totalPop = pop.total || ((pop.rural || 0) + (pop.urban || 0)) || ((census.ruralPopulation || 0) + (census.urbanPopulation || 0));
+        const hasPop   = totalPop > 0;
+        const fmt = (v) => (v && Number(v) > 0) ? Number(v).toLocaleString('en-IN') : null;
+
+        const popSection = hasPop ? `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;">
+                ${statBox(fmt(totalPop), 'Total Population', '#4ade80')}
+                ${statBox(pop.density ? pop.density + '/km²' : null, 'Population Density', '#60a5fa')}
+                ${statBox(pop.literacy ? pop.literacy + '%' : null, 'Literacy Rate', '#FF9933')}
+                ${statBox(pop.sex_ratio || null, 'Sex Ratio (per 1000 males)', '#c084fc')}
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.6rem;">
+                ${statBox(fmt(pop.rural || census.ruralPopulation), 'Rural Population', '#22c55e')}
+                ${statBox(fmt(pop.urban || census.urbanPopulation), 'Urban Population', '#8b5cf6')}
+                ${statBox(fmt(pop.male), 'Male', '#60a5fa')}
+                ${statBox(fmt(pop.female), 'Female', '#f472b6')}
+            </div>
+            ${census.hinduPopulation ? `
+            <div style="margin-top:.9rem;background:rgba(15,15,25,0.7);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:.8rem;">
+                <div style="font-size:.8rem;color:#f1f5f9;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:.5rem;">Religion Breakdown</div>
+                <div style="display:flex;flex-wrap:wrap;gap:.45rem;">
+                    <span style="background:#f97316;color:#fff;font-weight:700;font-size:.78rem;border-radius:8px;padding:4px 11px;">Hindu: ${Number(census.hinduPopulation).toLocaleString('en-IN')}</span>
+                    <span style="background:#3b82f6;color:#fff;font-weight:700;font-size:.78rem;border-radius:8px;padding:4px 11px;">Muslim: ${Number(census.muslimPopulation || 0).toLocaleString('en-IN')}</span>
+                    ${(census.sikhPopulation > 0) ? `<span style="background:#eab308;color:#000;font-weight:700;font-size:.78rem;border-radius:8px;padding:4px 11px;">Sikh: ${Number(census.sikhPopulation).toLocaleString('en-IN')}</span>` : ''}
+                    ${(census.christianPopulation > 0) ? `<span style="background:#22c55e;color:#000;font-weight:700;font-size:.78rem;border-radius:8px;padding:4px 11px;">Christian: ${Number(census.christianPopulation).toLocaleString('en-IN')}</span>` : ''}
+                </div>
+            </div>` : ''}
+            ${census.marriedPopulation ? `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.6rem;">
+                ${statBox(fmt(census.marriedPopulation), 'Currently Married', '#ec4899')}
+                ${statBox(fmt(census.migrantPopulation), 'Migrants', '#06b6d4')}
+            </div>` : ''}
+            <div style="font-size:.75rem;color:#4ade80;font-weight:700;margin-top:.6rem;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:6px;padding:5px 10px;display:inline-block;">✅ Source: Census 2011 DB + AI</div>
+        ` : `<div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:1rem;text-align:center;">
+                <div class="loading-spinner" style="margin:0 auto 0.5rem;"></div>
+                <p style="color:#94a3b8;font-size:.85rem;margin:0;">Fetching from AI — please wait...</p>
+             </div>`;
+
+        // ── Demographics bars ────────────────────────────────────
+        const maxVal  = Math.max(...demo.map(x => x.percent || 0), 1);
+        const demoBars = demo.length > 0
+            ? demo.map(g => `
+            <div style="margin-bottom:1rem;">
+                <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:.35rem;">
+                    <span style="color:#f1f5f9;font-weight:600;">${g.label}</span>
+                    <span style="color:#fff;font-weight:800;font-size:.88rem;">${g.percent}%</span>
+                </div>
+                <div style="height:10px;background:rgba(255,255,255,0.12);border-radius:6px;overflow:hidden;">
+                    <div style="height:100%;width:${(g.percent / maxVal) * 100}%;background:${g.color || '#FF9933'};border-radius:6px;transition:width .6s ease;"></div>
+                </div>
+                <div style="font-size:.75rem;color:#94a3b8;margin-top:.2rem;font-weight:500;">${g.count ? '~' + Number(g.count).toLocaleString('en-IN') + ' people' : ''}</div>
+            </div>`).join('')
+            : `<div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:1rem;text-align:center;">
+                <div class="loading-spinner" style="margin:0 auto 0.5rem;"></div>
+                <p style="color:#94a3b8;font-size:.85rem;margin:0;">Loading breakdown from AI...</p>
+               </div>`;
+
+        // ── News items ───────────────────────────────────────────
+        const newsItems = news.length > 0
+            ? news.map((h, i) => `
+                <div style="display:flex;gap:.6rem;margin-bottom:.9rem;align-items:flex-start;">
+                    <span style="background:#FF9933;color:#000;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:10px;flex-shrink:0;margin-top:2px;">${i + 1}</span>
+                    <p style="margin:0;font-size:.83rem;color:#e2e8f0;line-height:1.55;">${h}</p>
+                </div>`).join('')
+            : `<p style="color:#94a3b8;font-size:.85rem;">No recent news found for this district.</p>`;
+
+        // ── Build full panel HTML ────────────────────────────────
+        document.getElementById('up-dist-content').innerHTML = `
+
+            <!-- Political Leadership -->
+            <div class="up-dist-section">
+                <div class="up-dist-section-title">🏛️ Political Leadership</div>
+                <div style="background:rgba(10,10,20,0.85);border:1.5px solid rgba(255,153,51,0.35);border-radius:12px;padding:1.1rem;">
+                    <div style="font-size:1.1rem;font-weight:800;color:#ffffff;margin-bottom:.45rem;line-height:1.4;">
+                        ${leader.name && !leader.name.includes('Representative')
+                            ? leader.name
+                            : '<span style="color:#94a3b8;font-style:italic;font-size:.95rem;">Being fetched from AI...</span>'}
+                    </div>
+                    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.6rem;">
+                        <span style="background:#FF9933;color:#000;font-weight:800;border-radius:10px;padding:3px 12px;font-size:.78rem;">${leader.designation || 'MLA'}</span>
+                        <span style="background:#166534;color:#bbf7d0;font-weight:700;border-radius:10px;padding:3px 12px;font-size:.78rem;">${leader.party || 'N/A'}</span>
+                        ${leader.since ? `<span style="background:#1e3a5f;color:#93c5fd;font-weight:700;border-radius:10px;padding:3px 12px;font-size:.78rem;">Since ${leader.since}</span>` : ''}
+                    </div>
+                    ${leader.note && !leader.note.includes('database') && !leader.note.includes('available') ? `<div style="font-size:.82rem;color:#e2e8f0;border-top:1px solid rgba(255,255,255,0.12);padding-top:.55rem;margin-top:.35rem;line-height:1.6;">${leader.note}</div>` : ''}
+                    <div style="font-size:.72rem;color:#64748b;margin-top:.45rem;font-weight:500;">Source: ${d.source || 'AI Analysis'}</div>
+                </div>
+            </div>
+
+            <!-- Population Overview -->
+            <div class="up-dist-section">
+                <div class="up-dist-section-title">👥 Population Overview</div>
+                ${popSection}
+            </div>
+
+            <!-- Demographics -->
+            <div class="up-dist-section">
+                <div class="up-dist-section-title">📊 Demographics</div>
+                ${demoBars}
+                ${demo.length > 0 ? `<div style="font-size:.7rem;color:#64748b;margin-top:.5rem;font-style:italic;">Source: ${d.source || 'Census 2011 + AI'}</div>` : ''}
+            </div>
+
+            <!-- Top Headlines -->
+            <div class="up-dist-section">
+                <div class="up-dist-section-title">📰 Top 5 Latest Headlines</div>
+                ${newsItems}
+                ${news.length > 0 ? `<div style="font-size:.7rem;color:#64748b;margin-top:.3rem;">Source: Google News RSS (Real-time)</div>` : ''}
+            </div>
+        `;
+
+        document.getElementById('up-dist-loader').style.display = 'none';
+        document.getElementById('up-dist-content').style.display = 'block';
+    }
+
+    // ── 8. Expose initUPMap globally for script.js to call ─────────
+    window._initUPMap = async function () {
+        const mapDiv = document.getElementById('up-district-map');
+        if (!mapDiv) return;
+        if (mapDiv.querySelector('svg')) return;
+
+        const loader = document.getElementById('up-map-loader');
+        if (loader) loader.innerHTML = `
+            <div class="loading-spinner"></div>
+            <p style="color:var(--text-muted);margin-top:1rem;">Fetching UP district boundaries...</p>
+        `;
+
+        try {
+            const res = await fetch('/api/up/geo');
+            if (!res.ok) throw new Error(`Server returned ${res.status}`);
+            const geo = await res.json();
+            if (geo.error) throw new Error(geo.error);
+            if (!geo.features || geo.features.length === 0) throw new Error('No district data');
+            renderUPMap(geo);
+        } catch (e) {
+            console.error('[UP MAP] Failed to load GeoJSON:', e.message);
+            if (loader) loader.innerHTML = `
+                <div style="text-align:center;padding:2rem;">
+                    <p style="color:var(--negative);font-size:1rem;margin-bottom:1rem;">⚠️ Could not load map data</p>
+                    <p style="color:var(--text-muted);font-size:.85rem;">${e.message}</p>
+                    <button onclick="window._initUPMap()" style="margin-top:1rem;background:var(--primary);color:#000;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:600;">Retry</button>
+                </div>`;
+        }
+    };
+
+    // ── 9. Init nav + tab on DOM ready ───────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        injectNavLink();
+        injectTabSection();
+    });
+
+})();
