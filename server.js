@@ -194,10 +194,10 @@ const newsCache = new Map();           // per-query news cache
 const stateNewsCache = new Map();      // per-state news cache
 const districtNewsCache = new Map();   // per-district news cache
 const schemesCache = { data: null, ts: 0 };
-const CACHE_DURATION         = 6 * 60 * 60 * 1000;  // 6 hours (saves API quota)
-const SCHEMES_CACHE_DURATION = 6 * 60 * 60 * 1000;  // 6 hours
-const STATE_CACHE_DURATION   = 6 * 60 * 60 * 1000;  // 6 hours per state
-const DIST_CACHE_DURATION    = 6 * 60 * 60 * 1000;  // 6 hours per district
+const CACHE_DURATION         = 8 * 60 * 60 * 1000;  // 8 hours (saves API quota)
+const SCHEMES_CACHE_DURATION = 8 * 60 * 60 * 1000;  // 8 hours
+const STATE_CACHE_DURATION   = 8 * 60 * 60 * 1000;  // 8 hours per state
+const DIST_CACHE_DURATION    = 8 * 60 * 60 * 1000;  // 8 hours per district
 
 // Shared NewsData.io fetch helper — handles rate limits & caching
 const fetchNewsData = async (query, cacheMap, cacheKey, duration, maxResults = 5) => {
