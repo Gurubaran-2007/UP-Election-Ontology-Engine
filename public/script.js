@@ -205,6 +205,33 @@ async function fetchStateInfo(stateName) {
     }
 }
 
+// Wakeup banner — shown when server is cold-starting
+function showWakeupBanner() {
+    if (document.getElementById('wakeup-banner')) return;
+    const banner = document.createElement('div');
+    banner.id = 'wakeup-banner';
+    banner.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; z-index: 9999;
+        background: linear-gradient(90deg, #f97316, #eab308);
+        color: #000; text-align: center; padding: 10px 16px;
+        font-size: 0.85rem; font-weight: 600; letter-spacing: 0.03em;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+    `;
+    banner.innerHTML = `
+        <span style="font-size:1.1rem;">⚡</span>
+        Server is waking up — this takes about 30–60 seconds. Please wait...
+        <span id="wakeup-countdown" style="background:rgba(0,0,0,0.15); padding:2px 8px; border-radius:10px; font-size:0.8rem; margin-left:6px;"></span>
+    `;
+    document.body.prepend(banner);
+}
+
+function hideWakeupBanner() {
+    const banner = document.getElementById('wakeup-banner');
+    if (banner) banner.remove();
+}
+
+let _retryCount = 0;
 async function checkServerStatus() {
     try {
         const response = await fetch('/api/status');
@@ -213,15 +240,26 @@ async function checkServerStatus() {
             updateStatus('server-status', true);
             updateStatus('db-status', data.database === 'Connected');
             updateStatus('ai-status', data.ai === 'Connected');
+            hideWakeupBanner();
+            _retryCount = 0;
         }
     } catch (error) {
-        console.error("Server is not running yet or unreachable.");
+        console.warn("Server unreachable — retrying...");
         updateStatus('server-status', false);
+        updateStatus('db-status', false);
+        updateStatus('ai-status', false);
+        showWakeupBanner();
+        _retryCount++;
+        // Retry every 8 seconds until server responds (max 20 tries = ~2.5 mins)
+        if (_retryCount < 20) {
+            setTimeout(checkServerStatus, 8000);
+        }
     }
 }
 
 function updateStatus(elementId, isOnline) {
     const el = document.getElementById(elementId);
+    if (!el) return;
     if (isOnline) {
         el.classList.remove('offline');
         el.classList.add('online');

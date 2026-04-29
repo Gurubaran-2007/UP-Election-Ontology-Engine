@@ -15,6 +15,20 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ==========================================
+// Self-Ping: Keep Render free tier awake
+// Pings own /api/status every 10 minutes
+// ==========================================
+const RENDER_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${process.env.PORT || 3000}`;
+setInterval(async () => {
+    try {
+        await fetch(`${RENDER_URL}/api/status`);
+        console.log('[SELF-PING] Server kept alive at', new Date().toISOString());
+    } catch (e) {
+        console.warn('[SELF-PING] Failed:', e.message);
+    }
+}, 10 * 60 * 1000); // every 10 minutes
+
+// ==========================================
 // 1. Neo4j Database Configuration
 // ==========================================
 const uri      = process.env.NEO4J_URI      || 'neo4j://localhost:7687';
@@ -174,10 +188,13 @@ const extractAndRepairJSON = (text) => {
 };
 
 // ==========================================
-// 5. Intelligence Cache (10-minute News Cache)
+// 5. Intelligence Cache
 // ==========================================
-const newsCache = new Map();
-const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+const newsCache = new Map();          // per-query news cache
+const stateNewsCache = new Map();     // per-state news cache
+const schemesCache = { data: null, ts: 0 }; // UP schemes cache
+const CACHE_DURATION      = 10 * 60 * 1000; // 10 minutes
+const SCHEMES_CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
 const getCachedNews = async (query) => {
     const now = Date.now();
@@ -1089,6 +1106,11 @@ app.get('/api/up/weather', async (req, res) => {
     }
 });// UP Dashboard: Fetch Schemes (Real-Time News Extraction)
 app.get('/api/up/schemes', async (req, res) => {
+    // Serve from 30-min cache if available
+    if (schemesCache.data && Date.now() - schemesCache.ts < SCHEMES_CACHE_DURATION) {
+        console.log('[SCHEMES] Serving from cache');
+        return res.json(schemesCache.data);
+    }
     try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 10000);
@@ -1113,12 +1135,18 @@ app.get('/api/up/schemes', async (req, res) => {
         };
 
         const articles = (data.results || []).map(processArticle);
-        res.json({
+        const result = {
             recent: articles.slice(0, 2),
             future: articles.slice(2, 4)
-        });
+        };
+        // Store in cache
+        schemesCache.data = result;
+        schemesCache.ts = Date.now();
+        res.json(result);
     } catch (error) {
         console.error('[SCHEMES] Fetch failed:', error.message);
+        // Return cached data even if stale, rather than empty
+        if (schemesCache.data) return res.json(schemesCache.data);
         res.json({ recent: [], future: [] });
     }
 });
