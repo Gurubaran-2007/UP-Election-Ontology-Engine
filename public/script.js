@@ -157,7 +157,7 @@ async function loadIndiaMap() {
 
 async function fetchStateInfo(stateName) {
     try {
-        const response = await fetch(`http://localhost:3000/api/state-info/${encodeURIComponent(stateName)}`);
+        const response = await fetch(`/api/state-info/${encodeURIComponent(stateName)}`);
         if (!response.ok) throw new Error("Failed to fetch state data");
         
         const data = await response.json();
@@ -207,7 +207,7 @@ async function fetchStateInfo(stateName) {
 
 async function checkServerStatus() {
     try {
-        const response = await fetch('http://localhost:3000/api/status');
+        const response = await fetch('/api/status');
         if (response.ok) {
             const data = await response.json();
             updateStatus('server-status', true);
@@ -263,7 +263,7 @@ async function simulateAIAnalysis(title, description) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 45000);
 
-        const response = await fetch('http://localhost:3000/api/strategy', {
+        const response = await fetch('/api/strategy', {
             method: 'POST',
             signal: controller.signal,
             headers: { 'Content-Type': 'application/json' },
@@ -476,7 +476,7 @@ async function handleAISearch() {
     `;
 
     try {
-        const response = await fetch('http://localhost:3000/api/search', {
+        const response = await fetch('/api/search', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ query })
