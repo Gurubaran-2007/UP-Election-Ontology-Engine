@@ -51,7 +51,26 @@ console.log(`[NEO4J] Mode: ${isCloud ? '☁️  Cloud (AuraDB)' : '🖥️  Loca
 // ==========================================
 const SARVAM_API_KEY = process.env.SARVAM_API_KEY || 'sk_v9tiidlu_SUEXI3slP6thUJCk0F7DMDc8';
 const SARVAM_MODEL = 'sarvam-105b';
-const NEWSDATA_API_KEY = 'pub_ee985f10a11e450798c1ad7e01c9fbc4'; // NewsData.io (works from cloud servers)
+// NewsData.io — Dual API key rotation (400 requests/day total)
+// Key 1 is used first; if it hits 429 (rate limit), Key 2 takes over automatically.
+const NEWSDATA_KEYS = [
+    { key: 'pub_ee985f10a11e450798c1ad7e01c9fbc4', exhausted: false, resetAt: 0 },
+    { key: 'pub_633d28092c8742b58c64b6eccf4a7e85', exhausted: false, resetAt: 0 }
+];
+
+// Returns the first non-exhausted key. Resets keys after 24 hours.
+function getActiveNewsKey() {
+    const now = Date.now();
+    const ONE_DAY = 24 * 60 * 60 * 1000;
+    // Auto-reset keys that exhausted more than 24 hours ago
+    NEWSDATA_KEYS.forEach(k => {
+        if (k.exhausted && now - k.resetAt > ONE_DAY) {
+            k.exhausted = false;
+            console.log(`[NEWS KEY] Key ...${k.key.slice(-6)} auto-reset after 24h`);
+        }
+    });
+    return NEWSDATA_KEYS.find(k => !k.exhausted) || NEWSDATA_KEYS[0]; // fallback to first
+}
 const SARVAM_URL = 'https://api.sarvam.ai/v1/chat/completions';
 
 
@@ -199,7 +218,7 @@ const SCHEMES_CACHE_DURATION = 8 * 60 * 60 * 1000;  // 8 hours
 const STATE_CACHE_DURATION   = 8 * 60 * 60 * 1000;  // 8 hours per state
 const DIST_CACHE_DURATION    = 8 * 60 * 60 * 1000;  // 8 hours per district
 
-// Shared NewsData.io fetch helper — handles rate limits & caching
+// Shared NewsData.io fetch helper — auto-rotates between 2 API keys on rate limit
 const fetchNewsData = async (query, cacheMap, cacheKey, duration, maxResults = 5) => {
     const now = Date.now();
     const cached = cacheMap.get(cacheKey);
@@ -207,27 +226,48 @@ const fetchNewsData = async (query, cacheMap, cacheKey, duration, maxResults = 5
         console.log(`[NEWS CACHE] Hit for: ${cacheKey}`);
         return cached.data;
     }
-    try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 8000);
-        const res = await fetch(
-            `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&q=${encodeURIComponent(query)}&country=in&language=en&size=${maxResults}`,
-            { signal: controller.signal }
-        );
-        clearTimeout(timeout);
-        if (res.status === 429) {
-            console.warn('[NEWS] Rate limit hit — serving stale cache or empty');
-            return cached ? cached.data : null; // serve stale if available
+
+    // Try both keys — switch automatically if one is rate-limited
+    for (let attempt = 0; attempt < NEWSDATA_KEYS.length; attempt++) {
+        const keyObj = getActiveNewsKey();
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000);
+            const res = await fetch(
+                `https://newsdata.io/api/1/news?apikey=${keyObj.key}&q=${encodeURIComponent(query)}&country=in&language=en&size=${maxResults}`,
+                { signal: controller.signal }
+            );
+            clearTimeout(timeout);
+
+            if (res.status === 429) {
+                // Mark this key as exhausted and try the next key
+                keyObj.exhausted = true;
+                keyObj.resetAt = Date.now();
+                console.warn(`[NEWS KEY] Key ...${keyObj.key.slice(-6)} rate-limited — switching to next key`);
+                continue; // retry loop with next key
+            }
+            if (!res.ok) return cached ? cached.data : [];
+            const data = await res.json();
+            if (data.status === 'error') {
+                if (data.message && data.message.toLowerCase().includes('limit')) {
+                    keyObj.exhausted = true;
+                    keyObj.resetAt = Date.now();
+                    console.warn(`[NEWS KEY] Key ...${keyObj.key.slice(-6)} quota error — switching key`);
+                    continue;
+                }
+                return cached ? cached.data : [];
+            }
+            cacheMap.set(cacheKey, { data: data.results || [], ts: now });
+            return data.results || [];
+        } catch (e) {
+            console.warn(`[NEWS] Fetch failed for "${cacheKey}":`, e.message);
+            return cached ? cached.data : [];
         }
-        if (!res.ok) return cached ? cached.data : null;
-        const data = await res.json();
-        if (data.status === 'error') return cached ? cached.data : null;
-        cacheMap.set(cacheKey, { data: data.results || [], ts: now });
-        return data.results || [];
-    } catch (e) {
-        console.warn(`[NEWS] Fetch failed for "${cacheKey}":`, e.message);
-        return cached ? cached.data : [];
     }
+
+    // Both keys exhausted — serve stale cache
+    console.warn('[NEWS] Both API keys exhausted — serving stale cache');
+    return cached ? cached.data : [];
 };
 
 const getCachedNews = async (query) => {
