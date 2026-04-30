@@ -51,11 +51,21 @@ console.log(`[NEO4J] Mode: ${isCloud ? '☁️  Cloud (AuraDB)' : '🖥️  Loca
 // ==========================================
 const SARVAM_API_KEY = process.env.SARVAM_API_KEY || 'sk_v9tiidlu_SUEXI3slP6thUJCk0F7DMDc8';
 const SARVAM_MODEL = 'sarvam-105b';
-// NewsData.io — Dual API key rotation (400 requests/day total)
-// Key 1 is used first; if it hits 429 (rate limit), Key 2 takes over automatically.
+// NewsData.io — 13-Key Rotation System (2,600 requests/day total)
 const NEWSDATA_KEYS = [
     { key: 'pub_ee985f10a11e450798c1ad7e01c9fbc4', exhausted: false, resetAt: 0 },
-    { key: 'pub_633d28092c8742b58c64b6eccf4a7e85', exhausted: false, resetAt: 0 }
+    { key: 'pub_633d28092c8742b58c64b6eccf4a7e85', exhausted: false, resetAt: 0 },
+    { key: 'pub_9666c4fe46194899917da1cc6f030461', exhausted: false, resetAt: 0 },
+    { key: 'pub_a24ff28cdf7f4c06bbf3f60304dd36e2', exhausted: false, resetAt: 0 },
+    { key: 'pub_969addca677543688e8bd3e3dfbf0e50', exhausted: false, resetAt: 0 },
+    { key: 'pub_a2dd1f0b3c6c4b0cb6efede6c5c4fa26', exhausted: false, resetAt: 0 },
+    { key: 'pub_983a623e9164418db47934de6d746aec', exhausted: false, resetAt: 0 },
+    { key: 'pub_e2f3b03201d544dbb1866c4e00f025cb', exhausted: false, resetAt: 0 },
+    { key: 'pub_78eee9b40df34713ad84de3e4bb0caaa', exhausted: false, resetAt: 0 },
+    { key: 'pub_86fafa9e3ea441288bfdf9e046b5047a', exhausted: false, resetAt: 0 },
+    { key: 'pub_7ccca26995714fe28b54f8a42dfdd8a1', exhausted: false, resetAt: 0 },
+    { key: 'pub_7e87426a145942ceaeb9bd0caebf93ce', exhausted: false, resetAt: 0 },
+    { key: 'pub_d78b626366b044d897146aa9bff8c731', exhausted: false, resetAt: 0 }
 ];
 
 // Returns the first non-exhausted key. Resets keys after 24 hours.
@@ -213,10 +223,10 @@ const newsCache = new Map();           // per-query news cache
 const stateNewsCache = new Map();      // per-state news cache
 const districtNewsCache = new Map();   // per-district news cache
 const schemesCache = { data: null, ts: 0 };
-const CACHE_DURATION         = 8 * 60 * 60 * 1000;  // 8 hours (saves API quota)
-const SCHEMES_CACHE_DURATION = 8 * 60 * 60 * 1000;  // 8 hours
-const STATE_CACHE_DURATION   = 8 * 60 * 60 * 1000;  // 8 hours per state
-const DIST_CACHE_DURATION    = 8 * 60 * 60 * 1000;  // 8 hours per district
+const CACHE_DURATION         = 4 * 60 * 60 * 1000;  // 4 hours
+const SCHEMES_CACHE_DURATION = 4 * 60 * 60 * 1000;  // 4 hours
+const STATE_CACHE_DURATION   = 4 * 60 * 60 * 1000;  // 4 hours per state
+const DIST_CACHE_DURATION    = 4 * 60 * 60 * 1000;  // 4 hours per district
 
 // Shared NewsData.io fetch helper — auto-rotates between 2 API keys on rate limit
 const fetchNewsData = async (query, cacheMap, cacheKey, duration, maxResults = 5) => {
@@ -1165,7 +1175,7 @@ app.get('/api/up/weather', async (req, res) => {
 // Called by upsocial.js instead of hitting NewsData.io directly
 const upNewsCache = { data: null, ts: 0 };
 app.get('/api/up/news', async (req, res) => {
-    const CACHE_MS = 8 * 60 * 60 * 1000; // 8 hours
+    const CACHE_MS = 4 * 60 * 60 * 1000; // 4 hours
     if (upNewsCache.data && Date.now() - upNewsCache.ts < CACHE_MS) {
         return res.json(upNewsCache.data);
     }
@@ -1189,8 +1199,8 @@ app.get('/api/up/news', async (req, res) => {
     res.json(upNewsCache.data);
 });// UP Dashboard: Fetch Schemes (Real-Time News Extraction)
 app.get('/api/up/schemes', async (req, res) => {
-    const SCHEMES_CACHE_DURATION = 8 * 60 * 60 * 1000; // 8 hours
-    if (schemesCache.data && Date.now() - schemesCache.ts < SCHEMES_CACHE_DURATION) {
+    const SCHEMES_CACHE_DURATION_LOCAL = 4 * 60 * 60 * 1000; // 4 hours
+    if (schemesCache.data && Date.now() - schemesCache.ts < SCHEMES_CACHE_DURATION_LOCAL) {
         return res.json(schemesCache.data);
     }
     try {
