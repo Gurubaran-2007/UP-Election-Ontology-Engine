@@ -900,19 +900,16 @@ app.get('/api/up/district/:name', async (req, res) => {
     // Step 2: Fetch real-time news for this district (via NewsData.io — works from cloud)
     let headlines = [];
     try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 8000);
-        const res = await fetch(
-            `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&q=${encodeURIComponent(districtName + ' Uttar Pradesh')}&country=in&language=en&size=5`,
-            { signal: controller.signal }
+        const results = await fetchNewsData(
+            districtName + ' Uttar Pradesh',
+            districtNewsCache,
+            districtName,
+            DIST_CACHE_DURATION,
+            5
         );
-        clearTimeout(timeout);
-        if (res.ok) {
-            const data = await res.json();
-            headlines = (data.results || []).slice(0, 5)
-                .map(a => (a.title || '').trim())
-                .filter(h => h.length > 10);
-        }
+        headlines = (results || []).slice(0, 5)
+            .map(a => (a.title || '').trim())
+            .filter(h => h.length > 10);
     } catch (e) { /* silent */ }
 
     // Step 3: AI fills leader + derived demographics using REAL census as ground truth
@@ -1192,21 +1189,18 @@ app.get('/api/up/news', async (req, res) => {
     res.json(upNewsCache.data);
 });// UP Dashboard: Fetch Schemes (Real-Time News Extraction)
 app.get('/api/up/schemes', async (req, res) => {
-    // Serve from 30-min cache if available
+    const SCHEMES_CACHE_DURATION = 8 * 60 * 60 * 1000; // 8 hours
     if (schemesCache.data && Date.now() - schemesCache.ts < SCHEMES_CACHE_DURATION) {
-        console.log('[SCHEMES] Serving from cache');
         return res.json(schemesCache.data);
     }
     try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 10000);
-        const response = await fetch(
-            `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&q=Uttar+Pradesh+Government+Scheme+Yojana&country=in&language=en&size=8`,
-            { signal: controller.signal }
+        const results = await fetchNewsData(
+            'Uttar Pradesh Government Scheme Yojana',
+            new Map(),
+            'up-schemes',
+            SCHEMES_CACHE_DURATION,
+            8
         );
-        clearTimeout(timeout);
-        if (!response.ok) throw new Error('NewsData fetch failed');
-        const data = await response.json();
 
         const processArticle = (article) => {
             const title = (article.title || 'Government Policy Update').replace(/<[^>]*>/g, '').substring(0, 120);
@@ -1220,18 +1214,16 @@ app.get('/api/up/schemes', async (req, res) => {
             return { title, politician: announcer, description, url };
         };
 
-        const articles = (data.results || []).map(processArticle);
+        const articles = (results || []).map(processArticle);
         const result = {
             recent: articles.slice(0, 2),
             future: articles.slice(2, 4)
         };
-        // Store in cache
         schemesCache.data = result;
         schemesCache.ts = Date.now();
         res.json(result);
     } catch (error) {
         console.error('[SCHEMES] Fetch failed:', error.message);
-        // Return cached data even if stale, rather than empty
         if (schemesCache.data) return res.json(schemesCache.data);
         res.json({ recent: [], future: [] });
     }
@@ -1266,19 +1258,18 @@ app.get('/api/state-info/:state', async (req, res) => {
     // 2. Fetch Top 5 Headlines via NewsData.io (works from cloud servers)
     let news = [];
     try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 8000);
-        const res = await fetch(
-            `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&q=${encodeURIComponent(stateName + ' politics')}&country=in&language=en&size=5`,
-            { signal: controller.signal }
+        const results = await fetchNewsData(
+            stateName + ' politics',
+            stateNewsCache,
+            stateName,
+            STATE_CACHE_DURATION,
+            5
         );
-        clearTimeout(timeout);
-        if (res.ok) {
-            const data = await res.json();
-            news = (data.results || []).slice(0, 5)
-                .map(a => ({ title: a.title || '', url: a.link || '#' }))
-                .filter(n => n.title.length > 5);
-        }
+        
+        news = (results || []).slice(0, 5)
+            .map(a => ({ title: a.title || '', url: a.link || '#' }))
+            .filter(n => n.title.length > 5);
+
         if (news.length === 0) {
             news = [{ title: `No recent news found for ${stateName}.`, url: '#' }];
         }
