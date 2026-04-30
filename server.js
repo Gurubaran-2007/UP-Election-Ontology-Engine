@@ -260,8 +260,9 @@ const fetchNewsData = async (query, cacheMap, cacheKey, duration, maxResults = 5
             cacheMap.set(cacheKey, { data: data.results || [], ts: now });
             return data.results || [];
         } catch (e) {
-            console.warn(`[NEWS] Fetch failed for "${cacheKey}":`, e.message);
-            return cached ? cached.data : [];
+            console.warn(`[NEWS] Fetch error on attempt ${attempt + 1}:`, e.message);
+            // Don't return — try the next key
+            continue;
         }
     }
 
@@ -1161,6 +1162,34 @@ app.get('/api/up/weather', async (req, res) => {
         console.error("Weather fetch error:", error);
         res.status(500).json({ error: "Failed to fetch weather data" });
     }
+});
+
+// UP Social Media News Proxy — routes through dual-key rotation
+// Called by upsocial.js instead of hitting NewsData.io directly
+const upNewsCache = { data: null, ts: 0 };
+app.get('/api/up/news', async (req, res) => {
+    const CACHE_MS = 8 * 60 * 60 * 1000; // 8 hours
+    if (upNewsCache.data && Date.now() - upNewsCache.ts < CACHE_MS) {
+        return res.json(upNewsCache.data);
+    }
+    const results = await fetchNewsData(
+        'uttar pradesh',
+        new Map(),
+        'up-social-news',
+        CACHE_MS,
+        10
+    );
+    const articles = (results || []).slice(0, 10).map(a => ({
+        title:       a.title || '',
+        description: (a.description || '').replace(/<[^>]*>/g, '').substring(0, 200),
+        link:        a.link || '#',
+        pubDate:     a.pubDate || '',
+        source_id:   a.source_id || 'News',
+        image_url:   a.image_url || null
+    }));
+    upNewsCache.data = { status: 'success', results: articles };
+    upNewsCache.ts = Date.now();
+    res.json(upNewsCache.data);
 });// UP Dashboard: Fetch Schemes (Real-Time News Extraction)
 app.get('/api/up/schemes', async (req, res) => {
     // Serve from 30-min cache if available

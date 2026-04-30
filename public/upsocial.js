@@ -4,9 +4,9 @@
 
 (function () {
 
-    const NEWS_API_KEY = 'pub_ee985f10a11e450798c1ad7e01c9fbc4';
-    // Use exact phrase "uttar pradesh" + category filter to ensure UP-only news
-    const NEWS_API_URL = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}&q=%22uttar+pradesh%22&country=in&language=en,hi&size=10`;
+    // UP News fetched via server proxy (/api/up/news)
+    // Server uses dual-key rotation — no direct NewsData.io call from browser
+    const NEWS_API_URL = '/api/up/news';
 
     // Indian news channels with YouTube @handles for dynamic live stream resolution
     const TV_CHANNELS = [
