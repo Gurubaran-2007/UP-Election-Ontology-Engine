@@ -58,6 +58,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.upDashboardLoaded = true;
                 }
 
+                // Initialize Booth Module
+                if (targetId === 'up-booth-tab' && typeof window.initBoothModule === 'function') {
+                    window.initBoothModule();
+                }
+
                 // Lazy-load UP District Map
                 if (targetId === 'up-map-tab') {
                     setTimeout(() => {
