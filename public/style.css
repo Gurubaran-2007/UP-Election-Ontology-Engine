@@ -774,10 +774,23 @@ h3 {
     border-radius: 4px 8px 8px 4px;
 }
 
-.resistance-item strong {
+.support-item {
+    background: rgba(46, 204, 113, 0.05);
+    border-left: 3px solid #2ecc71;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 4px 8px 8px 4px;
+}
+
+.support-item strong {
     display: block;
-    color: #ff4d4d;
+    color: #2ecc71;
     margin-bottom: 0.3rem;
+}
+
+.demography-box p {
+    line-height: 1.7;
+    font-size: 0.9rem;
 }
 
 .roadmap-item {

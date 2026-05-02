@@ -356,6 +356,19 @@ async function simulateAIAnalysis(title, description) {
         // Render graph with delay for layout paint
         setTimeout(() => renderD3Graph(data.graph_data), 120);
 
+        // Render Support Deep-Dive
+        const supportContent = document.getElementById('support-content');
+        if (data.support && data.support.length > 0) {
+            supportContent.innerHTML = data.support.map(item => `
+                <div class="support-item fade-in">
+                    <strong>✅ ${item.group}</strong>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">${item.reason}</p>
+                </div>
+            `).join('');
+        } else {
+            supportContent.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">No specific support data available.</p>`;
+        }
+
         // Render Resistance Deep-Dive
         const resContent = document.getElementById('resistance-content');
         if (data.resistance && data.resistance.length > 0) {
@@ -368,6 +381,10 @@ async function simulateAIAnalysis(title, description) {
         } else {
             resContent.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">No major resistance detected for this strategy.</p>`;
         }
+
+        // Render Demography & Summary
+        document.getElementById('demography-content').innerHTML = `<p class="fade-in">${data.demography || 'Analysis pending...'}</p>`;
+        document.getElementById('success-summary-content').innerHTML = `<p class="fade-in">${data.summary || 'Awaiting final summary...'}</p>`;
 
         // Render AI Roadmap
         const roadmapContent = document.getElementById('roadmap-content');

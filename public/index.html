@@ -218,16 +218,36 @@
                         <p class="graph-caption" data-i18n="dash_graph_caption">Graphical representation of expected positive vs negative impact in various demographics. (Node Size = Impact, Node Color = Sentiment)</p>
                     </div>
 
-                    <!-- Resistance & Roadmap (Two Columns) -->
+                    <!-- Analysis Grid: Support & Resistance -->
                     <div class="analysis-grid mt-2">
+                        <div class="glass-panel support-box">
+                            <h3 style="color:#2ecc71;">✅ Support Analysis (Who & Why)</h3>
+                            <div id="support-content">
+                                <p style="color:var(--text-muted);">Submit a strategy to see support breakdown.</p>
+                            </div>
+                        </div>
                         <div class="glass-panel resistance-box">
                             <h3 style="color:#ff4d4d;">🛑 Resistance Analysis (Who & Why)</h3>
                             <div id="resistance-content">
                                 <p style="color:var(--text-muted);">Submit a strategy to see resistance breakdown.</p>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Analysis Grid: Demography & Roadmap -->
+                    <div class="analysis-grid mt-2">
+                        <div class="glass-panel demography-box">
+                            <h3 style="color:var(--secondary);">🧬 Demographic Study</h3>
+                            <div id="demography-content">
+                                <p style="color:var(--text-muted);">Awaiting demographic impact analysis...</p>
+                            </div>
+                            <div id="success-summary-box" class="mt-1" style="background:rgba(255,255,255,0.05); padding:1rem; border-radius:8px; border:1px solid var(--border);">
+                                <strong style="color:var(--primary); display:block; margin-bottom:0.5rem;">🎯 Success Justification:</strong>
+                                <div id="success-summary-content" style="font-size:0.9rem; line-height:1.6;">Awaiting summary...</div>
+                            </div>
+                        </div>
                         <div class="glass-panel roadmap-box">
-                            <h3 style="color:#2ecc71;">🚀 Roadmap to 100% Success</h3>
+                            <h3 style="color:#f39c12;">🚀 Roadmap to 100% Success</h3>
                             <div id="roadmap-content">
                                 <p style="color:var(--text-muted);">Submit a strategy to see improvement suggestions.</p>
                             </div>
