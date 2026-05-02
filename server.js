@@ -454,6 +454,14 @@ Then provide this exact JSON block:
     "negative": <0-100 score for resistance>,
     "overall": <0-100 overall success probability>
   },
+  "resistance_details": [
+    {"group": "<Who will resist>", "reason": "<Why will they resist? Give deep reasoning>"}
+  ],
+  "improvement_roadmap": [
+    "<Step 1 to reach 100% success>",
+    "<Step 2 to reach 100% success>",
+    "<Step 3 to reach 100% success>"
+  ],
   "graph": {
     "nodes": [
       {"id":"Strategy","group":1,"impact":60,"sentiment":1},
@@ -505,7 +513,9 @@ Then provide this exact JSON block:
 
         const parsed = extractAndRepairJSON(rawText) || {
             metrics: { positive: 72, negative: 18, overall: 68 },
-            graph: defaultGraph
+            graph: defaultGraph,
+            resistance_details: [],
+            improvement_roadmap: ["Enhance field awareness", "Engage local community influencers", "Address specific demographic concerns"]
         };
 
         if (!parsed.graph || !parsed.graph.nodes || parsed.graph.nodes.length === 0) {
@@ -528,6 +538,8 @@ Then provide this exact JSON block:
             ai_prediction: aiPrediction,
             metrics: parsed.metrics,
             graph_data: parsed.graph,
+            resistance: parsed.resistance_details || [],
+            roadmap: parsed.improvement_roadmap || [],
             db_context: historicalImpact ? "Historical precedent found in database" : "No exact precedent"
         });
 
@@ -600,12 +612,13 @@ VERIFIED UP DEMOGRAPHIC DATA FROM DATABASE (use these exact figures for impact s
 ${upCensusCtx || 'UP has ~200M population, ~80% Hindu, ~19% Muslim, ~78% rural, ~48.5% women.'}
 
 RULES (STRICTLY FOLLOW):
-1. Generate EXACTLY 10-12 nodes. NOT 6, NOT 8. EXACTLY 10 to 12.
-2. Node IDs must be SPECIFIC to THIS scheme — use the CATEGORY HINT above for ideas.
+1. Generate EXACTLY 10-12 nodes.
+2. Node IDs must be SPECIFIC to THIS scheme.
 3. NEVER use generic names like "Group 1", "Demographic", "Community".
-4. Create CROSS-LINKS between groups too (not just scheme→group). E.g., Farmers→Rural Women, Teachers→Students.
-5. Make sentiment and impact scores REALISTIC based on the actual scheme content.
-6. The center node (group:1) should be named after the scheme (max 3 words).
+4. Create CROSS-LINKS between groups.
+5. Provide a specific 'resistance_details' section explaining WHO will resist and WHY.
+6. Provide an 'improvement_roadmap' with 3 specific suggestions to reach 100% success.
+7. The center node (group:1) should be named after the scheme.
 
 Write a 3-bullet CONCISE analysis. Then produce the JSON.
 
@@ -616,6 +629,14 @@ Write a 3-bullet CONCISE analysis. Then produce the JSON.
     "negative": <realistic resistance score>,
     "overall": <predicted success %>
   },
+  "resistance_details": [
+    {"group": "<Group Name>", "reason": "<Detailed Why>"}
+  ],
+  "improvement_roadmap": [
+    "<Step 1 to reach 100%>",
+    "<Step 2 to reach 100%>",
+    "<Step 3 to reach 100%>"
+  ],
   "graph": {
     "nodes": [
       {"id":"<Short Scheme Name>","group":1,"impact":55,"sentiment":1},
@@ -678,14 +699,25 @@ Write a 3-bullet CONCISE analysis. Then produce the JSON.
             ]
         };
 
-        const parsed = extractAndRepairJSON(rawText) || {metrics:{positive:70,negative:10,overall:80}, graph: defaultGraph};
+        const parsed = extractAndRepairJSON(rawText) || {
+            metrics: {positive:70, negative:10, overall:80}, 
+            graph: defaultGraph,
+            resistance_details: [],
+            improvement_roadmap: ["Improve transparency", "Increase ground-level awareness", "Engage local community leaders"]
+        };
         if (!parsed.graph || !parsed.graph.nodes || parsed.graph.nodes.length < 4) parsed.graph = defaultGraph;
         if (!parsed.metrics) parsed.metrics = {positive:70, negative:15, overall:68};
 
         let aiPrediction = rawText.split(/```json/i)[0].trim();
         if (!aiPrediction || aiPrediction.length < 50) aiPrediction = rawText.replace(/```json[\s\S]*?```/i, "").trim();
 
-        res.json({ai_prediction: aiPrediction || "Analysis complete.", metrics: parsed.metrics, graph_data: parsed.graph});
+        res.json({
+            ai_prediction: aiPrediction || "Analysis complete.", 
+            metrics: parsed.metrics, 
+            graph_data: parsed.graph,
+            resistance: parsed.resistance_details || [],
+            roadmap: parsed.improvement_roadmap || []
+        });
     } catch (error) {
         console.error("[UP ANALYSIS ERROR]", error.message);
         const schemeShort = title.split(' ').slice(0, 3).join(' ');

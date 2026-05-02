@@ -356,6 +356,32 @@ async function simulateAIAnalysis(title, description) {
         // Render graph with delay for layout paint
         setTimeout(() => renderD3Graph(data.graph_data), 120);
 
+        // Render Resistance Deep-Dive
+        const resContent = document.getElementById('resistance-content');
+        if (data.resistance && data.resistance.length > 0) {
+            resContent.innerHTML = data.resistance.map(item => `
+                <div class="resistance-item fade-in">
+                    <strong>⚠️ ${item.group}</strong>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">${item.reason}</p>
+                </div>
+            `).join('');
+        } else {
+            resContent.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">No major resistance detected for this strategy.</p>`;
+        }
+
+        // Render AI Roadmap
+        const roadmapContent = document.getElementById('roadmap-content');
+        if (data.roadmap && data.roadmap.length > 0) {
+            roadmapContent.innerHTML = data.roadmap.map((step, idx) => `
+                <div class="roadmap-item fade-in" style="animation-delay:${idx * 0.1}s;">
+                    <div class="step-num">${idx + 1}</div>
+                    <p style="font-size:0.85rem; margin:0;">${step}</p>
+                </div>
+            `).join('');
+        } else {
+            roadmapContent.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">Strategy is already highly optimized.</p>`;
+        }
+
     } catch (error) {
         // Even on timeout/network error, show professional message
         aiContent.innerHTML = `

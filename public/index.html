@@ -210,12 +210,28 @@
                     </div>
 
                     <!-- Graphical Representation (Full Width Bottom) -->
-                    <div class="graph-box glass-panel">
+                    <div class="graph-box glass-panel mb-2">
                         <h3 data-i18n="dash_graph_title">Public Sentiment Graph</h3>
                         <div id="d3-graph-container" class="d3-container" style="height: 500px; width: 100%;">
                             <div class="placeholder-text" style="text-align: center; color:var(--text-muted); margin-top: 20%;" data-i18n="dash_graph_placeholder">Awaiting Data...</div>
                         </div>
                         <p class="graph-caption" data-i18n="dash_graph_caption">Graphical representation of expected positive vs negative impact in various demographics. (Node Size = Impact, Node Color = Sentiment)</p>
+                    </div>
+
+                    <!-- Resistance & Roadmap (Two Columns) -->
+                    <div class="analysis-grid mt-2">
+                        <div class="glass-panel resistance-box">
+                            <h3 style="color:#ff4d4d;">🛑 Resistance Analysis (Who & Why)</h3>
+                            <div id="resistance-content">
+                                <p style="color:var(--text-muted);">Submit a strategy to see resistance breakdown.</p>
+                            </div>
+                        </div>
+                        <div class="glass-panel roadmap-box">
+                            <h3 style="color:#2ecc71;">🚀 Roadmap to 100% Success</h3>
+                            <div id="roadmap-content">
+                                <p style="color:var(--text-muted);">Submit a strategy to see improvement suggestions.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
