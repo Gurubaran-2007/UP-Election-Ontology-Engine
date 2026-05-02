@@ -4,58 +4,10 @@
 
 (function () {
 
-    // ── 1. Inject nav link after "Interactive India Map" ────────────
-    function injectNavLink() {
-        const links = document.querySelectorAll('.tab-link');
-        let indiaLink = null;
-        links.forEach(l => { if (l.dataset.target === 'india-map-tab') indiaLink = l; });
-        if (indiaLink && !document.querySelector('[data-target="up-map-tab"]')) {
-            const li = document.createElement('li');
-            li.innerHTML = `<a href="#" data-target="up-map-tab" class="tab-link">UP District Map</a>`;
-            indiaLink.closest('li').insertAdjacentElement('afterend', li);
-        }
-    }
-
-    // ── 2. Inject tab section HTML ─────────────────────────────────
-    function injectTabSection() {
-        if (document.getElementById('up-map-tab')) return;
-        const main = document.querySelector('.content-area');
-        const section = document.createElement('section');
-        section.id = 'up-map-tab';
-        section.className = 'tab-content fade-in';
-        section.style.display = 'none';
-        section.innerHTML = `
-        <div class="card" style="padding:0;overflow:hidden;position:relative;">
-            <div style="padding:1.5rem 2rem;background:linear-gradient(135deg,rgba(255,153,51,.15),rgba(19,78,74,.2));border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
-                <div>
-                    <h2 style="margin:0;font-size:1.8rem;">🗺️ Uttar Pradesh District Map</h2>
-                    <p style="margin:.3rem 0 0;color:var(--text-muted);font-size:.9rem;">Click any district to view political, demographic &amp; news intelligence</p>
-                </div>
-                <div id="up-map-selected-label" style="font-size:.85rem;color:var(--secondary);font-weight:600;background:rgba(255,153,51,.1);padding:6px 14px;border-radius:20px;border:1px solid var(--secondary);">No district selected</div>
-            </div>
-            <div style="display:flex;height:85vh;min-height:600px;">
-                <div id="up-district-map" style="flex:1;position:relative;background:var(--bg-dark);overflow:hidden;">
-                    <div id="up-map-loader" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
-                        <div class="loading-spinner"></div>
-                        <p style="color:var(--text-muted);margin-top:1rem;">Loading UP District Map...</p>
-                    </div>
-                </div>
-                <div id="up-district-panel" style="width:0;overflow:hidden;transition:width .35s cubic-bezier(.4,0,.2,1);background:var(--bg-card);border-left:1px solid var(--border);position:relative;">
-                    <div id="up-district-panel-inner" style="width:420px;padding:1.5rem;height:100%;overflow-y:auto;box-sizing:border-box;">
-                        <button onclick="window._upMapClosePanel()" style="position:absolute;top:1rem;right:1rem;background:transparent;border:1px solid var(--border);color:var(--text);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:1rem;line-height:1;">✕</button>
-                        <h3 id="up-dist-name" style="color:var(--primary);font-size:1.4rem;margin:0 0 .3rem;padding-right:2rem;">District</h3>
-                        <p style="color:var(--text-muted);font-size:.8rem;margin:0 0 1.5rem;">Uttar Pradesh, India</p>
-                        <div id="up-dist-loader" style="text-align:center;padding:2rem 0;">
-                            <div class="loading-spinner"></div>
-                            <p style="color:var(--text-muted);margin-top:1rem;font-size:.85rem;">Fetching intelligence from AI &amp; Database...</p>
-                        </div>
-                        <div id="up-dist-content" style="display:none;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-        main.insertBefore(section, main.firstChild.nextSibling);
-    }
+    // ── 9. Init on DOM ready ───────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        // Functions now rely on static HTML in index.html
+    });
 
     // ── 3. Close panel ─────────────────────────────────────────────
     window._upMapClosePanel = function () {
