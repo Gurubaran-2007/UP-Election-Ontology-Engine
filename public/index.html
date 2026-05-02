@@ -38,8 +38,8 @@
             </div>
             <nav class="sidebar-nav">
                 <ul>
-                    <li><a href="#" data-target="up-dashboard-tab" class="tab-link active" data-i18n="nav_up">Uttar Pradesh Schemes</a></li>
-                    <li><a href="#" data-target="up-map-tab" class="tab-link">UP District Map</a></li>
+                    <li><a href="#" data-target="up-map-tab" class="tab-link active" data-i18n="nav_map">UP District Map</a></li>
+                    <li><a href="#" data-target="up-dashboard-tab" class="tab-link" data-i18n="nav_up">Uttar Pradesh Schemes</a></li>
                     <li><a href="#" data-target="strategy-tab" class="tab-link" data-i18n="nav_strategy">Strategy Builder & Prediction</a></li>
                     <li><a href="#" data-target="ai-search-tab" class="tab-link" data-i18n="nav_ai_search">AI Search</a></li>
                     <li><a href="#" data-target="up-social-tab" class="tab-link" data-i18n="nav_social">UP Social Media</a></li>
@@ -60,7 +60,7 @@
 
 
             <!-- Tab 1.5: Uttar Pradesh Dashboard -->
-            <section id="up-dashboard-tab" class="tab-content active fade-in">
+            <section id="up-dashboard-tab" class="tab-content fade-in" style="display: none;">
                 
                 <!-- Climate Widget -->
                 <div class="card weather-widget" style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, rgba(255,153,51,0.1), rgba(15,20,35,0.8));">
@@ -93,7 +93,7 @@
             </section>
 
             <!-- Tab: UP District Map -->
-            <section id="up-map-tab" class="tab-content fade-in" style="display: none;">
+            <section id="up-map-tab" class="tab-content active fade-in">
                 <div class="card" style="padding: 0; overflow: hidden; position: relative;">
                     <!-- Header -->
                     <div style="padding: 1.5rem 2rem; background: linear-gradient(135deg, rgba(255,153,51,0.15), rgba(19,78,74,0.2)); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">

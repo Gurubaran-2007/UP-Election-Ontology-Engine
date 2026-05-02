@@ -59,11 +59,15 @@
         const width  = container.clientWidth  || 800;
         const height = container.clientHeight || 700;
 
+        // Change background to Light Presentable Colour
+        container.style.background = '#f1f5f9'; // Slate 100 (Light & Clean)
+
         const svg = d3.select('#up-district-map')
             .append('svg')
             .attr('width', '100%')
             .attr('height', '100%')
-            .attr('viewBox', `0 0 ${width} ${height}`);
+            .attr('viewBox', `0 0 ${width} ${height}`)
+            .style('background', '#f1f5f9');
 
         const mapGroup = svg.append('g');
 
@@ -72,6 +76,23 @@
             .fitSize([width, height], geojson);
 
         const pathGenerator = d3.geoPath().projection(projection);
+
+        // 🚀 RE-ENABLE ZOOM & PAN
+        const zoom = d3.zoom()
+            .scaleExtent([1, 12])
+            .on('zoom', (event) => {
+                mapGroup.attr('transform', event.transform);
+                // Dynamically adjust label size on zoom
+                mapGroup.selectAll('.district-label')
+                    .style('font-size', d => `${0.45 / event.transform.k}rem`)
+                    .style('opacity', event.transform.k > 1.5 ? 1 : 0.8);
+                
+                mapGroup.selectAll('.region-label')
+                    .style('font-size', `${1.8 / Math.sqrt(event.transform.k)}rem`)
+                    .style('opacity', event.transform.k > 4 ? 0 : 0.7);
+            });
+        
+        svg.call(zoom);
 
         // Region Label Coordinates (Heuristic for UP)
         const regionLabels = [
@@ -89,28 +110,28 @@
             .attr('d', pathGenerator)
             .attr('class', 'district-path')
             .style('fill', d => getDistrictRegion(d.properties.NAME_2 || d.properties.name).color)
-            .style('stroke', '#475569')
-            .style('stroke-width', '0.5px')
+            .style('stroke', '#334155') // Darker borders like the image
+            .style('stroke-width', '0.6px')
             .style('cursor', 'pointer')
-            .style('transition', 'all 0.2s ease')
+            .style('transition', 'fill 0.2s ease')
             .on('mouseover', function (event, d) {
                 d3.select(this)
-                    .style('stroke-width', '1.5px')
+                    .style('fill', 'rgba(255,153,51,0.4)')
                     .style('stroke', '#000')
                     .raise();
             })
             .on('mouseout', function (event, d) {
                 const isSelected = window._upLastSelected && window._upLastSelected.node() === this;
                 d3.select(this)
-                    .style('stroke-width', isSelected ? '2px' : '0.5px')
-                    .style('stroke', isSelected ? 'var(--primary)' : '#475569');
+                    .style('fill', getDistrictRegion(d.properties.NAME_2 || d.properties.name).color)
+                    .style('stroke', isSelected ? 'var(--primary)' : '#334155');
             })
             .on('click', function (event, d) {
                 if (window._upLastSelected) {
-                    window._upLastSelected.style('stroke-width', '0.5px').style('stroke', '#475569');
+                    window._upLastSelected.style('stroke', '#334155');
                 }
                 window._upLastSelected = d3.select(this);
-                d3.select(this).style('stroke-width', '2px').style('stroke', 'var(--primary)');
+                d3.select(this).style('stroke', 'var(--primary)').style('stroke-width', '2.5px');
 
                 const name = d.properties.NAME_2 || d.properties.name || 'Unknown';
                 openDistrictPanel(name);
@@ -127,12 +148,14 @@
             .attr('text-anchor', 'middle')
             .style('font-size', '1.8rem')
             .style('font-weight', '900')
-            .style('fill', 'rgba(0,0,0,0.7)')
+            .style('fill', 'rgba(15, 23, 42, 0.6)') // Slate 900 semi-transparent
             .style('font-family', 'Outfit, sans-serif')
             .style('pointer-events', 'none')
+            .style('text-transform', 'uppercase')
+            .style('letter-spacing', '2px')
             .text(d => d.text);
 
-        // Add Small District Labels
+        // Add Small District Labels (Clear & High Contrast)
         mapGroup.selectAll('.district-label')
             .data(geojson.features)
             .enter()
@@ -144,9 +167,9 @@
             .attr('dy', '.35em')
             .style('pointer-events', 'none')
             .style('font-size', '0.45rem')
-            .style('font-weight', '600')
-            .style('fill', '#000')
-            .style('opacity', '0.8')
+            .style('font-weight', '700')
+            .style('fill', '#0f172a') // Slate 900 for absolute clarity
+            .style('text-transform', 'uppercase')
             .text(d => d.properties.NAME_2 || d.properties.name || '');
     }
 
