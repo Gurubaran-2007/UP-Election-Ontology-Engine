@@ -28,17 +28,33 @@
 
     // ── NAVIGATION HELPERS ──────────────────────────────────────────
 
-    function pushView(viewFn, args, title, subtitle) {
-        navStack.push({ fn: viewFn, args, title: titleEl.innerText, subtitle: subtitleEl.innerText });
+    let currentView = { fn: showRegions, args: [] };
+
+    function pushView(nextFn, nextArgs) {
+        // Save where we are now before going forward
+        navStack.push({ 
+            fn: currentView.fn, 
+            args: currentView.args, 
+            title: titleEl.innerText, 
+            subtitle: subtitleEl.innerText 
+        });
+        
         backBtn.style.display = 'flex';
-        viewFn(...args);
+        
+        // Update current view and execute
+        currentView = { fn: nextFn, args: nextArgs };
+        nextFn(...nextArgs);
     }
 
     function goBack() {
-        const last = navStack.pop();
-        if (last) {
+        const previous = navStack.pop();
+        if (previous) {
             if (navStack.length === 0) backBtn.style.display = 'none';
-            last.fn(...last.args);
+            
+            // Restore header and view
+            setHeader(previous.title, previous.subtitle);
+            currentView = { fn: previous.fn, args: previous.args };
+            previous.fn(...previous.args);
         }
     }
 
@@ -64,12 +80,12 @@
         `;
     }
 
-    window._boothPushDistricts = (id, name) => pushView(showDistricts, [id, name], name, `Districts in ${name}`);
+    window._boothPushDistricts = (id, name) => pushView(showDistricts, [id, name]);
 
     // ── VIEW 2: DISTRICTS ─────────────────────────────────────────────
 
     async function showDistricts(regionId, regionName) {
-        setHeader(regionName, `Select a district to view its constituencies`);
+        setHeader(regionName, `Districts in ${regionName}`);
         container.innerHTML = '<div class="loading-spinner" style="margin:15% auto;"></div>';
 
         try {
@@ -96,12 +112,12 @@
         }
     }
 
-    window._boothPushConstituencies = (dist) => pushView(showConstituencies, [dist], dist, `Constituencies in ${dist} District`);
+    window._boothPushConstituencies = (dist) => pushView(showConstituencies, [dist]);
 
     // ── VIEW 3: CONSTITUENCIES ────────────────────────────────────────
 
     async function showConstituencies(districtName) {
-        setHeader(districtName, `Select a constituency for intelligence & booth data`);
+        setHeader(districtName, `Constituencies in ${districtName} District`);
         container.innerHTML = '<div class="loading-spinner" style="margin:15% auto;"></div>';
 
         try {
@@ -124,12 +140,12 @@
         }
     }
 
-    window._boothPushAnalysis = (constName) => pushView(showConstituencyAnalysis, [constName], constName, `Intelligent Analysis & Booth Data`);
+    window._boothPushAnalysis = (constName) => pushView(showConstituencyAnalysis, [constName]);
 
     // ── VIEW 4: CONSTITUENCY ANALYSIS ────────────────────────────────
 
     async function showConstituencyAnalysis(constName) {
-        setHeader(constName, `Intelligence Hub: Analysis & Ground Reporting`);
+        setHeader(constName, `Intelligent Analysis & Booth Data`);
         container.innerHTML = '<div class="loading-spinner" style="margin:15% auto;"></div>';
 
         try {
@@ -248,7 +264,7 @@
         }
     }
 
-    window._boothPushDetail = (id, name) => pushView(showBoothAnalysis, [id, name], `Booth: ${name}`, `Ground Level Intelligence (ID: ${id})`);
+    window._boothPushDetail = (id, name) => pushView(showBoothAnalysis, [id, name]);
 
     // ── VIEW 5: BOOTH ANALYSIS ───────────────────────────────────────
 
