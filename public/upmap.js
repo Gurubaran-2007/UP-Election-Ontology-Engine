@@ -66,20 +66,46 @@
         }
     };
 
-    function upDistrictColor(d) {
-        const hash = (d.properties.NAME_2 || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-        const hues = [200, 220, 240, 180, 195, 210, 230, 215];
-        return `hsl(${hues[hash % hues.length]}, 55%, 28%)`;
+    // ── 4. Regional Classification Logic ───────────────────────────
+    const REGIONS = {
+        'Western U.P.': {
+            color: '#fef9c3', // Gold/Yellow
+            districts: ['Saharanpur', 'Muzaffarnagar', 'Shamli', 'Baghpat', 'Meerut', 'Ghaziabad', 'Hapur', 'Gautam Buddha Nagar', 'Bulandshahr', 'Aligarh', 'Hathras', 'Mathura', 'Agra', 'Firozabad', 'Etah', 'Kasganj', 'Mainpuri', 'Etawah', 'Auraiya', 'Kannauj', 'Farrukhabad']
+        },
+        'Rohilkhand': {
+            color: '#60a5fa', // Blue
+            districts: ['Bijnor', 'Jyotiba Phule Nagar', 'Amroha', 'Moradabad', 'Rampur', 'Sambhal', 'Budaun', 'Bareilly', 'Pilibhit', 'Shahjahanpur']
+        },
+        'Awadh': {
+            color: '#d8b4fe', // Purple
+            districts: ['Kheri', 'Sitapur', 'Hardoi', 'Unnao', 'Lucknow', 'Rae Bareli', 'Barabanki', 'Faizabad', 'Ayodhya', 'Amethi', 'Sultanpur', 'Ambedkar Nagar', 'Gonda', 'Bahraich', 'Shravasti', 'Balrampur', 'Fatehpur']
+        },
+        'Bundelkhand': {
+            color: '#fca5a5', // Red/Pink
+            districts: ['Jalaun', 'Jhansi', 'Lalitpur', 'Hamirpur', 'Mahoba', 'Banda', 'Chitrakoot']
+        },
+        'Purvanchal': {
+            color: '#86efac', // Green
+            districts: ['Siddharthnagar', 'Maharajganj', 'Kushinagar', 'Basti', 'Sant Kabir Nagar', 'Gorakhpur', 'Deoria', 'Azamgarh', 'Mau', 'Ballia', 'Jaunpur', 'Ghazipur', 'Varanasi', 'Sant Ravidas Nagar', 'Mirzapur', 'Chandauli', 'Sonbhadra', 'Allahabad', 'Prayagraj', 'Kaushambi', 'Pratapgarh']
+        }
+    };
+
+    function getDistrictRegion(name) {
+        const n = name.trim();
+        for (const [region, data] of Object.entries(REGIONS)) {
+            if (data.districts.some(d => n.includes(d) || d.includes(n))) return { region, color: data.color };
+        }
+        return { region: 'Other', color: '#cbd5e1' };
     }
 
-    // ── 4. Render D3 Map ────────────────────────────────────────────
+    // ── 5. Render D3 Map ────────────────────────────────────────────
     function renderUPMap(geojson) {
         const container = document.getElementById('up-district-map');
         if (!container) return;
         container.innerHTML = '';
 
-        const width  = container.clientWidth  || 700;
-        const height = container.clientHeight || 600;
+        const width  = container.clientWidth  || 800;
+        const height = container.clientHeight || 700;
 
         const svg = d3.select('#up-district-map')
             .append('svg')
@@ -95,58 +121,81 @@
 
         const pathGenerator = d3.geoPath().projection(projection);
 
-        const zoom = d3.zoom()
-            .scaleExtent([1, 10])
-            .on('zoom', event => mapGroup.attr('transform', event.transform));
-        svg.call(zoom);
+        // Region Label Coordinates (Heuristic for UP)
+        const regionLabels = [
+            { text: 'Western U.P.', x: width * 0.15, y: height * 0.55 },
+            { text: 'Rohilkhand', x: width * 0.40, y: height * 0.10 },
+            { text: 'Awadh', x: width * 0.60, y: height * 0.30 },
+            { text: 'Bundelkhand', x: width * 0.35, y: height * 0.82 },
+            { text: 'Purvanchal', x: width * 0.85, y: height * 0.78 }
+        ];
 
         mapGroup.selectAll('path')
             .data(geojson.features)
             .enter()
             .append('path')
             .attr('d', pathGenerator)
-            .attr('class', 'state-path')
+            .attr('class', 'district-path')
+            .style('fill', d => getDistrictRegion(d.properties.NAME_2 || d.properties.name).color)
+            .style('stroke', '#475569')
+            .style('stroke-width', '0.5px')
             .style('cursor', 'pointer')
-            .on('mouseover', function () {
-                if (window._upLastSelected && window._upLastSelected.node() === this) return;
-                d3.select(this).style('fill', 'rgba(255,153,51,0.5)');
+            .style('transition', 'all 0.2s ease')
+            .on('mouseover', function (event, d) {
+                d3.select(this)
+                    .style('stroke-width', '1.5px')
+                    .style('stroke', '#000')
+                    .raise();
             })
-            .on('mouseout', function () {
-                if (window._upLastSelected && window._upLastSelected.node() === this) return;
-                d3.select(this).style('fill', '');
+            .on('mouseout', function (event, d) {
+                const isSelected = window._upLastSelected && window._upLastSelected.node() === this;
+                d3.select(this)
+                    .style('stroke-width', isSelected ? '2px' : '0.5px')
+                    .style('stroke', isSelected ? 'var(--primary)' : '#475569');
             })
             .on('click', function (event, d) {
                 if (window._upLastSelected) {
-                    window._upLastSelected.style('fill', '');
+                    window._upLastSelected.style('stroke-width', '0.5px').style('stroke', '#475569');
                 }
                 window._upLastSelected = d3.select(this);
-                d3.select(this).style('fill', 'var(--primary)');
+                d3.select(this).style('stroke-width', '2px').style('stroke', 'var(--primary)');
 
-                const name = d.properties.NAME_2
-                    || d.properties.district
-                    || d.properties.name
-                    || d.properties.DISTRICT
-                    || 'Unknown';
+                const name = d.properties.NAME_2 || d.properties.name || 'Unknown';
                 openDistrictPanel(name);
             });
 
-        mapGroup.selectAll('text')
+        // Add Regional Text Labels (Large)
+        mapGroup.selectAll('.region-label')
+            .data(regionLabels)
+            .enter()
+            .append('text')
+            .attr('class', 'region-label')
+            .attr('x', d => d.x)
+            .attr('y', d => d.y)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '1.8rem')
+            .style('font-weight', '900')
+            .style('fill', 'rgba(0,0,0,0.7)')
+            .style('font-family', 'Outfit, sans-serif')
+            .style('pointer-events', 'none')
+            .text(d => d.text);
+
+        // Add Small District Labels
+        mapGroup.selectAll('.district-label')
             .data(geojson.features)
             .enter()
             .append('text')
-            .attr('class', 'state-label')
+            .attr('class', 'district-label')
             .attr('x', d => pathGenerator.centroid(d)[0] || 0)
             .attr('y', d => pathGenerator.centroid(d)[1] || 0)
             .attr('text-anchor', 'middle')
             .attr('dy', '.35em')
             .style('pointer-events', 'none')
-            .text(d =>
-                d.properties.NAME_2
-                || d.properties.district
-                || d.properties.name
-                || d.properties.DISTRICT
-                || ''
-            );
+            .style('font-size', '0.45rem')
+            .style('font-weight', '600')
+            .style('fill', '#000')
+            .style('opacity', '0.8')
+            .text(d => d.properties.NAME_2 || d.properties.name || '');
     }
 
     // ── 5. Open District Panel ─────────────────────────────────────
