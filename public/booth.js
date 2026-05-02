@@ -246,7 +246,8 @@
 
                         <!-- BOOTH LIST -->
                         <div class="glass-panel mt-2" style="background:rgba(59,130,246,0.05); border:1.5px solid rgba(59,130,246,0.3);">
-                            <h3 style="color:#60a5fa; font-size:1.1rem; margin-bottom:1rem;">📍 Ground Booths</h3>
+                            <h3 style="color:#60a5fa; font-size:1.1rem; margin-bottom:0.2rem;">📍 Ground Booths</h3>
+                            <p style="color:var(--text-muted); font-size:0.75rem; margin-bottom:1rem; font-style:italic;">Choose any booth to view in detail</p>
                             <div style="max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:0.5rem;">
                                 ${data.booths.map(b => `
                                     <div class="booth-link" onclick="window._boothPushDetail('${b.id}', '${b.name}')" style="cursor:pointer; padding:0.7rem; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:6px; font-size:0.85rem; display:flex; justify-content:space-between;">
