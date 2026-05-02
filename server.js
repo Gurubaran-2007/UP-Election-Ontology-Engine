@@ -142,13 +142,29 @@ const callAI = async (prompt) => {
 
 app.get('/api/up/region/:regionId/districts', (req, res) => {
     const regionMap = {
-        'western': ['Saharanpur', 'Meerut', 'Agra', 'Aligarh', 'Mathura', 'Ghaziabad'],
-        'central': ['Lucknow', 'Kanpur Nagar', 'Kanpur Dehat', 'Unnao', 'Sitapur', 'Rae Bareli'],
-        'eastern': ['Varanasi', 'Gorakhpur', 'Azamgarh', 'Prayagraj', 'Ghazipur', 'Ballia'],
-        'bundelkhand': ['Jhansi', 'Jalaun', 'Hamirpur', 'Banda', 'Chitrakoot', 'Mahoba']
+        'western': [
+            'Saharanpur', 'Muzaffarnagar', 'Shamli', 'Baghpat', 'Meerut', 'Ghaziabad', 
+            'Hapur', 'Gautam Buddha Nagar', 'Bulandshahr', 'Aligarh', 'Hathras', 'Mathura', 
+            'Agra', 'Firozabad', 'Etah', 'Kasganj', 'Mainpuri', 'Etawah', 'Auraiya', 
+            'Kannauj', 'Farrukhabad', 'Bijnor', 'Amroha', 'Moradabad', 'Rampur', 'Sambhal'
+        ],
+        'central': [
+            'Lucknow', 'Kanpur Nagar', 'Kanpur Dehat', 'Unnao', 'Sitapur', 'Rae Bareli', 
+            'Hardoi', 'Lakhimpur Kheri', 'Barabanki', 'Fatehpur'
+        ],
+        'eastern': [
+            'Varanasi', 'Gorakhpur', 'Azamgarh', 'Prayagraj', 'Ghazipur', 'Ballia', 
+            'Jaunpur', 'Mirzapur', 'Chandauli', 'Sonbhadra', 'Bhadohi', 'Deoria', 
+            'Kushinagar', 'Mau', 'Maharajganj', 'Siddharthnagar', 'Basti', 'Sant Kabir Nagar', 
+            'Amethi', 'Sultanpur', 'Ayodhya', 'Ambedkar Nagar', 'Gonda', 'Bahraich', 
+            'Shravasti', 'Balrampur', 'Pratapgarh', 'Kaushambi'
+        ],
+        'bundelkhand': [
+            'Jhansi', 'Jalaun', 'Hamirpur', 'Banda', 'Chitrakoot', 'Mahoba', 'Lalitpur'
+        ]
     };
     const districts = regionMap[req.params.regionId] || [];
-    res.json(districts);
+    res.json(districts.sort()); // Sort alphabetically for better UI
 });
 
 app.get('/api/up/district/:district/constituencies', (req, res) => {
