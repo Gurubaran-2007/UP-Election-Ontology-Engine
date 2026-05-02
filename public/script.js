@@ -22,10 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 landingPage.style.display = 'none';
                 document.getElementById('app-container').style.display = 'flex';
-                // Load map only after container is visible so width/height are calculated properly
-                if(!window.mapLoaded) {
-                    loadIndiaMap();
-                    window.mapLoaded = true;
+                // Automatically load UP Dashboard on entry
+                if(!window.upDashboardLoaded) {
+                    loadUPDashboard();
+                    window.upDashboardLoaded = true;
                 }
             }, 500); // match animation duration
         });
@@ -76,134 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
-async function loadIndiaMap() {
-    const mapContainer = document.getElementById('india-d3-map');
-    if (!mapContainer) return;
-
-    try {
-        const response = await fetch('https://code.highcharts.com/mapdata/countries/in/custom/in-all-disputed.geo.json');
-        const geojson = await response.json();
-
-        mapContainer.innerHTML = ''; 
-        
-        const width = mapContainer.clientWidth || 600;
-        const height = mapContainer.clientHeight || 500;
-
-        const svg = d3.select("#india-d3-map")
-            .append("svg")
-            .attr("width", "100%")
-            .attr("height", "100%")
-            .attr("viewBox", `0 0 ${width} ${height}`);
-
-        const mapGroup = svg.append("g");
-
-        const projection = d3.geoIdentity()
-            .reflectY(true)
-            .fitSize([width, height], geojson);
-
-        const pathGenerator = d3.geoPath().projection(projection);
-
-        const zoom = d3.zoom()
-            .scaleExtent([1, 8])
-            .on("zoom", (event) => {
-                mapGroup.attr("transform", event.transform);
-            });
-        
-        svg.call(zoom);
-
-        const infoModal = document.getElementById('state-modal');
-
-        mapGroup.selectAll("path")
-            .data(geojson.features)
-            .enter()
-            .append("path")
-            .attr("d", pathGenerator)
-            .attr("class", "state-path")
-            .on("click", function(event, d) {
-                const stateName = d.properties.name;
-                
-                infoModal.style.display = 'flex';
-                const displayStateName = currentLang === 'hi' ? (stateTranslations[stateName] || stateName) : stateName;
-                document.getElementById('state-name-display').innerText = displayStateName;
-                
-                document.getElementById('state-population').innerText = currentLang === 'hi' ? "लोड हो रहा है..." : "Loading...";
-                document.getElementById('state-cm').innerText = currentLang === 'hi' ? "लोड हो रहा है..." : "Loading...";
-                document.getElementById('state-cm-years').innerText = "";
-                document.getElementById('state-districts-list').innerHTML = `<li>${currentLang === 'hi' ? "लोड हो रहा है..." : "Loading..."}</li>`;
-                document.getElementById('state-news-list').innerHTML = `<li>${currentLang === 'hi' ? "लोड हो रहा है..." : "Loading..."}</li>`;
-
-                fetchStateInfo(stateName);
-            });
-
-        mapGroup.selectAll("text")
-            .data(geojson.features)
-            .enter()
-            .append("text")
-            .attr("class", "state-label")
-            .attr("x", d => pathGenerator.centroid(d)[0] || 0)
-            .attr("y", d => pathGenerator.centroid(d)[1] || 0)
-            .attr("text-anchor", "middle")
-            .attr("dy", ".35em")
-            .attr("data-state-name", d => d.properties.name)
-            .text(d => currentLang === 'hi' ? (stateTranslations[d.properties.name] || d.properties.name) : d.properties.name)
-            .style("pointer-events", "none");
-
-    } catch (error) {
-        console.error("Error loading map:", error);
-        mapContainer.innerHTML = `<p style="color:var(--negative)">Failed to load India map.</p>`;
-    }
-}
-
-async function fetchStateInfo(stateName) {
-    try {
-        const response = await fetch(`/api/state-info/${encodeURIComponent(stateName)}`);
-        if (!response.ok) throw new Error("Failed to fetch state data");
-        
-        const data = await response.json();
-        const pData = data.political_data;
-
-        const displayPop = pData.population;
-        let cmName = pData.cm;
-        
-        if (currentLang === 'hi') {
-            cmName = await transliterateSentence(cmName);
-        }
-
-        document.getElementById('state-population').innerText = displayPop;
-        document.getElementById('state-cm').innerText = cmName;
-        document.getElementById('state-cm-years').innerText = pData.cm_years;
-        
-        const districtList = document.getElementById('state-districts-list');
-        if (pData.districts && pData.districts.length > 0) {
-            let htmlStr = '';
-            for (let d of pData.districts) {
-                let dName = currentLang === 'hi' ? await transliterateSentence(d.name) : d.name;
-                let polName = currentLang === 'hi' ? await transliterateSentence(d.politician) : d.politician;
-                htmlStr += `<li><strong>${dName}</strong>: ${polName} (${d.years} ${currentLang === 'hi' ? 'वर्ष' : 'yrs'})</li>`;
-            }
-            districtList.innerHTML = htmlStr;
-        } else {
-            districtList.innerHTML = currentLang === 'hi' ? "<li>कोई जिला डेटा उपलब्ध नहीं है।</li>" : "<li>No district data available.</li>";
-        }
-
-        const newsList = document.getElementById('state-news-list');
-        if (data.news && data.news.length > 0) {
-            let newsHtml = '';
-            for (let n of data.news) {
-                let newsTitle = currentLang === 'hi' ? await translateToHindi(n.title) : n.title;
-                newsHtml += `<li><a href="${n.url}" target="_blank">${newsTitle}</a></li>`;
-            }
-            newsList.innerHTML = newsHtml;
-        } else {
-            newsList.innerHTML = currentLang === 'hi' ? "<li>कोई ताज़ा खबर नहीं मिली।</li>" : "<li>No recent news found.</li>";
-        }
-
-    } catch (error) {
-        console.error(error);
-        document.getElementById('state-districts-list').innerHTML = `<li style="color:var(--negative)">Error loading data.</li>`;
-    }
-}
 
 // Wakeup banner — shown when server is cold-starting
 function showWakeupBanner() {

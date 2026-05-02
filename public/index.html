@@ -38,10 +38,10 @@
             </div>
             <nav class="sidebar-nav">
                 <ul>
-                    <li><a href="#" data-target="india-map-tab" class="tab-link active" data-i18n="nav_map">Interactive India Map</a></li>
-                    <li><a href="#" data-target="up-dashboard-tab" class="tab-link" data-i18n="nav_up">Uttar Pradesh</a></li>
+                    <li><a href="#" data-target="up-dashboard-tab" class="tab-link active" data-i18n="nav_up">Uttar Pradesh</a></li>
                     <li><a href="#" data-target="strategy-tab" class="tab-link" data-i18n="nav_strategy">Strategy Builder & Prediction</a></li>
                     <li><a href="#" data-target="ai-search-tab" class="tab-link" data-i18n="nav_ai_search">AI Search</a></li>
+                    <li><a href="#" data-target="up-social-tab" class="tab-link" data-i18n="nav_social">UP Social Media</a></li>
                 </ul>
             </nav>
             <div class="sidebar-footer">
@@ -56,24 +56,10 @@
         <!-- Main Content Area -->
         <main class="content-area">
             
-            <!-- Tab 1: India Map -->
-            <section id="india-map-tab" class="tab-content active fade-in">
-                <div class="card">
-                    <h2 data-i18n="map_title">Interactive India Map</h2>
-                    <p data-i18n="map_desc">Click on a state to view real-time demographic, political, and news data.</p>
-                    
-                    <div class="map-layout-full">
-                        <!-- SVG Map Container -->
-                        <div id="india-d3-map" class="map-container-full">
-                            <div class="loading-spinner"></div>
-                            <p style="text-align:center;">Loading Map Data...</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
+
 
             <!-- Tab 1.5: Uttar Pradesh Dashboard -->
-            <section id="up-dashboard-tab" class="tab-content fade-in" style="display: none;">
+            <section id="up-dashboard-tab" class="tab-content active fade-in">
                 
                 <!-- Climate Widget -->
                 <div class="card weather-widget" style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, rgba(255,153,51,0.1), rgba(15,20,35,0.8));">
@@ -303,6 +289,5 @@
     <script src="script.js"></script>
     <script src="upmap.js"></script>
     <script src="upsocial.js"></script>
-    <script src="election.js"></script>
 </body>
 </html>
