@@ -59,17 +59,18 @@
         const width  = container.clientWidth  || 800;
         const height = container.clientHeight || 700;
 
-        // Change background to Light Presentable Colour
-        container.style.background = '#f1f5f9'; // Slate 100 (Light & Clean)
+        container.style.background = '#f8fafc';
 
         const svg = d3.select('#up-district-map')
             .append('svg')
             .attr('width', '100%')
             .attr('height', '100%')
             .attr('viewBox', `0 0 ${width} ${height}`)
-            .style('background', '#f1f5f9');
+            .style('background', '#f8fafc');
 
-        const mapGroup = svg.append('g');
+        const mainGroup = svg.append('g');
+        const pathGroup = mainGroup.append('g').attr('class', 'path-layer');
+        const labelGroup = mainGroup.append('g').attr('class', 'label-layer'); // ALWAYS ON TOP
 
         const projection = d3.geoIdentity()
             .reflectY(true)
@@ -77,24 +78,25 @@
 
         const pathGenerator = d3.geoPath().projection(projection);
 
-        // 🚀 RE-ENABLE ZOOM & PAN
+        // 🚀 SMART ZOOM (GOOGLE MAPS STYLE)
         const zoom = d3.zoom()
-            .scaleExtent([1, 12])
+            .scaleExtent([1, 15])
             .on('zoom', (event) => {
-                mapGroup.attr('transform', event.transform);
-                // Dynamically adjust label size on zoom
-                mapGroup.selectAll('.district-label')
-                    .style('font-size', d => `${0.45 / event.transform.k}rem`)
-                    .style('opacity', event.transform.k > 1.5 ? 1 : 0.8);
+                mainGroup.attr('transform', event.transform);
                 
-                mapGroup.selectAll('.region-label')
+                // Adjust District Labels to stay readable
+                labelGroup.selectAll('.district-label')
+                    .style('font-size', `${Math.max(0.3, 0.75 / Math.sqrt(event.transform.k))}rem`)
+                    .style('stroke-width', `${0.2 / event.transform.k}px`);
+                
+                // Adjust Region Labels
+                labelGroup.selectAll('.region-label')
                     .style('font-size', `${1.8 / Math.sqrt(event.transform.k)}rem`)
-                    .style('opacity', event.transform.k > 4 ? 0 : 0.7);
+                    .style('opacity', event.transform.k > 3 ? 0 : 0.6);
             });
         
         svg.call(zoom);
 
-        // Region Label Coordinates (Heuristic for UP)
         const regionLabels = [
             { text: 'Western U.P.', x: width * 0.15, y: height * 0.55 },
             { text: 'Rohilkhand', x: width * 0.40, y: height * 0.10 },
@@ -103,42 +105,44 @@
             { text: 'Purvanchal', x: width * 0.85, y: height * 0.78 }
         ];
 
-        mapGroup.selectAll('path')
+        pathGroup.selectAll('path')
             .data(geojson.features)
             .enter()
             .append('path')
             .attr('d', pathGenerator)
             .attr('class', 'district-path')
             .style('fill', d => getDistrictRegion(d.properties.NAME_2 || d.properties.name).color)
-            .style('stroke', '#334155') // Darker borders like the image
-            .style('stroke-width', '0.6px')
+            .style('stroke', '#475569')
+            .style('stroke-width', '0.5px')
             .style('cursor', 'pointer')
-            .style('transition', 'fill 0.2s ease')
             .on('mouseover', function (event, d) {
                 d3.select(this)
-                    .style('fill', 'rgba(255,153,51,0.4)')
+                    .transition().duration(150)
+                    .style('fill', 'rgba(255,153,51,0.5)')
                     .style('stroke', '#000')
-                    .raise();
+                    .style('stroke-width', '1.5px');
             })
             .on('mouseout', function (event, d) {
                 const isSelected = window._upLastSelected && window._upLastSelected.node() === this;
                 d3.select(this)
+                    .transition().duration(150)
                     .style('fill', getDistrictRegion(d.properties.NAME_2 || d.properties.name).color)
-                    .style('stroke', isSelected ? 'var(--primary)' : '#334155');
+                    .style('stroke', isSelected ? 'var(--primary)' : '#475569')
+                    .style('stroke-width', isSelected ? '2px' : '0.5px');
             })
             .on('click', function (event, d) {
                 if (window._upLastSelected) {
-                    window._upLastSelected.style('stroke', '#334155');
+                    window._upLastSelected.style('stroke', '#475569').style('stroke-width', '0.5px');
                 }
                 window._upLastSelected = d3.select(this);
-                d3.select(this).style('stroke', 'var(--primary)').style('stroke-width', '2.5px');
+                d3.select(this).style('stroke', 'var(--primary)').style('stroke-width', '2px');
 
                 const name = d.properties.NAME_2 || d.properties.name || 'Unknown';
                 openDistrictPanel(name);
             });
 
-        // Add Regional Text Labels (Large)
-        mapGroup.selectAll('.region-label')
+        // Add Regional Labels to the TOP layer
+        labelGroup.selectAll('.region-label')
             .data(regionLabels)
             .enter()
             .append('text')
@@ -148,15 +152,14 @@
             .attr('text-anchor', 'middle')
             .style('font-size', '1.8rem')
             .style('font-weight', '900')
-            .style('fill', 'rgba(15, 23, 42, 0.6)') // Slate 900 semi-transparent
+            .style('fill', 'rgba(15, 23, 42, 0.4)')
             .style('font-family', 'Outfit, sans-serif')
             .style('pointer-events', 'none')
             .style('text-transform', 'uppercase')
-            .style('letter-spacing', '2px')
             .text(d => d.text);
 
-        // Add Small District Labels (Clear & High Contrast)
-        mapGroup.selectAll('.district-label')
+        // Add District Labels to the TOP layer
+        labelGroup.selectAll('.district-label')
             .data(geojson.features)
             .enter()
             .append('text')
@@ -166,10 +169,13 @@
             .attr('text-anchor', 'middle')
             .attr('dy', '.35em')
             .style('pointer-events', 'none')
-            .style('font-size', '0.45rem')
+            .style('font-size', '0.65rem') // Increased base size
             .style('font-weight', '700')
-            .style('fill', '#0f172a') // Slate 900 for absolute clarity
+            .style('fill', '#0f172a')
             .style('text-transform', 'uppercase')
+            .style('paint-order', 'stroke')
+            .style('stroke', 'rgba(255,255,255,0.6)') // Subtle white glow for readability
+            .style('stroke-width', '0.2px')
             .text(d => d.properties.NAME_2 || d.properties.name || '');
     }
 
