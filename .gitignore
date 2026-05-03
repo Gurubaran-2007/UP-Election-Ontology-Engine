@@ -3,6 +3,10 @@ node_modules/
 
 # Environment secrets - NEVER push to GitHub
 .env
+.env.local
+
+# Neo4j Docker data
+neo4j_data/
 
 # Large CSV data files - not needed on server
 *.csv

@@ -1,0 +1,41 @@
+[
+  {
+    "election_id": "LS2019",
+    "type": "Lok Sabha",
+    "year": 2019,
+    "phase": "7-phase",
+    "description": "2019 General Election - 80 UP seats",
+    "total_seats": 80,
+    "bjp_seats": 62,
+    "sp_seats": 5,
+    "bsp_seats": 10,
+    "inc_seats": 1,
+    "others_seats": 2
+  },
+  {
+    "election_id": "VS2022",
+    "type": "Vidhan Sabha",
+    "year": 2022,
+    "phase": "7-phase",
+    "description": "2022 UP Assembly Election - 403 seats",
+    "total_seats": 403,
+    "bjp_seats": 255,
+    "sp_seats": 111,
+    "bsp_seats": 1,
+    "inc_seats": 2,
+    "others_seats": 34
+  },
+  {
+    "election_id": "LS2024",
+    "type": "Lok Sabha",
+    "year": 2024,
+    "phase": "7-phase",
+    "description": "2024 General Election - 80 UP seats",
+    "total_seats": 80,
+    "bjp_seats": 33,
+    "sp_seats": 37,
+    "bsp_seats": 0,
+    "inc_seats": 6,
+    "others_seats": 4
+  }
+]

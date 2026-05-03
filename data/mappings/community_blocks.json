@@ -1,0 +1,78 @@
+{
+  "community_blocks": [
+    {
+      "block_id": "UpperCasteGeneral",
+      "label": "Upper Caste General",
+      "description": "Brahmin, Rajput, Vaishya, Kayastha, Tyagi, Bhumihar — strong BJP retention post-2024",
+      "category": "Upper",
+      "bjp_affinity_2024": "strong_retention"
+    },
+    {
+      "block_id": "YadavOBC",
+      "label": "Yadav OBC",
+      "description": "Core SP vote bank — 70%+ voted INDIA bloc in 2024",
+      "category": "OBC",
+      "bjp_affinity_2024": "hostile"
+    },
+    {
+      "block_id": "NonYadavOBC",
+      "label": "Non-Yadav OBC",
+      "description": "Kurmi, Lodh, Kushwaha, Rajbhar, Nishad, Koeri, Teli, Gujjar, Jat, Ahir — key swing voters",
+      "category": "OBC",
+      "bjp_affinity_2024": "swing"
+    },
+    {
+      "block_id": "JatavSC",
+      "label": "Jatav SC",
+      "description": "Reserved seats strong correlation — all 17 SC seats won by Jatav candidates in 2024",
+      "category": "SC",
+      "bjp_affinity_2024": "hostile"
+    },
+    {
+      "block_id": "NonJatavSC",
+      "label": "Non-Jatav SC",
+      "description": "Pasi, Kori, Valmiki, Dhobi, Khatik, Dhanuk — moved towards INDIA bloc in 2024",
+      "category": "SC",
+      "bjp_affinity_2024": "swing_looking_india"
+    },
+    {
+      "block_id": "Muslim",
+      "label": "Muslim",
+      "description": "Sheikh, Ansari, Qureshi, Syed, Pathan — overwhelmingly INDIA bloc",
+      "category": "Muslim",
+      "bjp_affinity_2024": "hostile"
+    }
+  ],
+  "caste_to_block_mapping": {
+    "Brahmin": "UpperCasteGeneral",
+    "Rajput": "UpperCasteGeneral",
+    "Vaishya": "UpperCasteGeneral",
+    "Kayastha": "UpperCasteGeneral",
+    "Tyagi": "UpperCasteGeneral",
+    "Bhumihar": "UpperCasteGeneral",
+    "Yadav": "YadavOBC",
+    "Kurmi": "NonYadavOBC",
+    "Lodh": "NonYadavOBC",
+    "Kushwaha": "NonYadavOBC",
+    "Rajbhar": "NonYadavOBC",
+    "Nishad": "NonYadavOBC",
+    "Koeri": "NonYadavOBC",
+    "Teli": "NonYadavOBC",
+    "Gujjar": "NonYadavOBC",
+    "Jat": "NonYadavOBC",
+    "Ahir": "NonYadavOBC",
+    "Jatav": "JatavSC",
+    "Chamar": "JatavSC",
+    "Pasi": "NonJatavSC",
+    "Kori": "NonJatavSC",
+    "Valmiki": "NonJatavSC",
+    "Dhobi": "NonJatavSC",
+    "Khatik": "NonJatavSC",
+    "Dhanuk": "NonJatavSC",
+    "Sheikh": "Muslim",
+    "Ansari": "Muslim",
+    "Qureshi": "Muslim",
+    "Syed": "Muslim",
+    "Pathan": "Muslim"
+  }
+}
