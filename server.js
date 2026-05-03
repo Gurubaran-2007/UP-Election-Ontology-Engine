@@ -338,6 +338,18 @@ app.get('/api/status', async (req, res) => {
         console.error("Neo4j connection error:", err.message);
     }
 
+    // Check AI — verify Sarvam AI API connection
+    try {
+        const sarvamStatus = await withTimeout(fetch('https://api.sarvam.ai/v1/models', {
+            headers: { 'api-subscription-key': process.env.SARVAM_API_KEY }
+        }), 5000);
+        if (sarvamStatus.ok) {
+            aiStatus = 'Connected';
+        }
+    } catch (err) {
+        console.error("Sarvam AI connection error:", err.message);
+    }
+
     res.json({ 
         status: 'Server is running', 
         database: dbStatus,
