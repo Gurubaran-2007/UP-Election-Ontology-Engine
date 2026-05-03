@@ -1,15 +1,29 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv(".env")
+load_dotenv(".env.local")
 
 # Neo4j
 NEO4J_URI = os.getenv("NEO4J_URI", "neo4j://localhost:7687")
 NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")
+NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "guru@9114")
 
-# NewsData.io — keys loaded from env, comma-separated: NEWSDATA_API_KEYS=key1,key2,...
-NEWSDATA_KEYS = [k.strip() for k in os.getenv("NEWSDATA_API_KEYS", "").split(",") if k.strip()]
+# NewsData.io - 13 keys for round-robin
+NEWSDATA_KEYS = [
+    "pub_ee985f10a11e450798c1ad7e01c9fbc4",
+    "pub_633d28092c8742b58c64b6eccf4a7e85",
+    "pub_9666c4fe46194899917da1cc6f030461",
+    "pub_a24ff28cdf7f4c06bbf3f60304dd36e2",
+    "pub_969addca677543688e8bd3e3dfbf0e50",
+    "pub_a2dd1f0b3c6c4b0cb6efede6c5c4fa26",
+    "pub_983a623e9164418db47934de6d746aec",
+    "pub_e2f3b03201d544dbb1866c4e00f025cb",
+    "pub_78eee9b40df34713ad84de3e4bb0caaa",
+    "pub_86fafa9e3ea441288bfdf9e046b5047a",
+    "pub_7ccca26995714fe28b54f8a42dfdd8a1",
+    "pub_7e87426a145942ceaeb9bd0caebf93ce",
+    "pub_d78b626366b044d897146aa9bff8c731",
+]
 
 # Sarvam AI
 SARVAM_API_KEY = os.getenv("SARVAM_API_KEY", "")

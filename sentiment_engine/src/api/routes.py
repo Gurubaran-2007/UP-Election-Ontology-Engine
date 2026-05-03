@@ -4,12 +4,12 @@ from flask_cors import CORS
 import sys
 import os
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")))
+sys.path.insert(0, os.path.dirname(__file__))
 
-from sentiment_engine.src.processors.sentiment import classify_sentiment, classify_batch
-from sentiment_engine.src.processors.entity_resolution import resolve_entities, get_all_entities
-from sentiment_engine.src.collectors.newsdata import fetch_news, poll_all_queries, poll_constituency_news
-from sentiment_engine.src.database.neo4j_ingest import upsert_sentiment_observation, compute_constituency_aggregation
+from sentiment import classify_sentiment, classify_batch
+from entity_resolver import resolve_entities, get_all_entities
+from news_collector import fetch_news, poll_all_queries, poll_constituency_news
+from neo4j_ingest import upsert_sentiment_observation, compute_constituency_aggregation
 import json
 
 app = Flask(__name__)

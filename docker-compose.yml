@@ -3,8 +3,8 @@ services:
     image: neo4j:5.14-community
     container_name: up-election-neo4j
     ports:
-      - "7474:7474"   # Browser
-      - "7687:7687"   # Bolt protocol
+      - "7474:7474" # Browser
+      - "7687:7687" # Bolt protocol
     environment:
       - NEO4J_AUTH=${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD}
       - NEO4J_server_memory_pagecache_size=512M

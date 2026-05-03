@@ -1,10 +1,6 @@
 from neo4j import GraphDatabase
 
-import os
-driver = GraphDatabase.driver(
-    os.getenv("NEO4J_URI", "neo4j://localhost:7687"), 
-    auth=(os.getenv("NEO4J_USER", "neo4j"), os.getenv("NEO4J_PASSWORD"))
-)
+driver = GraphDatabase.driver("neo4j://localhost:7687", auth=("neo4j", "guru@9114"))
 session = driver.session()
 
 result = session.run("""

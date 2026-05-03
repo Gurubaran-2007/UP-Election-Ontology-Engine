@@ -7,75 +7,14 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sentiment_engine.config.settings import NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD
-from sentiment_engine.src.processors.entity_resolution import resolve_constituency_ls_id
 from neo4j import GraphDatabase
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
 
 
-_TOPIC_TO_ISSUE = {
-    "agriculture":      "farmer_distress",
-    "economy":          "price_rise",
-    "unemployment":     "unemployment",
-    "governance":       "law_order",
-    "infrastructure":   "local_road",
-    "water":            "water",
-    "electricity":      "electricity",
-    "education":        "paper_leaks",
-    "social":           "reservation",
-    "religion":         "hindutva",
-}
-
-
 def _generate_observation_id(text, source_url, timestamp):
     raw = f"{text}|{source_url}|{timestamp}"
     return "OBS-" + hashlib.sha256(raw.encode()).hexdigest()[:12]
-
-
-def upsert_issue_observation(obs):
-    """Create IssueObservation when a sentiment observation has a recognisable topic."""
-    topic = obs.get("topic", "general")
-    issue_id = _TOPIC_TO_ISSUE.get(topic)
-    if not issue_id:
-        return None
-
-    raw_const = obs.get("constituency_id", "")
-    constituency_id = resolve_constituency_ls_id(raw_const) or raw_const
-    if not constituency_id:
-        return None
-
-    raw = f"ISSUE|{issue_id}|{constituency_id}|{obs.get('url', '')}|{obs.get('published_at', '')}"
-    obs_id = "IO-" + hashlib.sha256(raw.encode()).hexdigest()[:12]
-
-    with driver.session() as session:
-        session.run(
-            """
-            MERGE (io:IssueObservation {observation_id: $obs_id})
-            SET io.constituency_id  = $constituency_id,
-                io.issue_id         = $issue_id,
-                io.evidence_text    = $evidence_text,
-                io.source_type      = $source_type,
-                io.source_url       = $source_url,
-                io.source_date      = date($source_date),
-                io.confidence       = $confidence,
-                io.ingested_at      = datetime()
-            WITH io
-            MATCH (ls:LokSabhaConstituency {ls_id: $constituency_id})
-            MERGE (io)-[:ABOUT_CONSTITUENCY]->(ls)
-            WITH io
-            MATCH (iss:Issue {issue_id: $issue_id})
-            MERGE (io)-[:CONCERNS_ISSUE]->(iss)
-            """,
-            obs_id=obs_id,
-            constituency_id=constituency_id,
-            issue_id=issue_id,
-            evidence_text=str(obs.get("text", ""))[:500],
-            source_type=obs.get("source_type", "news"),
-            source_url=obs.get("url", ""),
-            source_date=obs.get("published_at", "2026-01-01")[:10],
-            confidence=float(obs.get("confidence", 0.5)),
-        )
-    return obs_id
 
 
 def upsert_sentiment_observation(obs):
@@ -89,10 +28,6 @@ def upsert_sentiment_observation(obs):
 
     entity_id = entities[0]["entity_id"] if entities else "unknown"
     entity_type = entities[0]["entity_type"] if entities else "unknown"
-
-    # Resolve constituency name to canonical ls_id (e.g. "Saharanpur" → "UP-1")
-    raw_const = obs.get("constituency_id", "")
-    constituency_id = resolve_constituency_ls_id(raw_const) or raw_const
 
     with driver.session() as session:
         session.run(
@@ -128,7 +63,7 @@ def upsert_sentiment_observation(obs):
             confidence=float(obs.get("confidence", 0.5)),
             topic=obs.get("topic", "general"),
             geographic_scope=obs.get("geographic_scope", "constituency"),
-            constituency_id=constituency_id,
+            constituency_id=obs.get("constituency_id", ""),
             booth_id=obs.get("booth_id", None),
             model_version=obs.get("model_version", "distilbert-multilingual-v2.0"),
             vader_score=obs.get("vader_score", None),
