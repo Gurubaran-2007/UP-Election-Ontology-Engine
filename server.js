@@ -3,9 +3,6 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const neo4j = require('neo4j-driver');
-const https = require('https');
-const http  = require('http');
-const zlib  = require('zlib');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -33,7 +30,7 @@ setInterval(async () => {
 // ==========================================
 const uri      = process.env.NEO4J_URI      || 'neo4j://localhost:7687';
 const user     = process.env.NEO4J_USER     || 'neo4j';
-const password = process.env.NEO4J_PASSWORD || 'guru@9114';
+const password = process.env.NEO4J_PASSWORD;
 
 // Auto-detect encryption: AuraDB uses neo4j+s:// (TLS), local uses neo4j://
 const isCloud  = uri.startsWith('neo4j+s') || uri.startsWith('bolt+s');
@@ -44,32 +41,25 @@ const driver = neo4j.driver(
 );
 console.log(`[NEO4J] Connecting to: ${uri.replace(/\/\/.*@/, '//<credentials>@')}`);
 console.log(`[NEO4J] Mode: ${isCloud ? '☁️  Cloud (AuraDB)' : '🖥️  Local'}`);
+if (!password) {
+    console.warn('[NEO4J] NEO4J_PASSWORD is not configured. Database-backed routes will fail until it is set.');
+}
 
 
 // ==========================================
 // 2. Sarvam AI (Indian-Born AI Engine) Configuration
 // ==========================================
-const SARVAM_API_KEY = process.env.SARVAM_API_KEY || 'sk_v9tiidlu_SUEXI3slP6thUJCk0F7DMDc8';
+const SARVAM_API_KEY = process.env.SARVAM_API_KEY;
 const SARVAM_MODEL = 'sarvam-105b';
-// NewsData.io — 13-Key Rotation System (2,600 requests/day total)
-const NEWSDATA_KEYS = [
-    { key: 'pub_ee985f10a11e450798c1ad7e01c9fbc4', exhausted: false, resetAt: 0 },
-    { key: 'pub_633d28092c8742b58c64b6eccf4a7e85', exhausted: false, resetAt: 0 },
-    { key: 'pub_9666c4fe46194899917da1cc6f030461', exhausted: false, resetAt: 0 },
-    { key: 'pub_a24ff28cdf7f4c06bbf3f60304dd36e2', exhausted: false, resetAt: 0 },
-    { key: 'pub_969addca677543688e8bd3e3dfbf0e50', exhausted: false, resetAt: 0 },
-    { key: 'pub_a2dd1f0b3c6c4b0cb6efede6c5c4fa26', exhausted: false, resetAt: 0 },
-    { key: 'pub_983a623e9164418db47934de6d746aec', exhausted: false, resetAt: 0 },
-    { key: 'pub_e2f3b03201d544dbb1866c4e00f025cb', exhausted: false, resetAt: 0 },
-    { key: 'pub_78eee9b40df34713ad84de3e4bb0caaa', exhausted: false, resetAt: 0 },
-    { key: 'pub_86fafa9e3ea441288bfdf9e046b5047a', exhausted: false, resetAt: 0 },
-    { key: 'pub_7ccca26995714fe28b54f8a42dfdd8a1', exhausted: false, resetAt: 0 },
-    { key: 'pub_7e87426a145942ceaeb9bd0caebf93ce', exhausted: false, resetAt: 0 },
-    { key: 'pub_d78b626366b044d897146aa9bff8c731', exhausted: false, resetAt: 0 }
-];
+const NEWSDATA_KEYS = (process.env.NEWSDATA_API_KEYS || '')
+    .split(',')
+    .map((key) => key.trim())
+    .filter(Boolean)
+    .map((key) => ({ key, exhausted: false, resetAt: 0 }));
 
 // Returns the first non-exhausted key. Resets keys after 24 hours.
 function getActiveNewsKey() {
+    if (NEWSDATA_KEYS.length === 0) return null;
     const now = Date.now();
     const ONE_DAY = 24 * 60 * 60 * 1000;
     // Auto-reset keys that exhausted more than 24 hours ago
@@ -85,6 +75,10 @@ const SARVAM_URL = 'https://api.sarvam.ai/v1/chat/completions';
 
 
 const callAI = async (prompt) => {
+    if (!SARVAM_API_KEY) {
+        throw new Error('SARVAM_API_KEY is not configured');
+    }
+
     try {
         console.log(`[SARVAM AI] Connecting to Cloud...`);
         const response = await fetch(SARVAM_URL, {
@@ -104,30 +98,8 @@ const callAI = async (prompt) => {
         const data = await response.json();
         return data.choices[0].message.content;
     } catch (e) {
-        console.warn("AI Fallback active:", e.message);
-        // Professional Government-Grade Fallback Analysis
-        return `
-        1. Strong resonance with the target demographic in Uttar Pradesh.
-        2. Scalable framework with high operational feasibility.
-        3. Positive digital sentiment expected across youth and rural cohorts.
-
-        \`\`\`json
-        {
-          "metrics": {"positive": 82, "negative": 12, "overall": 70},
-          "graph": {
-            "nodes": [
-              {"id":"Strategy","group":1,"impact":50,"sentiment":1},
-              {"id":"Public","group":2,"impact":30,"sentiment":1},
-              {"id":"Demographics","group":2,"impact":25,"sentiment":1}
-            ],
-            "links": [
-              {"source":"Strategy","target":"Public","value":10},
-              {"source":"Strategy","target":"Demographics","value":8}
-            ]
-          }
-        }
-        \`\`\`
-        `;
+        console.warn("AI unavailable:", e.message);
+        throw e;
     }
 };
 
@@ -140,79 +112,119 @@ const callAI = async (prompt) => {
 // Route to check server and service status
 // ── UP BOOTH & CONSTITUENCY APIS ─────────────────────────────
 
-app.get('/api/up/region/:regionId/districts', (req, res) => {
-    const regionMap = {
-        'western': [
-            'Saharanpur', 'Muzaffarnagar', 'Shamli', 'Baghpat', 'Meerut', 'Ghaziabad', 
-            'Hapur', 'Gautam Buddha Nagar', 'Bulandshahr', 'Aligarh', 'Hathras', 'Mathura', 
-            'Agra', 'Firozabad', 'Etah', 'Kasganj', 'Mainpuri', 'Etawah', 'Auraiya', 
-            'Kannauj', 'Farrukhabad', 'Bijnor', 'Amroha', 'Moradabad', 'Rampur', 'Sambhal'
-        ],
-        'central': [
-            'Lucknow', 'Kanpur Nagar', 'Kanpur Dehat', 'Unnao', 'Sitapur', 'Rae Bareli', 
-            'Hardoi', 'Lakhimpur Kheri', 'Barabanki', 'Fatehpur'
-        ],
-        'eastern': [
-            'Varanasi', 'Gorakhpur', 'Azamgarh', 'Prayagraj', 'Ghazipur', 'Ballia', 
-            'Jaunpur', 'Mirzapur', 'Chandauli', 'Sonbhadra', 'Bhadohi', 'Deoria', 
-            'Kushinagar', 'Mau', 'Maharajganj', 'Siddharthnagar', 'Basti', 'Sant Kabir Nagar', 
-            'Amethi', 'Sultanpur', 'Ayodhya', 'Ambedkar Nagar', 'Gonda', 'Bahraich', 
-            'Shravasti', 'Balrampur', 'Pratapgarh', 'Kaushambi'
-        ],
-        'bundelkhand': [
-            'Jhansi', 'Jalaun', 'Hamirpur', 'Banda', 'Chitrakoot', 'Mahoba', 'Lalitpur'
-        ]
-    };
-    const districts = regionMap[req.params.regionId] || [];
-    res.json(districts.sort()); // Sort alphabetically for better UI
+app.get('/api/up/region/:regionId/districts', async (req, res) => {
+    const region = req.params.regionId;
+    try {
+        const session = driver.session();
+        const result = await session.run(
+            `MATCH (d:District)
+             WHERE d.region = $region
+             RETURN d.name AS name
+             ORDER BY d.name`,
+            { region }
+        );
+        await session.close();
+        
+        const districts = result.records.map(r => r.get('name'));
+        res.json(districts);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
-app.get('/api/up/district/:district/constituencies', (req, res) => {
-    // In a real app, this would query Neo4j. For now, returning realistic samples for UP.
-    const samples = ['Constituency A', 'Constituency B', 'Constituency C', 'Central Assembly', 'Rural Assembly'];
-    res.json(samples.map(s => `${req.params.district} ${s}`));
+app.get('/api/up/district/:district/constituencies', async (req, res) => {
+    const district = req.params.district;
+
+    try {
+        const session = driver.session();
+        const result = await session.run(
+            `MATCH (d:District)
+             WHERE toLower(d.name) = toLower($district)
+             OPTIONAL MATCH (d)-[:CONTAINS|HAS_LS]->(ls:LokSabhaConstituency)-[:HAS_VS]->(vs:VidhanSabhaConstituency)
+             WITH d, ls, collect(DISTINCT vs { .vs_id, .name, .reservation }) AS constituencies
+             ORDER BY ls.ls_no
+             RETURN d.name AS district_name, ls.ls_id AS ls_id, ls.name AS ls_name,
+                    constituencies
+            `,
+            { district }
+        );
+        await session.close();
+
+        if (result.records.length === 0) {
+            return res.status(404).json({ error: `No district named "${district}" found in the graph.` });
+        }
+
+        const payload = result.records
+            .filter((record) => record.get('ls_id'))
+            .map((record) => ({
+                district: record.get('district_name'),
+                lok_sabha: {
+                    ls_id: record.get('ls_id'),
+                    name: record.get('ls_name'),
+                },
+                vidhan_sabha_segments: record.get('constituencies')
+                    .filter(Boolean)
+                    .filter((vs) => vs.vs_id && vs.name),
+            }));
+
+        res.json(payload);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
 app.get('/api/up/constituency/:constName/analysis', async (req, res) => {
     const name = req.params.constName;
     try {
-        const prompt = `Perform a deep-dive political analysis for the Uttar Pradesh constituency: "${name}". 
-        Provide the following in JSON format:
-        {
-          "basic": {"total_voters": "string", "urban_rural": "string"},
-          "results": {"winner": "string", "party": "string", "vote_share": number, "chart_data": [{"label": "string", "val": number}]},
-          "candidates": [{"name": "string", "party": "string", "education": "string", "cases": number, "assets": "string"}],
-          "demographics": {"dominant_caste": "string", "religion_dist": "string", "youth_pop": "string"},
-          "issues": [{"name": "string", "level": "High/Medium/Low"}],
-          "trends": {"graph_explanation": "string"},
-          "graph_explanation": "string",
-          "alerts": ["string"],
-          "booths": [{"id": "string", "name": "string"}]
-        }`;
-        
-        const response = await axios.post('https://api.sarvam.ai/api/v1/ai/generate', {
-            model: "sarvam-1",
-            prompt: prompt,
-            temperature: 0.7
-        }, { headers: { 'api-key': API_KEYS[0] } });
+        const session = driver.session();
+        const result = await session.run(
+            `MATCH (ls:LokSabhaConstituency)
+             WHERE toLower(ls.name) = toLower($name)
+             OPTIONAL MATCH (ls)-[:HAS_RESULT]->(er:ElectionResult)
+             OPTIONAL MATCH (c:Candidate)-[:CONTESTS_IN|CONTESTS]->(ls)
+             RETURN ls, er, collect(DISTINCT c) AS candidates`,
+            { name }
+        );
+        await session.close();
 
-        res.json(JSON.parse(response.data.text));
-    } catch (e) {
-        // Mock fallback for presentation
+        if (result.records.length === 0) {
+            return res.status(404).json({ error: `No constituency named "${name}" found in the graph.` });
+        }
+
+        const record = result.records[0];
+        const ls = record.get('ls').properties;
+        const erNode = record.get('er');
+        const candidates = record.get('candidates')
+            .filter(Boolean)
+            .map((node) => node.properties)
+            .sort((a, b) => (Number(a.rank ?? 9999) - Number(b.rank ?? 9999)));
+        const er = erNode ? erNode.properties : null;
+
         res.json({
-            basic: { total_voters: "3.5 Lakhs", urban_rural: "45% Urban / 55% Rural" },
-            results: { winner: "BJP Candidate", party: "BJP", vote_share: 42, chart_data: [{label:"BJP", val:42}, {label:"SP", val:35}, {label:"BSP", val:15}] },
-            candidates: [
-                { name: "Yogi Dev", party: "BJP", education: "Graduate", cases: 0, assets: "5 Cr" },
-                { name: "Rahul Singh", party: "SP", education: "Post Graduate", cases: 2, assets: "12 Cr" }
-            ],
-            demographics: { dominant_caste: "Yadav / Brahmin", religion_dist: "Hindu 75%, Muslim 22%", youth_pop: "38%" },
-            issues: [{name:"Unemployment", level:"High"}, {name:"Water", level:"Medium"}, {name:"Electricity", level:"Low"}],
-            trends: { graph_explanation: "Incumbent party maintained strong lead in rural pockets but lost 5% urban share compared to 2017." },
-            graph_explanation: "The ontology shows a direct link between Caste Distribution and specific Issue Priorities in this region.",
-            alerts: ["High criminal cases for SP runner-up", "Sensitive booth spikes in North zone"],
-            booths: [{id: "101", name: "Primary School East"}, {id: "102", name: "Panchayat Bhavan"}, {id: "103", name: "Village Square"}, {id: "104", name: "Railway Colony"}]
+            constituency: {
+                ls_id: ls.ls_id,
+                name: ls.name,
+                reservation: ls.reservation ?? null,
+                region: ls.region ?? null
+            },
+            result: er ? {
+                result_id: er.result_id ?? null,
+                election_id: er.election_id ?? 'LS2019',
+                winner: er.winner ?? null,
+                winner_party_id: er.winner_party_id ?? null,
+                winner_vote_share: er.winner_vote_share ?? null,
+                margin_votes: er.margin_votes ?? null,
+                margin_pct: er.margin_pct ?? null,
+                total_valid_votes: er.total_valid_votes ?? null,
+                source: er.source ?? null,
+                source_url: er.source_url ?? null,
+                source_date: er.source_date ?? null
+            } : null,
+            candidates,
+            note: 'This response is graph-backed and only returns data currently available in Neo4j. No fabricated analysis is included.'
         });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
     }
 });
 
@@ -660,11 +672,15 @@ app.get('/api/status', async (req, res) => {
 
     // Check AI — verify Sarvam AI API connection
     try {
-        const sarvamStatus = await withTimeout(fetch('https://api.sarvam.ai/v1/models', {
-            headers: { 'api-subscription-key': SARVAM_API_KEY }
-        }), 3000);
-        if (sarvamStatus.ok) {
-            aiStatus = 'Connected';
+        if (SARVAM_API_KEY) {
+            const sarvamStatus = await withTimeout(fetch('https://api.sarvam.ai/v1/models', {
+                headers: { 'api-subscription-key': SARVAM_API_KEY }
+            }), 3000);
+            if (sarvamStatus.ok) {
+                aiStatus = 'Connected';
+            }
+        } else {
+            aiStatus = 'Unconfigured';
         }
     } catch (err) {
         console.error("Sarvam AI connection error:", err.message);
@@ -675,26 +691,6 @@ app.get('/api/status', async (req, res) => {
         database: dbStatus, 
         ai: aiStatus 
     });
-});
-
-// Diagnostic route to check DB structure after user load
-app.get('/api/db-check', async (req, res) => {
-    try {
-        const session = driver.session();
-        const labelsRes = await session.run('MATCH (n) RETURN DISTINCT labels(n) as labels, count(*) as count');
-        const propsRes = await session.run('MATCH (n) UNWIND keys(n) AS key RETURN DISTINCT labels(n) as labels, collect(DISTINCT key) as keys');
-        const districtsRes = await session.run('MATCH (d:District) RETURN d.name as name LIMIT 10');
-        
-        const summary = {
-            counts: labelsRes.records.map(r => ({ label: r.get('labels'), count: r.get('count').toNumber() })),
-            schema: propsRes.records.map(r => ({ label: r.get('labels'), keys: r.get('keys') })),
-            sampleDistricts: districtsRes.records.map(r => r.get('name'))
-        };
-        await session.close();
-        res.json(summary);
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
 });
 
 // ==========================================
@@ -733,6 +729,10 @@ const DIST_CACHE_DURATION    = 4 * 60 * 60 * 1000;  // 4 hours per district
 
 // Shared NewsData.io fetch helper — auto-rotates between 2 API keys on rate limit
 const fetchNewsData = async (query, cacheMap, cacheKey, duration, maxResults = 5) => {
+    if (NEWSDATA_KEYS.length === 0) {
+        return [];
+    }
+
     const now = Date.now();
     const cached = cacheMap.get(cacheKey);
     if (cached && now - cached.ts < duration) {
@@ -807,21 +807,21 @@ const getUPCensusContext = async () => {
             WHERE d.state = 'Uttar Pradesh'
             RETURN
               count(d) AS districtCount,
-              sum(d.totalPopulation) AS totalPop,
-              sum(d.totalMale) AS totalMale,
-              sum(d.totalFemale) AS totalFemale,
-              sum(d.ruralPopulation) AS ruralPop,
-              sum(d.urbanPopulation) AS urbanPop,
-              sum(d.hinduPopulation) AS hinduPop,
-              sum(d.muslimPopulation) AS muslimPop,
-              sum(d.christianPopulation) AS christianPop,
-              sum(d.sikhPopulation) AS sikhPop,
-              sum(d.currentlyMarriedPop) AS marriedPop,
-              sum(d.widowedPop) AS widowedPop,
-              sum(d.migrantPopulation) AS migrants,
-              sum(d.totalWomen) AS totalWomen,
-              sum(d.everMarriedWomen) AS everMarriedWomen,
-              sum(d.bilingualPopulation) AS bilingualPop
+              sum(d.total_population) AS totalPop,
+              sum(d.total_male) AS totalMale,
+              sum(d.total_female) AS totalFemale,
+              sum(d.rural_population) AS ruralPop,
+              sum(d.urban_population) AS urbanPop,
+              sum(d.hindu_population) AS hinduPop,
+              sum(d.muslim_population) AS muslimPop,
+              sum(d.christian_population) AS christianPop,
+              sum(d.sikh_population) AS sikhPop,
+              sum(d.currently_married_pop) AS marriedPop,
+              sum(d.widowed_pop) AS widowedPop,
+              sum(d.migrant_population) AS migrants,
+              sum(d.total_women) AS totalWomen,
+              sum(d.ever_married_women) AS everMarriedWomen,
+              sum(d.bilingual_population) AS bilingualPop
         `);
         await session.close();
 
@@ -877,403 +877,102 @@ app.post('/api/strategy', async (req, res) => {
     if (!title) return res.status(400).json({ error: 'Plan title is required.' });
 
     try {
-        console.log(`[STRATEGY ENGINE] Deep analysis for: "${title}"`);
+        console.log(`[STRATEGY ENGINE] Grounded analysis for: "${title}"`);
 
-        // Step 1: Deep Database Lookup — check for similar past strategies + load census
-        let dbContext = "No similar past implementation found in database.";
-        let historicalImpact = null;
-        let upCensusCtx = null;
-        try {
-            const session = driver.session();
-            const keywords = (title || '').split(' ').filter(w => w.length > 3);
-            for (const kw of keywords) {
-                const result = await session.run(
-                    `MATCH (s:Strategy) WHERE toLower(s.title) CONTAINS toLower($k) 
-                     RETURN s.title AS t, s.outcome AS o, s.positive_impact AS p, s.negative_impact AS n, s.year AS y 
-                     LIMIT 3`,
-                    { k: kw }
-                );
-                if (result.records.length > 0) {
-                    const records = result.records.map(r =>
-                        `"${r.get('t')}" (${r.get('y') || 'Unknown Year'}): ${r.get('o')} | Public Positive Response: ${r.get('p') || 'N/A'}% | Resistance: ${r.get('n') || 'N/A'}%`
-                    ).join('\n');
-                    dbContext = `SIMILAR PAST STRATEGIES FOUND:\n${records}`;
-                    historicalImpact = result.records[0];
-                    break;
-                }
-            }
-            await session.close();
-        } catch (dbErr) {
-            console.warn("DB lookup skipped:", dbErr.message);
-            dbContext = "Database offline — using AI knowledge base.";
-        }
 
         // Load UP-wide census data from DB for demographic grounding
-        upCensusCtx = await getUPCensusContext();
+        const upCensusCtx = await getUPCensusContext();
 
-        // Step 2: Fetch real-time news context about this topic
+        // Fetch real-time news context
         const newsContext = await getCachedNews(title);
 
-        // Step 3: Deep Strategy Analysis Prompt
+        // Analysis Prompt (Narration Only)
         const prompt = `
-You are an expert Indian political strategy analyst and governance advisor for Uttar Pradesh.
+You are an expert Indian political strategy analyst for Uttar Pradesh. 
+Analyze the proposed strategy below using the provided verified demographic figures.
 
-PROPOSED STRATEGY:
-Title: "${title}"
-Implementation Details: "${description}"
-
-REAL-TIME NEWS CONTEXT (Use this to ground your analysis in current events):
-${newsContext || "No recent news found — use your expert knowledge."}
-
-DATABASE OF PAST IMPLEMENTATIONS:
-${dbContext}
-
-VERIFIED UP DEMOGRAPHIC DATA FROM DATABASE (use these for realistic impact scores):
+PROPOSED STRATEGY: "${title}" (${description})
+REAL-TIME NEWS: ${newsContext || "No recent news found."}
+VERIFIED UP DEMOGRAPHICS:
 ${upCensusCtx || 'UP has ~200M population, ~80% Hindu, ~19% Muslim, ~78% rural.'}
 
 YOUR TASK:
-Analyze this proposed strategy with high accuracy and political intelligence. Consider:
-1. How will different demographic groups in UP react? (Farmers, Youth, Urban Middle Class, Women, OBC, SC/ST, Religious communities)
-2. What are the political risks and benefits?
-3. Has something similar been tried before and what was the outcome?
-4. What will be the economic impact?
-5. What is the probability of success vs political resistance?
+Provide a 3-paragraph "Deterministic Narrative" explaining:
+1. Which demographics (from the list above) will be most impacted and why?
+2. What are the specific political risks given these figures?
+3. How does this align with recent news trends?
 
-OUTPUT FORMAT (strictly follow this):
-
-First, write a detailed analysis with these sections:
-• STRATEGIC OVERVIEW: 2-3 sentences on what this plan aims to achieve
-• DEMOGRAPHIC IMPACT: How each key group will react
-• HISTORICAL PRECEDENT: Compare with past similar schemes (use DB data above)
-• PREDICTED OUTCOME: Likelihood of success with reasoning
-• RISK FACTORS: Key challenges and opposition
-
-Then provide this exact JSON block:
-
-\`\`\`json
-{
-  "metrics": {
-    "positive": <0-100 score for public support>,
-    "negative": <0-100 score for resistance>,
-    "overall": <0-100 overall success probability>
-  },
-  "support_details": [
-    {"group": "<Who will support>", "reason": "<Why will they support? Provide demographic logic>"}
-  ],
-  "resistance_details": [
-    {"group": "<Who will resist>", "reason": "<Why will they resist? Provide demographic/political logic>"}
-  ],
-  "demography_analysis": "<Detailed paragraph on how UP's specific demographics (Rural vs Urban, Youth, Religion, etc.) impact this specific scheme>",
-  "success_summary": "<Final 2-sentence summary on why this will or won't succeed in the long term>",
-  "improvement_roadmap": [
-    "<Specific Step 1>",
-    "<Specific Step 2>",
-    "<Specific Step 3>"
-  ],
-  "graph": {
-    "nodes": [
-      {"id":"Strategy","group":1,"impact":60,"sentiment":1},
-      {"id":"Farmers","group":2,"impact":<0-60>,"sentiment":<1 or -1>},
-      {"id":"Youth","group":2,"impact":<0-60>,"sentiment":<1 or -1>},
-      {"id":"Urban","group":2,"impact":<0-60>,"sentiment":<1 or -1>},
-      {"id":"Women","group":2,"impact":<0-60>,"sentiment":<1 or -1>},
-      {"id":"Rural Poor","group":2,"impact":<0-60>,"sentiment":<1 or -1>},
-      {"id":"OBC Community","group":2,"impact":<0-60>,"sentiment":<1 or -1>},
-      {"id":"Opposition","group":3,"impact":30,"sentiment":-1}
-    ],
-    "links": [
-      {"source":"Strategy","target":"Farmers","value":<1-15>},
-      {"source":"Strategy","target":"Youth","value":<1-15>},
-      {"source":"Strategy","target":"Urban","value":<1-15>},
-      {"source":"Strategy","target":"Women","value":<1-15>},
-      {"source":"Strategy","target":"Rural Poor","value":<1-15>},
-      {"source":"Strategy","target":"OBC Community","value":<1-15>},
-      {"source":"Strategy","target":"Opposition","value":<1-10>}
-    ]
-  }
-}
-\`\`\`
+DO NOT invent scores, metrics, or percentages. Provide a textual, factual narration.
 `;
 
         const rawText = await callAI(prompt);
 
-        // Guaranteed fallback graph
-        const defaultGraph = {
+        // Programmatic Graph Construction (Deterministic, not AI-invented)
+        // We show the impact on REAL demographic nodes
+        const graphData = {
             nodes: [
-                {id:"Strategy", group:1, impact:60, sentiment:1},
-                {id:"Farmers", group:2, impact:40, sentiment:1},
-                {id:"Youth", group:2, impact:35, sentiment:1},
-                {id:"Urban", group:2, impact:25, sentiment:-1},
-                {id:"Women", group:2, impact:30, sentiment:1},
-                {id:"Rural Poor", group:2, impact:45, sentiment:1},
-                {id:"OBC Community", group:2, impact:35, sentiment:1},
-                {id:"Opposition", group:3, impact:30, sentiment:-1}
+                {id: title.slice(0, 20), group: 1, impact: 60, sentiment: 1},
+                {id: "Rural Population", group: 2, impact: 77, sentiment: 1},
+                {id: "Urban Population", group: 2, impact: 23, sentiment: 1},
+                {id: "Youth", group: 2, impact: 30, sentiment: 1},
+                {id: "Women", group: 2, impact: 48, sentiment: 1}
             ],
             links: [
-                {source:"Strategy", target:"Farmers", value:10},
-                {source:"Strategy", target:"Youth", value:8},
-                {source:"Strategy", target:"Urban", value:5},
-                {source:"Strategy", target:"Women", value:7},
-                {source:"Strategy", target:"Rural Poor", value:12},
-                {source:"Strategy", target:"Opposition", value:4}
+                {source: title.slice(0, 20), target: "Rural Population", value: 10},
+                {source: title.slice(0, 20), target: "Urban Population", value: 10},
+                {source: title.slice(0, 20), target: "Youth", value: 10},
+                {source: title.slice(0, 20), target: "Women", value: 10}
             ]
         };
 
-        const parsed = extractAndRepairJSON(rawText) || {
-            metrics: { positive: 72, negative: 18, overall: 68 },
-            graph: defaultGraph,
-            resistance_details: [],
-            improvement_roadmap: ["Enhance field awareness", "Engage local community influencers", "Address specific demographic concerns"]
-        };
-
-        if (!parsed.graph || !parsed.graph.nodes || parsed.graph.nodes.length === 0) {
-            parsed.graph = defaultGraph;
-        }
-        if (!parsed.metrics) {
-            parsed.metrics = { positive: 72, negative: 18, overall: 68 };
-        }
-
-        // Extract clean text (before the JSON block)
-        let aiPrediction = rawText.split(/```json/i)[0].trim();
-        if (!aiPrediction || aiPrediction.length < 80) {
-            aiPrediction = rawText.replace(/```json[\s\S]*?```/gi, "").trim();
-        }
-        if (!aiPrediction || aiPrediction.length < 30) {
-            aiPrediction = `Strategic analysis for "${title}" has been processed. Review the demographic sentiment graph for detailed impact distribution.`;
-        }
-
         res.json({
-            ai_prediction: aiPrediction,
-            metrics: parsed.metrics,
-            graph_data: parsed.graph,
-            support: parsed.support_details || [],
-            resistance: parsed.resistance_details || [],
-            demography: parsed.demography_analysis || "Demographic analysis integrated into strategy prediction.",
-            summary: parsed.success_summary || "Strategic analysis complete based on current parameters.",
-            roadmap: parsed.improvement_roadmap || [],
-            db_context: historicalImpact ? "Historical precedent found in database" : "No exact precedent"
+            ai_prediction: rawText,
+            metrics: { positive: 'N/A', negative: 'N/A', overall: 'Grounded Analysis' },
+            graph_data: graphData,
+            support: [],
+            resistance: [],
+            demography: "Analysis grounded in verified Census 2011 figures.",
+            summary: "Narration complete.",
+            roadmap: [],
+            db_context: "Deterministic Narration Applied"
         });
 
     } catch (error) {
-        console.error("Strategy analysis error:", error.message);
-        const text = (title + ' ' + description).toLowerCase();
-        let fallbackMsg = `The scheme "${title}" is analyzed as a high-impact initiative for Uttar Pradesh. `;
-        let mockSupport = [{group: "General Beneficiaries", reason: "Direct benefit from the scheme's core promise."}];
-        let mockResist = [{group: "Administrative Hurdles", reason: "Potential delays in ground-level implementation and verification."}];
-
-        if (text.includes("yuva") || text.includes("youth") || text.includes("student")) {
-            fallbackMsg += "This youth-focused strategy aligns with UP's massive youth demographic (25% of population). Success depends on digital integration and employment linkages.";
-            mockSupport = [{group: "Educated Youth", reason: "Opportunity for skill development and employment."}, {group: "Student Unions", reason: "Direct empowerment through resources."}];
-            mockResist = [{group: "Local Bureaucracy", reason: "Complexity in beneficiary identification process."}, {group: "Job Seekers (Unskilled)", reason: "Perception of exclusion from specialized schemes."}];
-        } else if (text.includes("farm") || text.includes("kisan") || text.includes("rural")) {
-            fallbackMsg += "This agriculture strategy targets the 77% rural population of UP. Historical similar schemes show high voter loyalty if DBT is transparent.";
-            mockSupport = [{group: "Marginal Farmers", reason: "Relief from financial distress and input costs."}, {group: "Rural Laborers", reason: "Increased economic activity in the village ecosystem."}];
-            mockResist = [{group: "Middlemen/Arhatiyas", reason: "Direct benefit transfers reduce their traditional influence."}, {group: "Large Landowners", reason: "Resource competition or policy focus shift."}];
-        }
-
-        res.json({
-            ai_prediction: fallbackMsg,
-            metrics: { positive: 70, negative: 15, overall: 65 },
-            support: mockSupport,
-            resistance: mockResist,
-            demography: "UP's complex rural-urban divide and caste-based voting patterns heavily influence the reception of such high-budget welfare schemes.",
-            summary: "Likely to succeed if implementation avoids middleman interference and maintains transparency via digital portals.",
-            roadmap: ["Set up a 24/7 Digital Help Desk", "Launch a mass awareness campaign in rural dialects", "Implement weekly progress audits"],
-            graph_data: {
-                nodes: [
-                    {id:"Strategy", group:1, impact:60, sentiment:1},
-                    {id:"Primary Target", group:2, impact:50, sentiment:1},
-                    {id:"Rural Base", group:2, impact:45, sentiment:1},
-                    {id:"Youth/Women", group:2, impact:35, sentiment:1},
-                    {id:"Opposition", group:3, impact:30, sentiment:-1}
-                ],
-                links: [
-                    {source:"Strategy", target:"Primary Target", value:15},
-                    {source:"Strategy", target:"Rural Base", value:10},
-                    {source:"Strategy", target:"Opposition", value:5}
-                ]
-            },
-            db_context: "Fallback Expert Logic Applied"
-        });
+        res.status(500).json({ error: "Strategy analysis engine unavailable." });
     }
 });
 
-// Keep /api/analyze route working for UP Dashboard (DO NOT REMOVE)
+// Grounded /api/analyze route
 app.post('/api/analyze', async (req, res) => {
     const { title, description } = req.body;
     if (!title) return res.status(400).json({ error: 'Title required.' });
     try {
-        console.log(`[UP ANALYSIS] Analyzing: ${title}`);
-        const [neo4jContext, newsContext, upCensusCtx] = await Promise.all([
-            (async () => { try { const session = driver.session(); const result = await session.run('MATCH (s:Strategy) WHERE toLower(s.title) CONTAINS toLower($k) RETURN s.outcome AS o LIMIT 1', { k: title.split(' ')[0] }); const outcome = result.records.length > 0 ? `History: ${result.records[0].get('o')}` : "No precedent."; await session.close(); return outcome; } catch (e) { return "DB Offline."; } })(),
+        console.log(`[UP ANALYSIS] Grounding: ${title}`);
+        const [newsContext, upCensusCtx] = await Promise.all([
             getCachedNews(title),
             getUPCensusContext()
         ]);
 
-        // Determine scheme category from title/description for context hints
-        const text = (title + ' ' + description).toLowerCase();
-        const schemeHints = 
-            /farm|kisan|agri|crop|soil|irrig|wheat|rice|seed/i.test(text) ? 'AGRICULTURE — Think: Farmers, Landless Laborers, Irrigation Dept, Rural Women, Traders, Moneylenders, Input Suppliers, Agricultural Banks, Crop Exporters, Village Councils' :
-            /health|hospital|medicine|clinic|doctor|nurse|disease|sanitati/i.test(text) ? 'HEALTHCARE — Think: Rural Patients, Urban Hospitals, ASHA Workers, Private Clinics, Pharma Companies, Elderly, Pregnant Women, Children Under-5, Ayushman Beneficiaries, Public Sector Doctors' :
-            /school|education|student|teacher|college|literacy|skill|training/i.test(text) ? 'EDUCATION — Think: Primary Students, Secondary Students, Teachers Union, Private Schools, College Youth, Rural Girls, SC/ST Students, Mid-Day Meal Workers, Digital Learners, Education NGOs' :
-            /pension|elderly|senior|retirement|old age/i.test(text) ? 'PENSION/ELDERLY — Think: Senior Citizens, Widow Pensioners, Government Retirees, Private Sector Workers, Rural Elderly, Informal Workers, Finance Ministry, Insurance Companies, Caretaker Families, Bank Networks' :
-            /house|housing|shelter|flat|home|awas|ghar/i.test(text) ? 'HOUSING — Think: Urban Slum Dwellers, Rural Homeless, Construction Workers, Cement Industry, Real Estate Developers, Local Bodies, Banks/Lenders, Migrant Laborers, Land Owners, Urban Planners' :
-            /women|mahila|gender|girl|beti|widow|self.?help/i.test(text) ? 'WOMEN EMPOWERMENT — Think: Self-Help Groups, Rural Women, Urban Women Workers, Adolescent Girls, Widow Communities, Women Entrepreneurs, Anganwadi Workers, Male Opposition Groups, NGOs, Panchayat Women Members' :
-            /road|infra|bridge|highway|railway|transport|metro/i.test(text) ? 'INFRASTRUCTURE — Think: Daily Commuters, Truck Drivers, Contractors, Urban Residents, Rural Villages, Construction Labor, Land Acquisition Victims, Tourism, Environmental Groups, Local Businesses' :
-            /employ|job|rozgar|work|income|wage|mgnrega|labor/i.test(text) ? 'EMPLOYMENT — Think: Unemployed Youth, Rural Laborers, Urban Job Seekers, Women Workers, SC/ST Communities, Skill Trainees, Factory Owners, Trade Unions, Migrant Workers, Gig Economy Workers' :
-            /cash|rupee|money|transfer|dbt|payment|financial|bank/i.test(text) ? 'FINANCIAL TRANSFER — Think: BPL Families, Jan Dhan Account Holders, Rural Poor, Urban Slum Residents, Women Beneficiaries, SC/ST Communities, Bank Networks, Digital Payment Companies, Ration Card Holders, Local Middlemen' :
-            'GOVERNANCE — Think: Citizens, Opposition Parties, Local Administration, Media, Urban Middle Class, Rural Communities, Business Sector, Civil Society, Youth Voters, Senior Officials';
-
         const prompt = `
-You are India's top political intelligence analyst for Uttar Pradesh government schemes.
-
-SCHEME: "${title}"
-DETAILS: "${description}"
+You are India's top political intelligence analyst for Uttar Pradesh.
+Narrate the impact of the scheme "${title}" using these graph facts:
 NEWS: ${newsContext || "Not available"}
-HISTORY: ${neo4jContext}
-CATEGORY HINT: ${schemeHints}
+DEMOGRAPHICS: ${upCensusCtx}
 
-VERIFIED UP DEMOGRAPHIC DATA FROM DATABASE (use these exact figures for impact scoring):
-${upCensusCtx || 'UP has ~200M population, ~80% Hindu, ~19% Muslim, ~78% rural, ~48.5% women.'}
-
-RULES (STRICTLY FOLLOW):
-1. Generate EXACTLY 10-12 nodes.
-2. Node IDs must be SPECIFIC to THIS scheme.
-3. NEVER use generic names like "Group 1", "Demographic", "Community".
-4. Create CROSS-LINKS between groups.
-5. Provide a specific 'resistance_details' section explaining WHO will resist and WHY.
-6. Provide an 'improvement_roadmap' with 3 specific suggestions to reach 100% success.
-7. The center node (group:1) should be named after the scheme.
-
-Write a 3-bullet CONCISE analysis. Then produce the JSON.
-
-\`\`\`json
-{
-  "metrics": {
-    "positive": <realistic score>,
-    "negative": <realistic resistance score>,
-    "overall": <predicted success %>
-  },
-  "resistance_details": [
-    {"group": "<Group Name>", "reason": "<Detailed Why>"}
-  ],
-  "improvement_roadmap": [
-    "<Step 1 to reach 100%>",
-    "<Step 2 to reach 100%>",
-    "<Step 3 to reach 100%>"
-  ],
-  "graph": {
-    "nodes": [
-      {"id":"<Short Scheme Name>","group":1,"impact":55,"sentiment":1},
-      {"id":"<Specific Group 1>","group":2,"impact":<20-55>,"sentiment":<1 or -1>},
-      {"id":"<Specific Group 2>","group":2,"impact":<20-55>,"sentiment":<1 or -1>},
-      {"id":"<Specific Group 3>","group":2,"impact":<20-55>,"sentiment":<1 or -1>},
-      {"id":"<Specific Group 4>","group":2,"impact":<20-55>,"sentiment":<1 or -1>},
-      {"id":"<Specific Group 5>","group":2,"impact":<20-55>,"sentiment":<1 or -1>},
-      {"id":"<Specific Group 6>","group":2,"impact":<20-55>,"sentiment":<1 or -1>},
-      {"id":"<Specific Group 7>","group":2,"impact":<15-40>,"sentiment":<1 or -1>},
-      {"id":"<Specific Group 8>","group":2,"impact":<15-40>,"sentiment":<1 or -1>},
-      {"id":"<Opposition Group>","group":3,"impact":25,"sentiment":-1},
-      {"id":"<Implementation Body>","group":4,"impact":30,"sentiment":1}
-    ],
-    "links": [
-      {"source":"<Scheme Name>","target":"<Group 1>","value":12},
-      {"source":"<Scheme Name>","target":"<Group 2>","value":10},
-      {"source":"<Scheme Name>","target":"<Group 3>","value":9},
-      {"source":"<Scheme Name>","target":"<Group 4>","value":8},
-      {"source":"<Scheme Name>","target":"<Group 5>","value":7},
-      {"source":"<Scheme Name>","target":"<Group 6>","value":6},
-      {"source":"<Scheme Name>","target":"<Opposition>","value":4},
-      {"source":"<Scheme Name>","target":"<Implementation Body>","value":8},
-      {"source":"<Group 1>","target":"<Group 2>","value":5},
-      {"source":"<Group 3>","target":"<Group 5>","value":4},
-      {"source":"<Implementation Body>","target":"<Group 4>","value":6}
-    ]
-  }
-}
-\`\`\`
+Focus on how rural vs urban and religious demographics will react. 
+Provide a concise, defensible narrative. No invented metrics.
 `;
         const rawText = await callAI(prompt);
 
-        // Build a scheme-specific fallback graph using detected category
-        const schemeShort = title.split(' ').slice(0, 3).join(' ');
-        const defaultGraph = {
-            nodes: [
-                {id: schemeShort, group:1, impact:55, sentiment:1},
-                {id:"Rural Beneficiaries", group:2, impact:45, sentiment:1},
-                {id:"Urban Recipients", group:2, impact:30, sentiment:1},
-                {id:"Youth Population", group:2, impact:35, sentiment:1},
-                {id:"Women Groups", group:2, impact:40, sentiment:1},
-                {id:"Local Administration", group:4, impact:30, sentiment:1},
-                {id:"Opposition Parties", group:3, impact:25, sentiment:-1},
-                {id:"OBC Community", group:2, impact:35, sentiment:1},
-                {id:"SC/ST Groups", group:2, impact:38, sentiment:1},
-                {id:"Informal Workers", group:2, impact:32, sentiment:1}
-            ],
-            links: [
-                {source: schemeShort, target:"Rural Beneficiaries", value:12},
-                {source: schemeShort, target:"Urban Recipients", value:8},
-                {source: schemeShort, target:"Youth Population", value:9},
-                {source: schemeShort, target:"Women Groups", value:10},
-                {source: schemeShort, target:"OBC Community", value:7},
-                {source: schemeShort, target:"SC/ST Groups", value:8},
-                {source: schemeShort, target:"Opposition Parties", value:4},
-                {source: schemeShort, target:"Local Administration", value:6},
-                {source:"Rural Beneficiaries", target:"Women Groups", value:5},
-                {source:"Local Administration", target:"SC/ST Groups", value:4}
-            ]
-        };
-
-        const parsed = extractAndRepairJSON(rawText) || {
-            metrics: {positive:70, negative:10, overall:80}, 
-            graph: defaultGraph,
-            resistance_details: [],
-            improvement_roadmap: ["Improve transparency", "Increase ground-level awareness", "Engage local community leaders"]
-        };
-        if (!parsed.graph || !parsed.graph.nodes || parsed.graph.nodes.length < 4) parsed.graph = defaultGraph;
-        if (!parsed.metrics) parsed.metrics = {positive:70, negative:15, overall:68};
-
-        let aiPrediction = rawText.split(/```json/i)[0].trim();
-        if (!aiPrediction || aiPrediction.length < 50) aiPrediction = rawText.replace(/```json[\s\S]*?```/i, "").trim();
-
         res.json({
-            ai_prediction: aiPrediction || "Analysis complete.", 
-            metrics: parsed.metrics, 
-            graph_data: parsed.graph,
-            resistance: parsed.resistance_details || [],
-            roadmap: parsed.improvement_roadmap || []
+            ai_prediction: rawText, 
+            metrics: {positive: 'N/A', negative: 'N/A', overall: 'Fact-Based'}, 
+            graph_data: { nodes: [{id: title.slice(0,15), group:1, impact:50, sentiment:1}], links: [] },
+            resistance: [],
+            roadmap: []
         });
     } catch (error) {
-        console.error("[UP ANALYSIS ERROR]", error.message);
-        const schemeShort = title.split(' ').slice(0, 3).join(' ');
-        res.json({
-            ai_prediction: "Analysis complete. Review the sentiment graph for demographic impact.",
-            metrics: {positive:70, negative:15, overall:68},
-            graph_data: {
-                nodes:[
-                    {id: schemeShort, group:1, impact:55, sentiment:1},
-                    {id:"Rural Communities", group:2, impact:45, sentiment:1},
-                    {id:"Urban Citizens", group:2, impact:30, sentiment:1},
-                    {id:"Youth", group:2, impact:35, sentiment:1},
-                    {id:"Women & Families", group:2, impact:40, sentiment:1},
-                    {id:"Govt Officials", group:4, impact:30, sentiment:1},
-                    {id:"Opposition", group:3, impact:25, sentiment:-1},
-                    {id:"OBC/SC/ST Groups", group:2, impact:38, sentiment:1},
-                    {id:"Informal Workers", group:2, impact:32, sentiment:1},
-                    {id:"Business Sector", group:2, impact:20, sentiment:-1}
-                ],
-                links:[
-                    {source: schemeShort, target:"Rural Communities", value:12},
-                    {source: schemeShort, target:"Youth", value:9},
-                    {source: schemeShort, target:"Women & Families", value:10},
-                    {source: schemeShort, target:"OBC/SC/ST Groups", value:8},
-                    {source: schemeShort, target:"Opposition", value:4},
-                    {source: schemeShort, target:"Govt Officials", value:6},
-                    {source:"Rural Communities", target:"Women & Families", value:5},
-                    {source:"Govt Officials", target:"OBC/SC/ST Groups", value:4}
-                ]
-            }
-        });
+        res.status(500).json({ error: "Analysis failed." });
     }
 });
 
@@ -1377,26 +1076,26 @@ app.get('/api/up/district/:name', async (req, res) => {
              OPTIONAL MATCH (d)-[:REPRESENTED_BY]->(l:Leader)
              RETURN
                d.name               AS distName,
-               d.totalPopulation    AS totalPop,
-               d.totalMale          AS totalMale,
-               d.totalFemale        AS totalFemale,
-               d.ruralPopulation    AS ruralPop,
-               d.urbanPopulation    AS urbanPop,
-               d.hinduPopulation    AS hinduPop,
-               d.muslimPopulation   AS muslimPop,
-               d.christianPopulation AS christianPop,
-               d.sikhPopulation     AS sikhPop,
-               d.buddhistPopulation AS buddhistPop,
-               d.jainPopulation     AS jainPop,
-               d.neverMarriedPop    AS neverMarried,
-               d.marriedPopulation  AS married,
-               d.widowedPopulation  AS widowed,
-               d.migrantPopulation  AS migrants,
-               d.bilingualPopulation AS bilingual,
-               d.trilingualPopulation AS trilingual,
-               d.youthPopulation    AS youth,
-               d.workingAgePop      AS workingAge,
-               d.seniorPopulation   AS senior,
+               d.total_population    AS totalPop,
+               d.total_male          AS totalMale,
+               d.total_female        AS totalFemale,
+               d.rural_population    AS ruralPop,
+               d.urban_population    AS urbanPop,
+               d.hindu_population    AS hinduPop,
+               d.muslim_population   AS muslimPop,
+               d.christian_population AS christianPop,
+               d.sikh_population     AS sikhPop,
+               d.buddhist_population AS buddhistPop,
+               d.jain_population     AS jainPop,
+               d.never_married_pop    AS neverMarried,
+               d.married_population  AS married,
+               d.widowed_population  AS widowed,
+               d.migrant_population  AS migrants,
+               d.bilingual_population AS bilingual,
+               d.trilingual_population AS trilingual,
+               d.youth_population    AS youth,
+               d.working_age_pop      AS workingAge,
+               d.senior_population   AS senior,
                d.population         AS oldPop,
                d.literacy           AS literacy,
                d.density            AS density,
@@ -1479,115 +1178,57 @@ app.get('/api/up/district/:name', async (req, res) => {
             .filter(h => h.length > 10);
     } catch (e) { /* silent */ }
 
-    // Step 3: AI fills leader + derived demographics using REAL census as ground truth
-    const totalPop = dbPopulation && dbPopulation.total;
-    const censusSummary = dbCensus && totalPop ? `
-VERIFIED CENSUS 2011 DATA (use these EXACT numbers — do NOT change them):
-- Total Population : ${totalPop.toLocaleString()}
-- Male / Female    : ${(dbPopulation.male||0).toLocaleString()} / ${(dbPopulation.female||0).toLocaleString()}
-- Rural / Urban    : ${(dbPopulation.rural||0).toLocaleString()} / ${(dbPopulation.urban||0).toLocaleString()}
-- Hindu Population : ${(dbCensus.hinduPop||0).toLocaleString()}
-- Muslim Population: ${(dbCensus.muslimPop||0).toLocaleString()}
-- Christian Pop    : ${(dbCensus.christianPop||0).toLocaleString()}
-- Sikh Population  : ${(dbCensus.sikhPop||0).toLocaleString()}
-- Currently Married: ${(dbCensus.married||0).toLocaleString()}
-- Widowed          : ${(dbCensus.widowed||0).toLocaleString()}
-- Migrants         : ${(dbCensus.migrants||0).toLocaleString()}
-- Total Women      : ${(dbCensus.totalWomen||0).toLocaleString()}
-- Bilingual Pop    : ${(dbCensus.bilingual||0).toLocaleString()}
-` : 'No census data in database — estimate from Census 2011 patterns.';
-
-    // Pre-compute demographics from real census data where possible
-    const preDemo = totalPop ? [
-        { label: 'Hindu Community',    percent: +((dbCensus.hinduPop/totalPop)*100).toFixed(1),   count: dbCensus.hinduPop,    color: '#f97316' },
-        { label: 'Muslim Community',   percent: +((dbCensus.muslimPop/totalPop)*100).toFixed(1),  count: dbCensus.muslimPop,   color: '#3b82f6' },
-        { label: 'Rural Population',   percent: +((dbPopulation.rural/totalPop)*100).toFixed(1),  count: dbPopulation.rural,   color: '#22c55e' },
-        { label: 'Urban Population',   percent: +((dbPopulation.urban/totalPop)*100).toFixed(1),  count: dbPopulation.urban,   color: '#8b5cf6' },
-        { label: 'Married Population', percent: +((dbCensus.married/totalPop)*100).toFixed(1),    count: dbCensus.married,     color: '#ec4899' },
-        { label: 'Women',              percent: +((dbPopulation.female/totalPop)*100).toFixed(1), count: dbPopulation.female,  color: '#e11d48' },
-        { label: 'Migrants',           percent: +((dbCensus.migrants/totalPop)*100).toFixed(1),   count: dbCensus.migrants,    color: '#06b6d4' },
-        { label: 'Bilingual Pop',      percent: +((dbCensus.bilingual/totalPop)*100).toFixed(1),  count: dbCensus.bilingual,   color: '#eab308' },
-    ].filter(d => d.count > 0) : null;
-
-    // Step 3: Ask AI ONLY for what isn't in the Census DB:
-    //   - Political leader (name, party, designation, since, note)
-    //   - Density, Literacy Rate, Sex Ratio (not in our CSV files)
-    const aiPrompt = `You are a political and census expert for Uttar Pradesh, India.
-District: "${districtName}"
-
-${dbLeader ? `KNOWN LEADER (verify or correct if wrong): ${JSON.stringify(dbLeader)}` : `Who is the current MLA or District Magistrate of ${districtName}, Uttar Pradesh?`}
-
-Also provide Census 2011 estimates for:
-- Population density (persons per km²)
-- Literacy rate (%)
-- Sex ratio (females per 1000 males)
-
-Reply with ONLY this JSON (no explanation):
-\`\`\`json
-{
-  "leader": {
-    "name": "<Full name of current MLA/DM>",
-    "designation": "<MLA or District Magistrate>",
-    "party": "<Political party>",
-    "since": "<Year e.g. 2022>",
-    "note": "<One sentence about their key achievement>"
-  },
-  "density": <number>,
-  "literacy": <number>,
-  "sex_ratio": <number>
-}
-\`\`\``;
-
-    let aiData = null;
-    try {
-        const rawAI = await callAI(aiPrompt);
-        aiData = extractAndRepairJSON(rawAI);
-        console.log(`[DISTRICT] AI returned:`, JSON.stringify(aiData).slice(0, 200));
-    } catch (e) {
-        console.warn(`[DISTRICT] AI call failed: ${e.message}`);
-    }
-
-    // Step 4: Merge DB + AI data — DB is primary source, AI fills gaps
-    const finalLeader = dbLeader || (aiData && aiData.leader) || {
-        name: `${districtName} District Representative`,
-        designation: 'MLA',
+    // Step 3: AI Narration (Limited to Narration Only, no computation)
+    const finalLeader = dbLeader || {
+        name: 'Data Pending Acquisition',
+        designation: 'N/A',
         party: 'N/A',
-        since: '2022',
-        note: 'Leader data not yet available.'
+        since: 'N/A',
+        note: 'The current representative data for this district is being updated.'
     };
 
-    // AI provides density, literacy, sex_ratio (not in Census CSVs)
-    // DB provides total, male, female, rural, urban
     const finalPop = {
         total:     (dbPopulation && dbPopulation.total)     || null,
         male:      (dbPopulation && dbPopulation.male)      || null,
         female:    (dbPopulation && dbPopulation.female)    || null,
         rural:     (dbPopulation && dbPopulation.rural)     || null,
         urban:     (dbPopulation && dbPopulation.urban)     || null,
-        density:   (dbPopulation && dbPopulation.density)   || (aiData && aiData.density)   || null,
-        literacy:  (dbPopulation && dbPopulation.literacy)  || (aiData && aiData.literacy)  || null,
-        sex_ratio: (dbPopulation && dbPopulation.sex_ratio) || (aiData && aiData.sex_ratio) || null,
+        density:   (dbPopulation && dbPopulation.density)   || null,
+        literacy:  (dbPopulation && dbPopulation.literacy)  || null,
+        sex_ratio: (dbPopulation && dbPopulation.sex_ratio) || null,
     };
-    // Use pre-computed census demographics if available; fall back to AI output
-    const finalDemo = preDemo || (aiData && aiData.demographics) || [];
+
+    // Use pre-computed census demographics from real graph data
+    const finalDemo = preDemo || [];
     const finalHeadlines = headlines.length > 0 ? headlines : [`No recent news found for ${districtName}. Check back soon.`];
+
+    // AI Narration of the graph facts (Deterministic Narration)
+    let aiNarration = "Analysis pending acquisition of structured governance data.";
+    if (totalPop) {
+        try {
+            const prompt = `Narrate a 2-sentence political and demographic summary for ${districtName}, Uttar Pradesh based on these facts:
+            Population: ${totalPop.toLocaleString()}, Rural: ${finalPop.rural?.toLocaleString()}, Urban: ${finalPop.urban?.toLocaleString()}.
+            Top News: ${headlines.slice(0, 2).join(' | ')}`;
+            aiNarration = await callAI(prompt);
+        } catch (e) { /* fallback to default string */ }
+    }
 
     // Build census summary block for the response
     const censusBlock = dbCensus ? {
-        hinduPopulation:     dbCensus.hinduPop     || 0,
-        muslimPopulation:    dbCensus.muslimPop    || 0,
-        christianPopulation: dbCensus.christianPop || 0,
-        sikhPopulation:      dbCensus.sikhPop      || 0,
-        marriedPopulation:   dbCensus.married      || 0,
-        widowedPopulation:   dbCensus.widowed      || 0,
-        migrantPopulation:   dbCensus.migrants     || 0,
-        bilingualPopulation: dbCensus.bilingual    || 0,
-        trilingualPopulation:dbCensus.trilingual   || 0,
-        youthPopulation:     dbCensus.youth        || 0,
-        workingAgePopulation:dbCensus.workingAge   || 0,
-        seniorPopulation:    dbCensus.senior       || 0,
-        ruralPopulation:     (dbPopulation && dbPopulation.rural)  || 0,
-        urbanPopulation:     (dbPopulation && dbPopulation.urban)  || 0,
+        hindu_population:     dbCensus.hinduPop     || 0,
+        muslim_population:    dbCensus.muslimPop    || 0,
+        christian_population: dbCensus.christianPop || 0,
+        sikh_population:      dbCensus.sikhPop      || 0,
+        married_population:   dbCensus.married      || 0,
+        widowed_population:   dbCensus.widowed      || 0,
+        migrant_population:   dbCensus.migrants     || 0,
+        bilingual_population: dbCensus.bilingual    || 0,
+        trilingual_population:dbCensus.trilingual   || 0,
+        youth_population:     dbCensus.youth        || 0,
+        working_age_population:dbCensus.workingAge   || 0,
+        senior_population:    dbCensus.senior       || 0,
+        rural_population:     (dbPopulation && dbPopulation.rural)  || 0,
+        urban_population:     (dbPopulation && dbPopulation.urban)  || 0,
     } : null;
 
     res.json({
@@ -1597,7 +1238,8 @@ Reply with ONLY this JSON (no explanation):
         demographics: finalDemo,
         census: censusBlock,
         headlines: finalHeadlines,
-        source: dbCensus ? 'Census 2011 DB + AI + News' : (dbLeader ? 'Database + AI + News' : 'AI Analysis + News')
+        narration: aiNarration,
+        source: dbCensus ? 'Census 2011 DB + AI Narration + News' : 'Database + News'
     });
 });
 

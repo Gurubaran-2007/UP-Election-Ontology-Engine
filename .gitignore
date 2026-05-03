@@ -4,12 +4,18 @@ node_modules/
 # Environment secrets - NEVER push to GitHub
 .env
 .env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*
+!.env.example
 
 # Neo4j Docker data
 neo4j_data/
+data/manual/
+data/raw/
 
-# Large CSV data files - not needed on server
-*.csv
+# Large local-only scripts / one-off utilities
 import_data.js
 import_remaining_data.js
 migrate_to_cloud.js
@@ -17,6 +23,9 @@ migrate_to_cloud.js
 # Logs
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # OS files
 .DS_Store
@@ -25,3 +34,18 @@ Thumbs.db
 # Editor
 .vscode/
 *.swp
+.idea/
+.venv/
+
+# Test / coverage output
+coverage/
+.nyc_output/
+
+# Build output
+dist/
+build/
+
+# Runtime files
+tmp/
+temp/
+*.pid

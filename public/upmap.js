@@ -240,7 +240,7 @@
             </div>`;
 
         // ── Population section ───────────────────────────────────
-        const totalPop = pop.total || ((pop.rural || 0) + (pop.urban || 0)) || ((census.ruralPopulation || 0) + (census.urbanPopulation || 0));
+        const totalPop = pop.total || ((pop.rural || 0) + (pop.urban || 0)) || ((census.rural_population || 0) + (census.urban_population || 0));
         const hasPop   = totalPop > 0;
         const fmt = (v) => (v && Number(v) > 0) ? Number(v).toLocaleString('en-IN') : null;
 
@@ -248,29 +248,29 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;">
                 ${statBox(fmt(totalPop), 'Total Population', '#4ade80')}
                 ${statBox(pop.density ? pop.density + '/km²' : null, 'Population Density', '#60a5fa')}
-                ${statBox(pop.literacy ? pop.literacy + '%' : null, 'Literacy Rate', '#FF9933')}
+                ${statBox(pop.literacy_rate ? pop.literacy_rate + '%' : null, 'Literacy Rate', '#FF9933')}
                 ${statBox(pop.sex_ratio || null, 'Sex Ratio (per 1000 males)', '#c084fc')}
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.6rem;">
-                ${statBox(fmt(pop.rural || census.ruralPopulation), 'Rural Population', '#22c55e')}
-                ${statBox(fmt(pop.urban || census.urbanPopulation), 'Urban Population', '#8b5cf6')}
+                ${statBox(fmt(pop.rural || census.rural_population), 'Rural Population', '#22c55e')}
+                ${statBox(fmt(pop.urban || census.urban_population), 'Urban Population', '#8b5cf6')}
                 ${statBox(fmt(pop.male), 'Male', '#60a5fa')}
                 ${statBox(fmt(pop.female), 'Female', '#f472b6')}
             </div>
-            ${census.hinduPopulation ? `
+            ${census.hindu_population ? `
             <div style="margin-top:.9rem;background:rgba(15,15,25,0.7);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:.8rem;">
                 <div style="font-size:.8rem;color:#f1f5f9;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:.5rem;">Religion Breakdown</div>
                 <div style="display:flex;flex-wrap:wrap;gap:.45rem;">
-                    <span style="background:#f97316;color:#fff;font-weight:700;font-size:.78rem;border-radius:8px;padding:4px 11px;">Hindu: ${Number(census.hinduPopulation).toLocaleString('en-IN')}</span>
-                    <span style="background:#3b82f6;color:#fff;font-weight:700;font-size:.78rem;border-radius:8px;padding:4px 11px;">Muslim: ${Number(census.muslimPopulation || 0).toLocaleString('en-IN')}</span>
-                    ${(census.sikhPopulation > 0) ? `<span style="background:#eab308;color:#000;font-weight:700;font-size:.78rem;border-radius:8px;padding:4px 11px;">Sikh: ${Number(census.sikhPopulation).toLocaleString('en-IN')}</span>` : ''}
-                    ${(census.christianPopulation > 0) ? `<span style="background:#22c55e;color:#000;font-weight:700;font-size:.78rem;border-radius:8px;padding:4px 11px;">Christian: ${Number(census.christianPopulation).toLocaleString('en-IN')}</span>` : ''}
+                    <span style="background:#f97316;color:#fff;font-weight:700;font-size:.78rem;border-radius:8px;padding:4px 11px;">Hindu: ${Number(census.hindu_population).toLocaleString('en-IN')}</span>
+                    <span style="background:#3b82f6;color:#fff;font-weight:700;font-size:.78rem;border-radius:8px;padding:4px 11px;">Muslim: ${Number(census.muslim_population || 0).toLocaleString('en-IN')}</span>
+                    ${(census.sikh_population > 0) ? `<span style="background:#eab308;color:#000;font-weight:700;font-size:.78rem;border-radius:8px;padding:4px 11px;">Sikh: ${Number(census.sikh_population).toLocaleString('en-IN')}</span>` : ''}
+                    ${(census.christian_population > 0) ? `<span style="background:#22c55e;color:#000;font-weight:700;font-size:.78rem;border-radius:8px;padding:4px 11px;">Christian: ${Number(census.christian_population).toLocaleString('en-IN')}</span>` : ''}
                 </div>
             </div>` : ''}
-            ${census.marriedPopulation ? `
+            ${census.married_population ? `
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.6rem;">
-                ${statBox(fmt(census.marriedPopulation), 'Currently Married', '#ec4899')}
-                ${statBox(fmt(census.migrantPopulation), 'Migrants', '#06b6d4')}
+                ${statBox(fmt(census.married_population), 'Currently Married', '#ec4899')}
+                ${statBox(fmt(census.migrant_population), 'Migrants', '#06b6d4')}
             </div>` : ''}
             <div style="font-size:.75rem;color:#4ade80;font-weight:700;margin-top:.6rem;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:6px;padding:5px 10px;display:inline-block;">✅ Source: Census 2011 DB + AI</div>
         ` : `<div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:1rem;text-align:center;">

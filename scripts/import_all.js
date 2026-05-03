@@ -2,17 +2,167 @@
 // Run: node scripts/import_all.js
 // Prerequisites: Neo4j running on localhost:7687, data files in data/ directory
 
+require('dotenv').config();
 const neo4j = require('neo4j-driver');
 const fs = require('fs');
 const path = require('path');
 
 const URI = process.env.NEO4J_URI || 'neo4j://localhost:7687';
 const USER = process.env.NEO4J_USER || 'neo4j';
-const PASSWORD = process.env.NEO4J_PASSWORD || 'guru@9114';
+const PASSWORD = process.env.NEO4J_PASSWORD;
 
 const DATA_DIR = path.join(__dirname, '..', 'data');
 
-const driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASSWORD), { encrypted: 'ENCRYPTION_OFF' });
+const isCloud = URI.startsWith('neo4j+s') || URI.startsWith('bolt+s');
+const driver = neo4j.driver(
+    URI,
+    neo4j.auth.basic(USER, PASSWORD || ''),
+    isCloud ? {} : { encrypted: 'ENCRYPTION_OFF' }
+);
+
+function requireEnv(name, value) {
+    if (!value) {
+        throw new Error(`${name} is required`);
+    }
+}
+
+function buildNodeProvenance(source, sourceDate, sourceUrl = null, confidence = 'high') {
+    return {
+        source,
+        source_date: sourceDate,
+        source_url: sourceUrl,
+        confidence,
+        ingested_at: new Date().toISOString(),
+    };
+}
+
+function buildRelProvenance(source, sourceDate, confidence = 'high') {
+    return {
+        source,
+        source_date: sourceDate,
+        confidence,
+    };
+}
+
+// ============================================================
+// VALIDATION HELPERS (Step 9)
+// ============================================================
+function validateProvenance(node, nodeType, context) {
+    const required = ['source', 'source_date', 'confidence'];
+    const missing = required.filter(f => !node[f]);
+    if (missing.length > 0) {
+        throw new Error(
+            `[PROVENANCE FAIL] ${nodeType} (${context}) missing: ${missing.join(', ')}. ` +
+            `Import halted. Fix source data before re-running.`
+        );
+    }
+    const validConfidence = ['high', 'medium', 'low'];
+    if (!validConfidence.includes(node.confidence)) {
+        throw new Error(
+            `[PROVENANCE FAIL] ${nodeType} (${context}): confidence must be one of ` +
+            `${validConfidence.join('|')}, got: "${node.confidence}"`
+        );
+    }
+}
+
+function validateLS(ls, context) {
+    if (!ls.ls_id || !/^UP-\d{1,2}$/.test(ls.ls_id))
+        throw new Error(`[VALIDATION FAIL] ${context}: ls_id must match UP-{1-80}, got: ${ls.ls_id}`);
+    if (!['GEN', 'SC', 'ST'].includes(ls.reservation))
+        throw new Error(`[VALIDATION FAIL] ${context}: reservation must be GEN|SC|ST, got: ${ls.reservation}`);
+    validateProvenance(ls, 'LokSabhaConstituency', context);
+}
+
+function validateElectionResult(er, context) {
+    if (!er.result_id) throw new Error(`[VALIDATION FAIL] ${context}: result_id required`);
+    if (!er.election_id) throw new Error(`[VALIDATION FAIL] ${context}: election_id required`);
+    if (!er.constituency_id) throw new Error(`[VALIDATION FAIL] ${context}: constituency_id required`);
+    if (er.margin_votes === undefined || er.margin_votes === null)
+        throw new Error(`[VALIDATION FAIL] ${context}: margin_votes required`);
+    if (er.margin_pct === undefined || er.margin_pct === null)
+        throw new Error(`[VALIDATION FAIL] ${context}: margin_pct required`);
+    if (er.winner_vote_share === undefined || er.winner_vote_share === null)
+        throw new Error(`[VALIDATION FAIL] ${context}: winner_vote_share required`);
+    if (er.total_valid_votes <= 0)
+        throw new Error(`[VALIDATION FAIL] ${context}: total_valid_votes must be > 0, got: ${er.total_valid_votes}`);
+    validateProvenance(er, 'ElectionResult', context);
+}
+
+function validateCandidate(c, context) {
+    if (!c.cand_id) throw new Error(`[VALIDATION FAIL] ${context}: cand_id required`);
+    if (!c.name) throw new Error(`[VALIDATION FAIL] ${context}: candidate name required`);
+    if (!c.party_id) throw new Error(`[VALIDATION FAIL] ${context}: party_id required`);
+    if (!['M', 'F', 'OTHER'].includes(c.gender) && c.gender !== null && c.gender !== undefined)
+        throw new Error(`[VALIDATION FAIL] ${context}: gender must be M|F|OTHER|null, got: ${c.gender}`);
+    if (c.vote_share !== null && (c.vote_share < 0 || c.vote_share > 100))
+        throw new Error(`[VALIDATION FAIL] ${context}: vote_share out of range: ${c.vote_share}`);
+    if (c.rank !== null && c.rank < 1)
+        throw new Error(`[VALIDATION FAIL] ${context}: rank must be >= 1`);
+    validateProvenance(c, 'Candidate', context);
+}
+
+function validateAffidavit(aff, context) {
+    if (!aff.affidavit_id) throw new Error(`[VALIDATION FAIL] ${context}: affidavit_id required`);
+    if (!aff.cand_id) throw new Error(`[VALIDATION FAIL] ${context}: cand_id required`);
+    if (aff.criminal_cases < 0)
+        throw new Error(`[VALIDATION FAIL] ${context}: criminal_cases cannot be negative`);
+    if (aff.serious_cases < 0)
+        throw new Error(`[VALIDATION FAIL] ${context}: serious_cases cannot be negative`);
+    if (aff.serious_cases > aff.criminal_cases)
+        throw new Error(`[VALIDATION FAIL] ${context}: serious_cases (${aff.serious_cases}) cannot exceed criminal_cases (${aff.criminal_cases})`);
+    validateProvenance(aff, 'Affidavit', context);
+}
+
+function toPartyId(name) {
+    const normalized = String(name || '').trim().toLowerCase();
+    const lookup = {
+        'bharatiya janata party': 'bjp',
+        'samajwadi party': 'sp',
+        'bahujan samaj party': 'bsp',
+        'indian national congress': 'inc',
+        'apna dal (soneylal)': 'apd',
+        'apna दल (soneylal)': 'apd',
+        'rashtriya lok samta party': 'rlsp',
+        'azad samaj party': 'ajsp',
+        'none of the above': 'nota',
+    };
+
+    return lookup[normalized] || normalized.replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'other';
+}
+
+function getLSDistrictMap() {
+    return {
+        'UP-1': 'Saharanpur', 'UP-2': 'Shamli', 'UP-3': 'Muzaffarnagar',
+        'UP-4': 'Bijnor', 'UP-5': 'Bijnor', 'UP-6': 'Moradabad',
+        'UP-7': 'Rampur', 'UP-8': 'Sambhal', 'UP-9': 'Amroha',
+        'UP-10': 'Meerut', 'UP-11': 'Baghpat', 'UP-12': 'Ghaziabad',
+        'UP-13': 'Gautam Buddha Nagar', 'UP-14': 'Bulandshahr',
+        'UP-15': 'Aligarh', 'UP-16': 'Hathras', 'UP-17': 'Mathura',
+        'UP-18': 'Agra', 'UP-19': 'Agra', 'UP-20': 'Firozabad',
+        'UP-21': 'Mainpuri', 'UP-22': 'Etah', 'UP-23': 'Badaun',
+        'UP-24': 'Bareilly', 'UP-25': 'Bareilly', 'UP-26': 'Pilibhit',
+        'UP-27': 'Shahjahanpur', 'UP-28': 'Lakhimpur Kheri',
+        'UP-29': 'Lakhimpur Kheri', 'UP-30': 'Sitapur',
+        'UP-31': 'Hardoi', 'UP-32': 'Hardoi', 'UP-33': 'Unnao',
+        'UP-34': 'Lucknow', 'UP-35': 'Lucknow', 'UP-36': 'Rae Bareli',
+        'UP-37': 'Amethi', 'UP-38': 'Sultanpur', 'UP-39': 'Pratapgarh',
+        'UP-40': 'Farrukhabad', 'UP-41': 'Etawah', 'UP-42': 'Kannauj',
+        'UP-43': 'Kanpur Nagar', 'UP-44': 'Kanpur Nagar',
+        'UP-45': 'Jalaun', 'UP-46': 'Jhansi', 'UP-47': 'Hamirpur',
+        'UP-48': 'Banda', 'UP-49': 'Fatehpur', 'UP-50': 'Kaushambi',
+        'UP-51': 'Prayagraj', 'UP-52': 'Prayagraj', 'UP-53': 'Barabanki',
+        'UP-54': 'Ayodhya', 'UP-55': 'Ambedkar Nagar', 'UP-56': 'Bahraich',
+        'UP-57': 'Gonda', 'UP-58': 'Shravasti', 'UP-59': 'Gonda',
+        'UP-60': 'Siddharthnagar', 'UP-61': 'Basti',
+        'UP-62': 'Sant Kabir Nagar', 'UP-63': 'Maharajganj',
+        'UP-64': 'Gorakhpur', 'UP-65': 'Kushinagar', 'UP-66': 'Deoria',
+        'UP-67': 'Gorakhpur', 'UP-68': 'Azamgarh', 'UP-69': 'Azamgarh',
+        'UP-70': 'Mau', 'UP-71': 'Ballia', 'UP-72': 'Ballia',
+        'UP-73': 'Jaunpur', 'UP-74': 'Jaunpur', 'UP-75': 'Ghazipur',
+        'UP-76': 'Chandauli', 'UP-77': 'Varanasi', 'UP-78': 'Bhadohi',
+        'UP-79': 'Mirzapur', 'UP-80': 'Sonbhadra',
+    };
+}
 
 async function runCypher(cypher, params = {}) {
     const session = driver.session();
@@ -34,14 +184,21 @@ async function createConstraints() {
         `CREATE CONSTRAINT district_id_unique IF NOT EXISTS FOR (d:District) REQUIRE d.district_id IS UNIQUE`,
         `CREATE CONSTRAINT ls_id_unique IF NOT EXISTS FOR (ls:LokSabhaConstituency) REQUIRE ls.ls_id IS UNIQUE`,
         `CREATE CONSTRAINT vs_id_unique IF NOT EXISTS FOR (vs:VidhanSabhaConstituency) REQUIRE vs.vs_id IS UNIQUE`,
-        `CREATE CONSTRAINT booth_id_unique IF NOT EXISTS FOR (b:Booth) REQUIRE b.booth_id IS UNIQUE`,
         `CREATE CONSTRAINT party_id_unique IF NOT EXISTS FOR (p:Party) REQUIRE p.party_id IS UNIQUE`,
         `CREATE CONSTRAINT cand_id_unique IF NOT EXISTS FOR (c:Candidate) REQUIRE c.cand_id IS UNIQUE`,
         `CREATE CONSTRAINT election_id_unique IF NOT EXISTS FOR (e:Election) REQUIRE e.election_id IS UNIQUE`,
-        `CREATE CONSTRAINT caste_code_unique IF NOT EXISTS FOR (cg:CasteGroup) REQUIRE cg.caste_code IS UNIQUE`,
-        `CREATE CONSTRAINT block_id_unique IF NOT EXISTS FOR (cb:CommunityBlock) REQUIRE cb.block_id IS UNIQUE`,
         `CREATE CONSTRAINT issue_id_unique IF NOT EXISTS FOR (i:Issue) REQUIRE i.issue_id IS UNIQUE`,
-        `CREATE CONSTRAINT risk_id_unique IF NOT EXISTS FOR (r:RiskCategory) REQUIRE r.risk_id IS UNIQUE`,
+        `CREATE CONSTRAINT result_id_unique IF NOT EXISTS FOR (er:ElectionResult) REQUIRE er.result_id IS UNIQUE`,
+        `CREATE CONSTRAINT turnout_id_unique IF NOT EXISTS FOR (t:Turnout) REQUIRE t.turnout_id IS UNIQUE`,
+        `CREATE CONSTRAINT alliance_id_unique IF NOT EXISTS FOR (a:Alliance) REQUIRE a.alliance_id IS UNIQUE`,
+        `CREATE CONSTRAINT scheme_id_unique IF NOT EXISTS FOR (sd:SchemeDelivery) REQUIRE sd.delivery_id IS UNIQUE`,
+        `CREATE CONSTRAINT affidavit_id_unique IF NOT EXISTS FOR (aff:Affidavit) REQUIRE aff.affidavit_id IS UNIQUE`,
+        `CREATE CONSTRAINT classification_id_unique IF NOT EXISTS FOR (sc:SeatClassification) REQUIRE sc.classification_id IS UNIQUE`,
+        `CREATE CONSTRAINT observation_id_unique IF NOT EXISTS FOR (io:IssueObservation) REQUIRE io.observation_id IS UNIQUE`,
+        `CREATE CONSTRAINT recommendation_id_unique IF NOT EXISTS FOR (dr:DecisionRecommendation) REQUIRE dr.recommendation_id IS UNIQUE`,
+        `CREATE CONSTRAINT bundle_id_unique IF NOT EXISTS FOR (eb:EvidenceBundle) REQUIRE eb.bundle_id IS UNIQUE`,
+        `CREATE CONSTRAINT topic_id_unique IF NOT EXISTS FOR (mt:MediaTopic) REQUIRE mt.topic_id IS UNIQUE`,
+        `CREATE CONSTRAINT rule_id_unique IF NOT EXISTS FOR (rd:RuleDefinition) REQUIRE rd.rule_id IS UNIQUE`,
     ];
 
     for (const c of constraints) {
@@ -54,10 +211,6 @@ async function createConstraints() {
     }
 
     const indexes = [
-        `CREATE INDEX booth_district_idx IF NOT EXISTS FOR (b:Booth) ON (b.district)`,
-        `CREATE INDEX booth_vs_idx IF NOT EXISTS FOR (b:Booth) ON (b.vs_id)`,
-        `CREATE INDEX booth_urban_rural_idx IF NOT EXISTS FOR (b:Booth) ON (b.urban_rural)`,
-        `CREATE INDEX result_election_idx IF NOT EXISTS FOR (br:BoothResult) ON (br.election_id)`,
         `CREATE INDEX district_name_idx IF NOT EXISTS FOR (d:District) ON (d.name)`,
     ];
 
@@ -72,10 +225,154 @@ async function createConstraints() {
 }
 
 // ============================================================
-// STEP 2: Create LokSabha + VidhanSabha constituencies
+// STEP 2: Create District nodes
+// ============================================================
+async function importDistricts() {
+    console.log('\n=== Step 2: Importing Districts ===');
+
+    const session = driver.session();
+    const nodeProvenance = buildNodeProvenance('IMPORT_SEED', '2026-05-03', null, 'medium');
+    const lsDistrictMap = getLSDistrictMap();
+    const districtNames = [...new Set(Object.values(lsDistrictMap))].sort();
+
+    let districtSamples = new Map();
+    const indiaDataPath = path.join(DATA_DIR, 'india_data.json');
+    if (fs.existsSync(indiaDataPath)) {
+        try {
+            const indiaData = JSON.parse(fs.readFileSync(indiaDataPath, 'utf8'));
+            const upDistricts = indiaData?.['Uttar Pradesh']?.districts;
+            if (Array.isArray(upDistricts)) {
+                districtSamples = new Map(
+                    upDistricts
+                        .filter((row) => row && row.name)
+                        .map((row) => [String(row.name).trim().toLowerCase(), row])
+                );
+            }
+        } catch (err) {
+            console.warn('  ! Could not parse india_data.json for district enrichment:', err.message);
+        }
+    }
+const regionMap = {
+    'western': [
+        'Saharanpur', 'Muzaffarnagar', 'Shamli', 'Baghpat', 'Meerut', 'Ghaziabad', 
+        'Hapur', 'Gautam Buddha Nagar', 'Bulandshahr', 'Aligarh', 'Hathras', 'Mathura', 
+        'Agra', 'Firozabad', 'Etah', 'Kasganj', 'Mainpuri', 'Etawah', 'Auraiya', 
+        'Kannauj', 'Farrukhabad', 'Bijnor', 'Amroha', 'Moradabad', 'Rampur', 'Sambhal'
+    ],
+    'central': [
+        'Lucknow', 'Kanpur Nagar', 'Kanpur Dehat', 'Unnao', 'Sitapur', 'Rae Bareli', 
+        'Hardoi', 'Lakhimpur Kheri', 'Barabanki', 'Fatehpur'
+    ],
+    'eastern': [
+        'Varanasi', 'Gorakhpur', 'Azamgarh', 'Prayagraj', 'Ghazipur', 'Ballia', 
+        'Jaunpur', 'Mirzapur', 'Chandauli', 'Sonbhadra', 'Bhadohi', 'Deoria', 
+        'Kushinagar', 'Mau', 'Maharajganj', 'Siddharthnagar', 'Basti', 'Sant Kabir Nagar', 
+        'Amethi', 'Sultanpur', 'Ayodhya', 'Ambedkar Nagar', 'Gonda', 'Bahraich', 
+        'Shravasti', 'Balrampur', 'Pratapgarh', 'Kaushambi'
+    ],
+    'bundelkhand': [
+        'Jhansi', 'Jalaun', 'Hamirpur', 'Banda', 'Chitrakoot', 'Mahoba', 'Lalitpur'
+    ]
+};
+
+try {
+    for (let index = 0; index < districtNames.length; index++) {
+        const name = districtNames[index];
+        const sample = upDistricts.find((d) => d.name === name) || {};
+
+        // Find region
+        let region = 'other';
+        for (const [r, dists] of Object.entries(regionMap)) {
+            if (dists.includes(name)) {
+                region = r;
+                break;
+            }
+        }
+
+        await session.run(
+            `MERGE (d:District {district_id: $district_id})
+             SET d.name = $name,
+                 d.state = 'Uttar Pradesh',
+                 d.region = $region,
+                 d.census_year = 2011,
+                 d.total_population = $total_population,
+                     d.total_male = $total_male,
+                     d.total_female = $total_female,
+                     d.rural_population = $rural_population,
+                     d.urban_population = $urban_population,
+                     d.hindu_population = $hindu_population,
+                     d.muslim_population = $muslim_population,
+                     d.christian_population = $christian_population,
+                     d.sikh_population = $sikh_population,
+                     d.buddhist_population = $buddhist_population,
+                     d.jain_population = $jain_population,
+                     d.never_married_pop = $never_married_pop,
+                     d.married_population = $married_population,
+                     d.widowed_pop = $widowed_pop,
+                     d.migrant_population = $migrant_population,
+                     d.bilingual_population = $bilingual_population,
+                     d.trilingual_population = $trilingual_population,
+                     d.youth_population = $youth_population,
+                     d.working_age_pop = $working_age_pop,
+                     d.senior_population = $senior_population,
+                     d.total_women = $total_women,
+                     d.ever_married_women = $ever_married_women,
+                     d.literacy_rate = $literacy_rate,
+                     d.sex_ratio = $sex_ratio,
+                     d.source = $source,
+                     d.source_date = date($source_date),
+                     d.ingested_at = datetime($ingested_at),
+                     d.confidence = $confidence,
+                     d.sample_politician = $sample_politician,
+                     d.sample_years = $sample_years`,
+                {
+                    district_id: `UP-DIST-${String(index + 1).padStart(2, '0')}`,
+                    name,
+                    region,
+                    total_population: sample.total_population || null,
+                    total_male: sample.total_male || null,
+                    total_female: sample.total_female || null,
+                    rural_population: sample.rural_population || null,
+                    urban_population: sample.urban_population || null,
+                    hindu_population: sample.hindu_population || null,
+                    muslim_population: sample.muslim_population || null,
+                    christian_population: sample.christian_population || null,
+                    sikh_population: sample.sikh_population || null,
+                    buddhist_population: sample.buddhist_population || null,
+                    jain_population: sample.jain_population || null,
+                    never_married_pop: sample.never_married_pop || null,
+                    married_population: sample.married_population || null,
+                    widowed_pop: sample.widowed_pop || null,
+                    migrant_population: sample.migrant_population || null,
+                    bilingual_population: sample.bilingual_population || null,
+                    trilingual_population: sample.trilingual_population || null,
+                    youth_population: sample.youth_population || null,
+                    working_age_pop: sample.working_age_pop || null,
+                    senior_population: sample.senior_population || null,
+                    total_women: sample.total_women || null,
+                    ever_married_women: sample.ever_married_women || null,
+                    literacy_rate: sample.literacy_rate || null,
+                    sex_ratio: sample.sex_ratio || null,
+                    source: nodeProvenance.source,
+                    source_date: nodeProvenance.source_date,
+                    ingested_at: nodeProvenance.ingested_at,
+                    confidence: nodeProvenance.confidence,
+                    sample_politician: sample.politician || null,
+                    sample_years: sample.years || null,
+                }
+            );
+        }
+        console.log(`  ✓ Created ${districtNames.length} District nodes`);
+    } finally {
+        await session.close();
+    }
+}
+
+// ============================================================
+// STEP 3: Create LokSabha + VidhanSabha constituencies
 // ============================================================
 async function importConstituencies() {
-    console.log('\n=== Step 2: Importing Constituencies ===');
+    console.log('\n=== Step 3: Importing Constituencies ===');
 
     const mappingPath = path.join(DATA_DIR, 'mappings', 'up_ls_vs_mapping.json');
     if (!fs.existsSync(mappingPath)) {
@@ -85,24 +382,39 @@ async function importConstituencies() {
 
     const mapping = JSON.parse(fs.readFileSync(mappingPath, 'utf8'));
     const session = driver.session();
+    const nodeProvenance = buildNodeProvenance('ECI_DELIMITATION_2008', '2008-01-01');
+    const relProvenance = buildRelProvenance('ECI_DELIMITATION_2008', '2008-01-01');
 
     try {
         // Create Parties first
         const parties = [
-            { party_id: 'bjp', name: 'Bharatiya Janata Party', symbol: 'Lotus' },
-            { party_id: 'sp', name: 'Samajwadi Party', symbol: 'Cycle' },
-            { party_id: 'bsp', name: 'Bahujan Samaj Party', symbol: 'Elephant' },
-            { party_id: 'inc', name: 'Indian National Congress', symbol: 'Hand' },
-            { party_id: 'apd', name: 'Apna Dal (Soneylal)', symbol: 'Banana' },
-            { party_id: 'rlsp', name: 'Rashtriya Lok Samta Party', symbol: 'Clock' },
-            { party_id: 'ajsp', name: 'Azad Samaj Party', symbol: 'Spectacles' },
-            { party_id: 'other', name: 'Others', symbol: '' },
+            { party_id: 'bjp', name: 'Bharatiya Janata Party', symbol: 'Lotus', type: 'NATIONAL' },
+            { party_id: 'sp', name: 'Samajwadi Party', symbol: 'Cycle', type: 'STATE' },
+            { party_id: 'bsp', name: 'Bahujan Samaj Party', symbol: 'Elephant', type: 'NATIONAL' },
+            { party_id: 'inc', name: 'Indian National Congress', symbol: 'Hand', type: 'NATIONAL' },
+            { party_id: 'apd', name: 'Apna Dal (Soneylal)', symbol: 'Banana', type: 'STATE' },
+            { party_id: 'rlsp', name: 'Rashtriya Lok Samta Party', symbol: 'Clock', type: 'STATE' },
+            { party_id: 'ajsp', name: 'Azad Samaj Party', symbol: 'Spectacles', type: 'STATE' },
+            { party_id: 'other', name: 'Others', symbol: '', type: 'REGISTERED' },
         ];
 
         for (const p of parties) {
             await session.run(
-                `MERGE (p:Party {party_id: $party_id}) SET p.name = $name, p.symbol = $symbol`,
-                p
+                `MERGE (p:Party {party_id: $party_id})
+                 SET p.name = $name,
+                     p.symbol = $symbol,
+                     p.type = $type,
+                     p.source = $source,
+                     p.source_date = date($source_date),
+                     p.ingested_at = datetime($ingested_at),
+                     p.confidence = $confidence`,
+                { 
+                    ...p, 
+                    source: 'ECI_PARTY_REGISTER', 
+                    source_date: nodeProvenance.source_date,
+                    ingested_at: nodeProvenance.ingested_at,
+                    confidence: 'high'
+                }
             );
         }
         console.log(`  ✓ Created ${parties.length} parties`);
@@ -110,10 +422,19 @@ async function importConstituencies() {
         // Create LS constituencies
         let lsCount = 0;
         for (const ls of mapping.lok_sabha_constituencies) {
+            const lsNode = { ...ls, ...nodeProvenance };
+            validateLS(lsNode, `LS: ${ls.name}`);
+
             await session.run(
-                `MERGE (ls:LokSabhaConstituency {ls_id: $ls_id})
-                 SET ls.name = $name, ls.reservation = $reservation, ls.ls_no = $ls_no`,
-                ls
+                `MERGE (ls:Constituency:LokSabhaConstituency {ls_id: $ls_id})
+                 SET ls.name = $name,
+                     ls.reservation = $reservation,
+                     ls.ls_no = $ls_no,
+                     ls.source = $source,
+                     ls.source_date = date($source_date),
+                     ls.ingested_at = datetime($ingested_at),
+                     ls.confidence = $confidence`,
+                lsNode
             );
             lsCount++;
         }
@@ -126,15 +447,39 @@ async function importConstituencies() {
             for (let i = 0; i < ls.assembly_segments.length; i++) {
                 const vsName = ls.assembly_segments[i];
                 const vsId = `UP-VS-${ls.ls_no}-${i + 1}`;
-                const reservation = ls.reservation;
+                const vsReservation = 'GEN'; // Corrected: default to GEN, don't inherit LS reservation
+
+                const vsNode = {
+                    vs_id: vsId,
+                    name: vsName,
+                    reservation: vsReservation,
+                    ls_id: ls.ls_id,
+                    ...nodeProvenance
+                };
+                validateProvenance(vsNode, 'VidhanSabhaConstituency', `VS: ${vsName}`);
 
                 await session.run(
-                    `MERGE (vs:VidhanSabhaConstituency {vs_id: $vs_id})
-                     SET vs.name = $vs_name, vs.reservation = $reservation, vs.ls_id = $ls_id
+                    `MERGE (vs:Constituency:VidhanSabhaConstituency {vs_id: $vs_id})
+                     SET vs.name = $name,
+                         vs.reservation = $reservation,
+                         vs.ls_id = $ls_id,
+                         vs.source = $source,
+                         vs.source_date = date($source_date),
+                         vs.ingested_at = datetime($ingested_at),
+                         vs.confidence = $confidence
                      WITH vs
                      MATCH (ls:LokSabhaConstituency {ls_id: $ls_id})
-                     MERGE (ls)-[:HAS_VS]->(vs)`,
-                    { vs_id: vsId, vs_name: vsName, reservation, ls_id: ls.ls_id }
+                     MERGE (ls)-[:HAS_VS {
+                        source: $rel_source,
+                        source_date: date($rel_source_date),
+                        confidence: $rel_confidence
+                     }]->(vs)`,
+                    {
+                        ...vsNode,
+                        rel_source: relProvenance.source,
+                        rel_source_date: relProvenance.source_date,
+                        rel_confidence: relProvenance.confidence,
+                    }
                 );
                 vsCount++;
                 vsLinkCount++;
@@ -143,47 +488,20 @@ async function importConstituencies() {
         console.log(`  ✓ Created ${vsCount} Vidhan Sabha constituencies`);
         console.log(`  ✓ Created ${vsLinkCount} LS→VS links`);
 
-        // Link LS to Districts (approximate — based on known district associations)
-        const lsDistrictMap = {
-            'UP-1': 'Saharanpur', 'UP-2': 'Shamli', 'UP-3': 'Muzaffarnagar',
-            'UP-4': 'Bijnor', 'UP-5': 'Bijnor', 'UP-6': 'Moradabad',
-            'UP-7': 'Rampur', 'UP-8': 'Sambhal', 'UP-9': 'Amroha',
-            'UP-10': 'Meerut', 'UP-11': 'Baghpat', 'UP-12': 'Ghaziabad',
-            'UP-13': 'Gautam Buddha Nagar', 'UP-14': 'Bulandshahr',
-            'UP-15': 'Aligarh', 'UP-16': 'Hathras', 'UP-17': 'Mathura',
-            'UP-18': 'Agra', 'UP-19': 'Agra', 'UP-20': 'Firozabad',
-            'UP-21': 'Mainpuri', 'UP-22': 'Etah', 'UP-23': 'Badaun',
-            'UP-24': 'Bareilly', 'UP-25': 'Bareilly', 'UP-26': 'Pilibhit',
-            'UP-27': 'Shahjahanpur', 'UP-28': 'Lakhimpur Kheri',
-            'UP-29': 'Lakhimpur Kheri', 'UP-30': 'Sitapur',
-            'UP-31': 'Hardoi', 'UP-32': 'Hardoi', 'UP-33': 'Unnao',
-            'UP-34': 'Lucknow', 'UP-35': 'Lucknow', 'UP-36': 'Rae Bareli',
-            'UP-37': 'Amethi', 'UP-38': 'Sultanpur', 'UP-39': 'Pratapgarh',
-            'UP-40': 'Farrukhabad', 'UP-41': 'Etawah', 'UP-42': 'Kannauj',
-            'UP-43': 'Kanpur Nagar', 'UP-44': 'Kanpur Nagar',
-            'UP-45': 'Jalaun', 'UP-46': 'Jhansi', 'UP-47': 'Hamirpur',
-            'UP-48': 'Banda', 'UP-49': 'Fatehpur', 'UP-50': 'Kaushambi',
-            'UP-51': 'Prayagraj', 'UP-52': 'Prayagraj', 'UP-53': 'Barabanki',
-            'UP-54': 'Ayodhya', 'UP-55': 'Ambedkar Nagar', 'UP-56': 'Bahraich',
-            'UP-57': 'Gonda', 'UP-58': 'Shrawasti', 'UP-59': 'Gonda',
-            'UP-60': 'Siddharthnagar', 'UP-61': 'Basti',
-            'UP-62': 'Sant Kabir Nagar', 'UP-63': 'Maharajganj',
-            'UP-64': 'Gorakhpur', 'UP-65': 'Kushinagar', 'UP-66': 'Deoria',
-            'UP-67': 'Gorakhpur', 'UP-68': 'Azamgarh', 'UP-69': 'Azamgarh',
-            'UP-70': 'Mau', 'UP-71': 'Ballia', 'UP-72': 'Ballia',
-            'UP-73': 'Jaunpur', 'UP-74': 'Jaunpur', 'UP-75': 'Ghazipur',
-            'UP-76': 'Chandauli', 'UP-77': 'Varanasi', 'UP-78': 'Bhadohi',
-            'UP-79': 'Mirzapur', 'UP-80': 'Sonbhadra',
-        };
+        const lsDistrictMap = getLSDistrictMap();
 
         let districtLinkCount = 0;
         for (const [lsId, districtName] of Object.entries(lsDistrictMap)) {
             const result = await session.run(
                 `MATCH (ls:LokSabhaConstituency {ls_id: $ls_id})
                  MATCH (d:District {name: $district_name})
-                 MERGE (d)-[:HAS_LS]->(ls)
+                 MERGE (d)-[:CONTAINS {
+                    source: $source,
+                    source_date: date($source_date),
+                    confidence: $confidence
+                 }]->(ls)
                  RETURN count(*) AS created`,
-                { ls_id: lsId, district_name: districtName }
+                { ls_id: lsId, district_name: districtName, ...relProvenance }
             );
             if (result.records[0]?.get('created')?.toNumber() > 0) {
                 districtLinkCount++;
@@ -197,10 +515,10 @@ async function importConstituencies() {
 }
 
 // ============================================================
-// STEP 3: Import elections
+// STEP 4: Import elections
 // ============================================================
 async function importElections() {
-    console.log('\n=== Step 3: Importing Elections ===');
+    console.log('\n=== Step 4: Importing Elections ===');
 
     const electionsPath = path.join(DATA_DIR, 'eci', 'elections.json');
     if (!fs.existsSync(electionsPath)) {
@@ -210,37 +528,66 @@ async function importElections() {
 
     const elections = JSON.parse(fs.readFileSync(electionsPath, 'utf8'));
     const session = driver.session();
+    const nodeProvenance = buildNodeProvenance('ECI', '2019-01-01');
 
     try {
         for (const e of elections) {
+            const electionType = String(e.type || '').toLowerCase().includes('vidhan') ? 'VS' : 'LS';
+            const phaseCount = Number.parseInt(String(e.phase || '').replace(/\D+/g, ''), 10) || null;
             await session.run(
                 `MERGE (e:Election {election_id: $election_id})
-                 SET e.type = $type, e.year = $year, e.phase = $phase,
-                     e.description = $description, e.total_seats = $total_seats,
-                     e.bjp_seats = $bjp_seats, e.sp_seats = $sp_seats,
-                     e.bsp_seats = $bsp_seats, e.inc_seats = $inc_seats,
-                     e.others_seats = $others_seats`,
-                e
+                 SET e.type = $type,
+                     e.year = $year,
+                     e.phase_count = $phase_count,
+                     e.state = 'Uttar Pradesh',
+                     e.source = $source,
+                     e.source_date = date($source_date),
+                     e.ingested_at = datetime($ingested_at),
+                     e.confidence = $confidence`,
+                {
+                    election_id: e.election_id,
+                    type: electionType,
+                    year: e.year,
+                    phase_count: phaseCount,
+                    source: nodeProvenance.source,
+                    source_date: '2019-01-01', // Default for LS2019/VS2022
+                    ingested_at: nodeProvenance.ingested_at,
+                    confidence: nodeProvenance.confidence,
+                }
             );
         }
         console.log(`  ✓ Created ${elections.length} election nodes`);
 
         // Create alliances
         const alliances = [
-            { alliance_id: 'nda', name: 'NDA', parties: ['bjp', 'apd'] },
-            { alliance_id: 'india_bloc', name: 'INDIA Bloc', parties: ['sp', 'inc', 'ajsp'] },
-            { alliance_id: 'non_aligned', name: 'Non-Aligned', parties: ['bsp', 'rlsp'] },
+            { alliance_id: 'nda_2024', name: 'NDA', election_id: 'LS2024', parties: ['bjp', 'apd'] },
+            { alliance_id: 'india_bloc_2024', name: 'INDIA Bloc', election_id: 'LS2024', parties: ['sp', 'inc', 'ajsp'] },
+            { alliance_id: 'non_aligned_2024', name: 'Non-Aligned', election_id: 'LS2024', parties: ['bsp', 'rlsp'] },
         ];
 
         for (const a of alliances) {
             await session.run(
                 `MERGE (a:Alliance {alliance_id: $alliance_id})
-                 SET a.name = $name
+                 SET a.name = $name,
+                     a.election_id = $election_id,
+                     a.source = $source,
+                     a.ingested_at = datetime($ingested_at)
                  WITH a
                  UNWIND $parties AS pid
                  MATCH (p:Party {party_id: pid})
-                 MERGE (p)-[:PART_OF_ALLIANCE]->(a)`,
-                a
+                 MERGE (p)-[:PART_OF_ALLIANCE {
+                    election_id: $election_id,
+                    source: $source,
+                    source_date: date($source_date),
+                    confidence: $confidence
+                 }]->(a)`,
+                {
+                    ...a,
+                    source: nodeProvenance.source,
+                    source_date: nodeProvenance.source_date,
+                    ingested_at: nodeProvenance.ingested_at,
+                    confidence: nodeProvenance.confidence,
+                }
             );
         }
         console.log(`  ✓ Created ${alliances.length} alliances with party links`);
@@ -250,65 +597,15 @@ async function importElections() {
 }
 
 // ============================================================
-// STEP 4: Import community blocks + caste groups
+// STEP 5: Import issue dictionary
 // ============================================================
-async function importSocialStructure() {
-    console.log('\n=== Step 4: Importing Social Structure ===');
+async function importIssues() {
+    console.log('\n=== Step 5: Importing Issues ===');
 
-    const blocksPath = path.join(DATA_DIR, 'mappings', 'community_blocks.json');
-    if (!fs.existsSync(blocksPath)) {
-        console.log('  ✗ Community blocks file not found, skipping');
-        return;
-    }
-
-    const data = JSON.parse(fs.readFileSync(blocksPath, 'utf8'));
     const session = driver.session();
+    const nodeProvenance = buildNodeProvenance('PRD_SEED', '2026-05-03', null, 'medium');
 
     try {
-        // Create CommunityBlocks
-        for (const block of data.community_blocks) {
-            await session.run(
-                `MERGE (cb:CommunityBlock {block_id: $block_id})
-                 SET cb.label = $label, cb.description = $description,
-                     cb.category = $category, cb.bjp_affinity_2024 = $bjp_affinity_2024`,
-                block
-            );
-        }
-        console.log(`  ✓ Created ${data.community_blocks.length} community blocks`);
-
-        // Create CasteGroups + link to blocks
-        for (const [casteName, blockId] of Object.entries(data.caste_to_block_mapping)) {
-            const casteCode = casteName.toLowerCase().replace(/\s+/g, '');
-            await session.run(
-                `MERGE (cg:CasteGroup {caste_code: $caste_code})
-                 SET cg.name = $caste_name
-                 WITH cg
-                 MATCH (cb:CommunityBlock {block_id: $block_id})
-                 MERGE (cg)-[:PART_OF_BLOCK]->(cb)`,
-                { caste_code: casteCode, caste_name: casteName, block_id: blockId }
-            );
-        }
-        console.log(`  ✓ Created ${Object.keys(data.caste_to_block_mapping).length} caste groups with block links`);
-
-        // Create RiskCategories
-        const risks = [
-            { risk_id: 'safe', label: 'Safe', description: 'BJP stronghold, >50% vote share' },
-            { risk_id: 'leaning', label: 'Leaning', description: 'BJP ahead but vulnerable' },
-            { risk_id: 'tossup', label: 'TossUp', description: 'Highly competitive, within 5% margin' },
-            { risk_id: 'losing', label: 'Losing', description: 'Opposition ahead, BJP lost last election' },
-            { risk_id: 'hostile', label: 'Hostile', description: 'Strong opposition territory, <30% BJP' },
-        ];
-
-        for (const r of risks) {
-            await session.run(
-                `MERGE (rc:RiskCategory {risk_id: $risk_id})
-                 SET rc.label = $label, rc.description = $description`,
-                r
-            );
-        }
-        console.log(`  ✓ Created ${risks.length} risk categories`);
-
-        // Create Issues
         const issues = [
             { issue_id: 'unemployment', name: 'Unemployment', category: 'economic' },
             { issue_id: 'paper_leaks', name: 'Exam Paper Leaks', category: 'governance' },
@@ -325,8 +622,11 @@ async function importSocialStructure() {
         for (const i of issues) {
             await session.run(
                 `MERGE (iss:Issue {issue_id: $issue_id})
-                 SET iss.name = $name, iss.category = $category`,
-                i
+                 SET iss.name = $name,
+                     iss.category = $category,
+                     iss.source = $source,
+                     iss.ingested_at = datetime($ingested_at)`,
+                { ...i, source: nodeProvenance.source, ingested_at: nodeProvenance.ingested_at }
             );
         }
         console.log(`  ✓ Created ${issues.length} issue nodes`);
@@ -337,10 +637,10 @@ async function importSocialStructure() {
 }
 
 // ============================================================
-// STEP 5: Import 2019 LS constituency results into Neo4j
+// STEP 6: Import 2019 LS constituency results into Neo4j
 // ============================================================
 async function importConstituencyResults() {
-    console.log('\n=== Step 5: Importing 2019 LS Constituency Results ===');
+    console.log('\n=== Step 6: Importing 2019 LS Constituency Results ===');
 
     const resultsPath = path.join(DATA_DIR, 'eci', 'up_ls2019_constituency_results.json');
     if (!fs.existsSync(resultsPath)) {
@@ -351,8 +651,19 @@ async function importConstituencyResults() {
 
     const results = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
     const session = driver.session();
+    const nodeProvenance = buildNodeProvenance('ECI_2019', '2019-05-23');
+    const relProvenance = buildRelProvenance('ECI_2019', '2019-05-23');
 
     try {
+        await session.run(
+            `MATCH (c:Candidate {election_id: 'LS2019'})
+             DETACH DELETE c`
+        );
+        await session.run(
+            `MATCH (er:ElectionResult {election_id: 'LS2019'})
+             DETACH DELETE er`
+        );
+
         let candidateCount = 0;
         let resultCount = 0;
 
@@ -360,7 +671,8 @@ async function importConstituencyResults() {
             const lsId = `UP-${pc.pc_code}`;
 
             const electionId = 'LS2019';
-            const votesJson = pc.results.map(r => ({
+            const sortedResults = [...pc.results].sort((a, b) => b.total_votes - a.total_votes);
+            const votesJson = sortedResults.map(r => ({
                 candidate: r.candidate,
                 party: r.party,
                 total_votes: r.total_votes,
@@ -368,54 +680,148 @@ async function importConstituencyResults() {
                 postal_votes: r.postal_votes
             }));
 
-            const winner = pc.results.sort((a, b) => b.total_votes - a.total_votes)[0];
+            const totalValidVotes = votesJson.reduce((sum, v) => sum + v.total_votes, 0);
+            const winner = sortedResults[0];
+            const runnerUp = sortedResults[1] || null;
+            const notaRow = sortedResults.find((row) => String(row.party).trim().toLowerCase() === 'none of the above');
+            const marginVotes = runnerUp ? winner.total_votes - runnerUp.total_votes : winner.total_votes;
+            const marginPct = totalValidVotes > 0 ? (marginVotes / totalValidVotes) * 100 : null;
+            const winnerVoteShare = totalValidVotes > 0 ? (winner.total_votes / totalValidVotes) * 100 : null;
 
-            const safeCandId = `LS2019_PC${pc.pc_code}_${winner.candidate.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')}`;
+            for (let index = 0; index < sortedResults.length; index++) {
+                const candidate = sortedResults[index];
+                const partyId = toPartyId(candidate.party);
+                const safeCandidateName = candidate.candidate.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+                const safeCandId = `CAND_LS2019_PC${pc.pc_code}_${safeCandidateName}_${partyId}_${index + 1}`;
+                const voteShare = totalValidVotes > 0 ? (candidate.total_votes / totalValidVotes) * 100 : null;
 
-            await session.run(
-                `MERGE (c:Candidate {cand_id: $cand_id})
-                 SET c.name = $winner_name, c.party_id = toLower($winner_party),
-                     c.gender = 'unknown'
-                 WITH c
-                 MATCH (ls:LokSabhaConstituency {ls_id: $ls_id})
-                 MERGE (c)-[:CONTESTS]->(ls)
-                 WITH c, ls
-                 MATCH (p:Party {party_id: toLower($winner_party)})
-                 MERGE (c)-[:BELONGS_TO]->(p)`,
-                {
+                const candNode = {
                     cand_id: safeCandId,
-                    winner_name: winner.candidate,
-                    winner_party: winner.party,
-                    ls_id: lsId
-                }
-            );
-            candidateCount++;
+                    candidate_name: candidate.candidate,
+                    party_id: partyId,
+                    election_id: electionId,
+                    ls_id: lsId,
+                    votes: candidate.total_votes,
+                    vote_share: voteShare,
+                    rank: index + 1,
+                    gender: null, // Set to null as it's not in the 2019 result file
+                    source: nodeProvenance.source,
+                    source_url: `ECI_FORM20_LS2019_PC${pc.pc_code}`,
+                    source_date: nodeProvenance.source_date,
+                    ingested_at: nodeProvenance.ingested_at,
+                    confidence: nodeProvenance.confidence,
+                };
+                validateCandidate({ ...candNode, name: candNode.candidate_name }, `Candidate: ${candidate.candidate}`);
+
+                await session.run(
+                    `MERGE (c:Candidate {cand_id: $cand_id})
+                     SET c.name = $candidate_name,
+                         c.party_id = $party_id,
+                         c.election_id = $election_id,
+                         c.constituency_id = $ls_id,
+                         c.votes = $votes,
+                         c.vote_share = $vote_share,
+                         c.rank = $rank,
+                         c.gender = $gender,
+                         c.source = $source,
+                         c.source_url = $source_url,
+                         c.source_date = date($source_date),
+                         c.ingested_at = datetime($ingested_at),
+                         c.confidence = $confidence
+                     WITH c
+                     MATCH (ls:LokSabhaConstituency {ls_id: $ls_id})
+                     MERGE (c)-[:CONTESTS_IN {
+                        election_id: $election_id,
+                        vote_share: $vote_share,
+                        rank: $rank,
+                        source: $rel_source,
+                        source_date: date($rel_source_date),
+                        confidence: $rel_confidence
+                     }]->(ls)
+                     WITH c
+                     OPTIONAL MATCH (p:Party {party_id: $party_id})
+                     FOREACH (_ IN CASE WHEN p IS NULL THEN [] ELSE [1] END |
+                        MERGE (c)-[:BELONGS_TO {
+                            since_year: 2019,
+                            source: $rel_source,
+                            source_date: date($rel_source_date),
+                            confidence: $rel_confidence
+                        }]->(p)
+                     )`,
+                    {
+                        ...candNode,
+                        rel_source: relProvenance.source,
+                        rel_source_date: relProvenance.source_date,
+                        rel_confidence: relProvenance.confidence,
+                    }
+                );
+                candidateCount++;
+            }
 
             // Create an ElectionResult node at constituency level
+            const resultNode = {
+                ls_id: lsId,
+                election_id: electionId,
+                result_id: `LS2019_PC${pc.pc_code}`,
+                votes_json: JSON.stringify(votesJson),
+                winner: winner.candidate,
+                winner_party_id: toPartyId(winner.party),
+                winner_votes: winner.total_votes,
+                winner_vote_share: winnerVoteShare,
+                runner_up: runnerUp ? runnerUp.candidate : null,
+                runner_up_party_id: runnerUp ? toPartyId(runnerUp.party) : null,
+                runner_up_votes: runnerUp ? runnerUp.total_votes : null,
+                margin_votes: marginVotes,
+                margin_pct: marginPct,
+                total_valid_votes: totalValidVotes,
+                nota_votes: notaRow ? notaRow.total_votes : null,
+                source: nodeProvenance.source,
+                source_url: `ECI_FORM20_LS2019_PC${pc.pc_code}`,
+                source_date: nodeProvenance.source_date,
+                ingested_at: nodeProvenance.ingested_at,
+                confidence: nodeProvenance.confidence,
+            };
+            validateElectionResult({ ...resultNode, constituency_id: resultNode.ls_id }, `Result: ${lsId}`);
+
             await session.run(
                 `MATCH (ls:LokSabhaConstituency {ls_id: $ls_id})
-                 MATCH (e:Election {election_id: $election_id})
                  MERGE (er:ElectionResult {result_id: $result_id})
-                 SET er.votes_json = $votes_json,
+                 SET er.election_id = $election_id,
+                     er.constituency_id = $ls_id,
+                     er.all_candidates_json = $votes_json,
                      er.winner = $winner,
-                     er.winner_party = $winner_party,
-                     er.total_valid_votes = $total_valid_votes
-                 MERGE (ls)-[:HAS_RESULT]->(er)
-                 MERGE (er)-[:PART_OF]->(e)`,
+                     er.winner_party_id = $winner_party_id,
+                     er.winner_votes = $winner_votes,
+                     er.winner_vote_share = $winner_vote_share,
+                     er.runner_up = $runner_up,
+                     er.runner_up_party_id = $runner_up_party_id,
+                     er.runner_up_votes = $runner_up_votes,
+                     er.margin_votes = $margin_votes,
+                     er.margin_pct = $margin_pct,
+                     er.total_valid_votes = $total_valid_votes,
+                     er.nota_votes = $nota_votes,
+                     er.source = $source,
+                     er.source_url = $source_url,
+                     er.source_date = date($source_date),
+                     er.ingested_at = datetime($ingested_at),
+                     er.confidence = $confidence
+                 MERGE (ls)-[:HAS_RESULT {
+                    election_id: $election_id,
+                    source: $rel_source,
+                    source_date: date($rel_source_date),
+                    confidence: $rel_confidence
+                 }]->(er)`,
                 {
-                    ls_id: lsId,
-                    election_id: electionId,
-                    result_id: `LS2019_PC${pc.pc_code}`,
-                    votes_json: JSON.stringify(votesJson),
-                    winner: winner.candidate,
-                    winner_party: winner.party,
-                    total_valid_votes: votesJson.reduce((sum, v) => sum + v.total_votes, 0)
+                    ...resultNode,
+                    rel_source: relProvenance.source,
+                    rel_source_date: relProvenance.source_date,
+                    rel_confidence: relProvenance.confidence,
                 }
             );
             resultCount++;
         }
 
-        console.log(`  ✓ Created ${candidateCount} candidate nodes (winners only)`);
+        console.log(`  ✓ Created ${candidateCount} candidate nodes`);
         console.log(`  ✓ Created ${resultCount} election result nodes`);
 
     } finally {
@@ -424,10 +830,192 @@ async function importConstituencyResults() {
 }
 
 // ============================================================
-// STEP 6: Verify counts
+// STEP 7: Import turnout
+// ============================================================
+async function importTurnout() {
+    console.log('\n=== Step 7: Importing Turnout ===');
+
+    const candidatePaths = [
+        path.join(DATA_DIR, 'eci', 'up_ls2019_turnout.json'),
+        path.join(DATA_DIR, 'manual', 'up_ls2019_turnout.json'),
+    ];
+    const turnoutPath = candidatePaths.find((filePath) => fs.existsSync(filePath));
+
+    if (!turnoutPath) {
+        console.log('  ! No turnout source file found. Skipping Turnout import.');
+        console.log('  ! Expected JSON path: data/eci/up_ls2019_turnout.json or data/manual/up_ls2019_turnout.json');
+        return;
+    }
+
+    const rows = JSON.parse(fs.readFileSync(turnoutPath, 'utf8'));
+    const session = driver.session();
+    let imported = 0;
+
+    try {
+        await session.run(
+            `MATCH (t:Turnout {election_id: 'LS2019'})
+             DETACH DELETE t`
+        );
+
+        for (const row of rows) {
+            const pcCode = row.pc_code ?? row.ls_no ?? row.pc_no;
+            if (pcCode == null || row.registered_voters == null) {
+                console.log(`  ! Skipping turnout row with missing constituency code or registered_voters: ${JSON.stringify(row)}`);
+                continue;
+            }
+
+            const lsId = row.ls_id || `UP-${pcCode}`;
+            const turnoutId = row.turnout_id || `TURNOUT_LS2019_PC${pcCode}`;
+            const source = row.source || 'ECI_ROLLS';
+            const sourceDate = row.source_date || '2019-05-23';
+            const sourceUrl = row.source_url || null;
+
+            await session.run(
+                `MATCH (ls:LokSabhaConstituency {ls_id: $ls_id})
+                 OPTIONAL MATCH (ls)-[:HAS_RESULT {election_id: 'LS2019'}]->(er:ElectionResult)
+                 MERGE (t:Turnout {turnout_id: $turnout_id})
+                 SET t.election_id = 'LS2019',
+                     t.constituency_id = $ls_id,
+                     t.registered_voters = toInteger($registered_voters),
+                     t.votes_cast = toInteger($votes_cast),
+                     t.turnout_pct = $turnout_pct,
+                     t.source = $source,
+                     t.source_url = $source_url,
+                     t.source_date = date($source_date),
+                     t.ingested_at = datetime($ingested_at),
+                     t.confidence = $confidence
+                 MERGE (ls)-[:HAS_TURNOUT {
+                    election_id: 'LS2019',
+                    source: $source,
+                    source_date: date($source_date),
+                    confidence: $confidence
+                 }]->(t)`,
+                {
+                    turnout_id: turnoutId,
+                    ls_id: lsId,
+                    registered_voters: Number(row.registered_voters),
+                    votes_cast: Number(
+                        row.votes_cast ??
+                        row.total_votes_cast ??
+                        row.total_valid_votes ??
+                        row.valid_votes ??
+                        0
+                    ),
+                    turnout_pct: row.turnout_pct != null
+                        ? Number(row.turnout_pct)
+                        : (
+                            Number(row.registered_voters) > 0
+                                ? (Number(
+                                    row.votes_cast ??
+                                    row.total_votes_cast ??
+                                    row.total_valid_votes ??
+                                    row.valid_votes ??
+                                    0
+                                ) / Number(row.registered_voters)) * 100
+                                : null
+                        ),
+                    source,
+                    source_url: sourceUrl,
+                    source_date: sourceDate,
+                    ingested_at: new Date().toISOString(),
+                    confidence: row.confidence || 'high',
+                }
+            );
+            imported++;
+        }
+
+        console.log(`  ✓ Created ${imported} Turnout nodes`);
+    } finally {
+        await session.close();
+    }
+}
+
+// ============================================================
+// STEP 8: Import affidavits
+// ============================================================
+async function importAffidavits() {
+    console.log('\n=== Step 8: Importing Affidavits ===');
+
+    const affPath = path.join(DATA_DIR, 'manual', 'up_ls2019_affidavits.csv');
+    if (!fs.existsSync(affPath)) {
+        console.log('  ! Affidavit source file not found. Skipping.');
+        return;
+    }
+
+    const session = driver.session();
+    let imported = 0;
+
+    try {
+        // Read CSV logic (simplified for this script's style)
+        const content = fs.readFileSync(affPath, 'utf8');
+        const lines = content.split('\n').filter(l => l.trim());
+        const headers = lines[0].split(',').map(h => h.trim());
+
+        for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',').map(v => v.trim());
+            const row = {};
+            headers.forEach((h, idx) => { row[h] = values[idx]; });
+
+            const candName = row['Candidate'];
+            const pcCode   = row['Constituency_No'];
+            const partyId  = toPartyId(row['Party']);
+
+            if (!candName || !pcCode) continue;
+
+            // Use the same ID logic as importConstituencyResults
+            const safeCandidateName = candName.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+            const candId = `CAND_LS2019_PC${pcCode}_${safeCandidateName}_${partyId}_1`; // Assuming winner/primary for now
+
+            const affId = `AFF_LS2019_${candId}`;
+
+            const affNode = {
+                affidavit_id: affId,
+                cand_id: candId,
+                election_id: 'LS2019',
+                criminal_cases: parseInt(row['Criminal_Case']) || 0,
+                serious_cases: parseInt(row['Serious_IPC']) || 0,
+                total_assets_cr: parseFloat(row['Assets']) || 0,
+                education: row['Education'] || null,
+                source: 'MyNeta_ADR',
+                source_date: '2019-05-23',
+                confidence: 'high'
+            };
+            validateAffidavit(affNode, `Affidavit: ${candName}`);
+
+            await session.run(
+                `MATCH (c:Candidate {cand_id: $cand_id})
+                 MERGE (aff:Affidavit {affidavit_id: $affidavit_id})
+                 SET aff.cand_id = $cand_id,
+                     aff.election_id = $election_id,
+                     aff.criminal_cases = toInteger($criminal_cases),
+                     aff.serious_cases = toInteger($serious_cases),
+                     aff.total_assets_cr = toFloat($total_assets_cr),
+                     aff.education = $education,
+                     aff.source = $source,
+                     aff.source_date = date($source_date),
+                     aff.ingested_at = datetime(),
+                     aff.confidence = $confidence
+                 MERGE (c)-[:HAS_AFFIDAVIT {election_id: $election_id}]->(aff)`,
+                {
+                    ...affNode,
+                    ingested_at: datetime() // handled in Cypher
+                }
+            );
+            imported++;
+        }
+        console.log(`  ✓ Created ${imported} Affidavit nodes`);
+    } catch (err) {
+        console.log(`  ! Error importing affidavits: ${err.message}`);
+    } finally {
+        await session.close();
+    }
+}
+
+// ============================================================
+// STEP 9: Verify counts
 // ============================================================
 async function verifyCounts() {
-    console.log('\n=== Step 6: Verification ===');
+    console.log('\n=== Step 9: Verification ===');
 
     const queries = [
         ['District', 'MATCH (d:District) RETURN count(d) AS count'],
@@ -435,16 +1023,19 @@ async function verifyCounts() {
         ['VidhanSabhaConstituency', 'MATCH (vs:VidhanSabhaConstituency) RETURN count(vs) AS count'],
         ['Party', 'MATCH (p:Party) RETURN count(p) AS count'],
         ['Alliance', 'MATCH (a:Alliance) RETURN count(a) AS count'],
-        ['CommunityBlock', 'MATCH (cb:CommunityBlock) RETURN count(cb) AS count'],
-        ['CasteGroup', 'MATCH (cg:CasteGroup) RETURN count(cg) AS count'],
         ['Election', 'MATCH (e:Election) RETURN count(e) AS count'],
         ['Candidate', 'MATCH (c:Candidate) RETURN count(c) AS count'],
         ['ElectionResult', 'MATCH (er:ElectionResult) RETURN count(er) AS count'],
+        ['Turnout', 'MATCH (t:Turnout) RETURN count(t) AS count'],
         ['Issue', 'MATCH (i:Issue) RETURN count(i) AS count'],
-        ['RiskCategory', 'MATCH (rc:RiskCategory) RETURN count(rc) AS count'],
+        ['Affidavit', 'MATCH (aff:Affidavit) RETURN count(aff) AS count'],
+        ['SchemeDelivery', 'MATCH (sd:SchemeDelivery) RETURN count(sd) AS count'],
+        ['SeatClassification', 'MATCH (sc:SeatClassification) RETURN count(sc) AS count'],
+        ['DecisionRecommendation', 'MATCH (dr:DecisionRecommendation) RETURN count(dr) AS count'],
+        ['MediaTopic', 'MATCH (mt:MediaTopic) RETURN count(mt) AS count'],
         ['HAS_VS links', 'MATCH ()-[:HAS_VS]->() RETURN count(*) AS count'],
-        ['HAS_LS links', 'MATCH ()-[:HAS_LS]->() RETURN count(*) AS count'],
-        ['PART_OF_BLOCK links', 'MATCH ()-[:PART_OF_BLOCK]->() RETURN count(*) AS count'],
+        ['CONTAINS links', 'MATCH ()-[:CONTAINS]->() RETURN count(*) AS count'],
+        ['HAS_TURNOUT links', 'MATCH ()-[:HAS_TURNOUT]->() RETURN count(*) AS count'],
         ['PART_OF_ALLIANCE links', 'MATCH ()-[:PART_OF_ALLIANCE]->() RETURN count(*) AS count'],
     ];
 
@@ -470,11 +1061,15 @@ async function main() {
     console.log('==========================================');
 
     try {
+        requireEnv('NEO4J_PASSWORD', PASSWORD);
         await createConstraints();
+        await importDistricts();
         await importConstituencies();
         await importElections();
-        await importSocialStructure();
+        await importIssues();
         await importConstituencyResults();
+        await importTurnout();
+        await importAffidavits();
         await verifyCounts();
 
         console.log('\n✓ Import complete!');
