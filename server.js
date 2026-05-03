@@ -203,7 +203,8 @@ app.get('/api/up/district/:district/constituencies', async (req, res) => {
     const session = driver.session();
     try {
         const result = await session.run(`
-            MATCH (c:Constituency)-[:BELONGS_TO]->(d:District {name: $district})
+            MATCH (c:Constituency)-[:BELONGS_TO]->(d:District)
+            WHERE toLower(d.name) CONTAINS toLower($district)
             RETURN c.name AS name
             ORDER BY c.name
         `, { district: req.params.district });
