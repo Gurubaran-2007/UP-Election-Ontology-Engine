@@ -140,7 +140,16 @@
         }
     }
 
-    window._boothPushAnalysis = (constName) => pushView(showConstituencyAnalysis, [constName]);
+    window._boothPushAnalysis = (constName) => {
+        pushView(showConstituencyAnalysis, [constName]);
+        // Propagate constituency selection to AppState for sentiment tab
+        if (window.AppState) {
+            window.AppState.setSelection({
+                constituencyId: constName,
+                level: 'constituency'
+            });
+        }
+    };
 
     // ── VIEW 4: CONSTITUENCY ANALYSIS ────────────────────────────────
 
@@ -152,13 +161,48 @@
             const res = await fetch(`/api/up/constituency/${encodeURIComponent(constName)}/analysis`);
             const data = await res.json();
 
-            // Helper for section styling
+            const sentimentData = await fetch(`/api/up/sentiment/${encodeURIComponent(constName)}`).then(r => r.json()).catch(() => null);
+
             const section = (title, content, color="#FF9933") => `
                 <div class="glass-panel mb-2" style="border-top: 3px solid ${color};">
                     <h3 style="color:${color}; font-size:1.1rem; margin-bottom:1.2rem; text-transform:uppercase; letter-spacing:1px;">${title}</h3>
                     ${content}
                 </div>
             `;
+
+            const sentimentHtml = sentimentData && sentimentData.total > 0 ? `
+                ${section('9. Sentiment Analysis', `
+                    <div style="display:flex; gap:0.8rem; margin-bottom:1rem;">
+                        ${sentimentData.breakdown.map(b => `
+                            <div style="flex:1; text-align:center; padding:0.8rem; background:rgba(0,0,0,0.2); border-radius:8px; border-top: 3px solid ${b.label === 'positive' ? '#4ade80' : b.label === 'negative' ? '#ef4444' : '#94a3b8'};">
+                                <div style="font-size:1.8rem; font-weight:800; color:${b.label === 'positive' ? '#4ade80' : b.label === 'negative' ? '#ef4444' : '#94a3b8'};">${b.count}</div>
+                                <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">${b.label}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="max-height:200px; overflow-y:auto;">
+                        ${sentimentData.recent.map(r => `
+                            <div style="padding:0.6rem; background:rgba(255,255,255,0.02); border-left:3px solid ${r.label === 'positive' ? '#4ade80' : r.label === 'negative' ? '#ef4444' : '#94a3b8'}; margin-bottom:0.5rem; border-radius:4px;">
+                                <div style="font-size:0.75rem; font-weight:600;">${r.title.substring(0, 80)}${r.title.length > 80 ? '...' : ''}</div>
+                                <div style="font-size:0.65rem; color:var(--text-muted); margin-top:0.3rem;">
+                                    <span style="color:${r.label === 'positive' ? '#4ade80' : r.label === 'negative' ? '#ef4444' : '#94a3b8'}; font-weight:bold;">${r.label.toUpperCase()}</span>
+                                    · ${r.confidence ? (r.confidence * 100).toFixed(0) + '%' : 'N/A'}
+                                    · ${r.language || 'unknown'}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="text-align:center; margin-top:0.8rem; font-size:0.7rem; color:var(--text-muted);">
+                        ${sentimentData.total} articles analyzed
+                    </div>
+                `, '#a78bfa')}` : `
+                ${section('9. Sentiment Analysis', `
+                    <div style="text-align:center; padding:1.5rem; color:var(--text-muted);">
+                        <div style="font-size:2rem; margin-bottom:0.5rem;">📊</div>
+                        <div style="font-size:0.8rem;">No sentiment data yet for ${constName}</div>
+                        <div style="font-size:0.7rem; margin-top:0.3rem;">Run the sentiment pipeline to collect news</div>
+                    </div>
+                `, '#94a3b8')}`;
 
             container.innerHTML = `
                 <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:1.5rem;">
@@ -229,6 +273,8 @@
                             `).join('')}
                         `, '#f39c12')}
 
+                        ${sentimentHtml}
+
                         ${section('7. Graph View', `
                             <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.6; margin-bottom:1rem;">${data.graph_explanation}</p>
                             <div style="height:180px; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; color:var(--secondary);">
@@ -270,76 +316,127 @@
     // ── VIEW 5: BOOTH ANALYSIS ───────────────────────────────────────
 
     async function showBoothAnalysis(boothId, boothName) {
-        setHeader(`Booth: ${boothName}`, `Constituency & Ground Level Data`);
+        setHeader(`Booth: ${boothName}`, `Constituency & Ground Level Intelligence`);
         container.innerHTML = '<div class="loading-spinner" style="margin:15% auto;"></div>';
 
         try {
-            const res = await fetch(`/api/up/booth/${boothId}/analysis`);
-            const data = await res.json();
+            const [metaRes, leadersRes] = await Promise.all([
+                fetch(`/api/up/booth/${boothId}/analysis`),
+                fetch(`/api/up/booth/${boothId}/leaders`),
+            ]);
+            const data = await metaRes.json();
+            const leadersData = await leadersRes.json();
 
-            const section = (title, content, color="#FF9933") => `
-                <div class="glass-panel" style="border-top: 2px solid ${color}; margin-bottom:1.2rem;">
-                    <h4 style="color:${color}; font-size:0.9rem; margin-bottom:1rem; text-transform:uppercase;">${title}</h4>
-                    ${content}
-                </div>
-            `;
+            const b = data.basic;
+            const demo = data.demographics || {};
+            const shrugNote = demo.shrug_loaded
+                ? `<span style="color:#4ade80;font-size:0.7rem;">✓ SHRUG demographics loaded</span>`
+                : `<span style="color:#f59e0b;font-size:0.7rem;">⚠ SHRUG pending — equal-weight interpolation active</span>`;
 
-            container.innerHTML = `
-                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:1.2rem;">
-                    <div class="booth-col">
-                        ${section('1. Booth Basic Info', `
-                            <p><strong>ID:</strong> ${data.basic.id}</p>
-                            <p><strong>Location:</strong> ${data.basic.location}</p>
-                            <p><strong>Linked:</strong> ${data.basic.constituency}</p>
-                        `, '#60a5fa')}
-                        
-                        ${section('2. Voter Data', `
-                            <p><strong>Total:</strong> ${data.voters.total}</p>
-                            <p><strong>Ratio:</strong> ${data.voters.ratio}</p>
-                            <p><strong>Ages:</strong> ${data.voters.age_groups}</p>
-                        `, '#4ade80')}
-
-                        ${section('7. Risk Indicators', `
-                            ${data.risks.map(r => `<div style="color:#ef4444; font-weight:bold; margin-bottom:0.4rem;">🚨 ${r}</div>`).join('')}
-                        `, '#ef4444')}
+            const metaHtml = `
+                <div class="glass-panel" style="border-top:3px solid #60a5fa;margin-bottom:1.2rem;">
+                    <h4 style="color:#60a5fa;font-size:0.9rem;margin-bottom:1rem;text-transform:uppercase;letter-spacing:1px;">📍 Booth Context</h4>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;font-size:0.85rem;">
+                        <div><span style="color:var(--text-muted);">Booth ID:</span> <strong>${b.id}</strong></div>
+                        <div><span style="color:var(--text-muted);">Location:</span> <strong>${b.location}</strong></div>
+                        <div><span style="color:var(--text-muted);">District:</span> <strong>${b.district}</strong></div>
+                        <div><span style="color:var(--text-muted);">Type:</span> <strong>${data.social && data.social.type !== 'N/A' ? data.social.type : 'Unknown'}</strong></div>
+                        <div><span style="color:var(--text-muted);">VS:</span> <strong>${b.vs_name || b.constituency}</strong></div>
+                        <div><span style="color:var(--text-muted);">LS:</span> <strong>${b.ls_name || 'N/A'}</strong></div>
+                        ${demo.total_voters ? `<div><span style="color:var(--text-muted);">Total Voters:</span> <strong>${Number(demo.total_voters).toLocaleString()}</strong></div>` : ''}
+                        ${demo.literacy_rate ? `<div><span style="color:var(--text-muted);">Literacy:</span> <strong>${(demo.literacy_rate*100).toFixed(1)}%</strong></div>` : ''}
                     </div>
+                    <div style="margin-top:0.8rem;">${shrugNote}</div>
+                </div>`;
 
-                    <div class="booth-col">
-                        ${section('3. Voting Pattern', `
-                            <div style="height:120px; width:120px; border-radius:50%; border:15px solid var(--primary); margin:0 auto; display:flex; align-items:center; justify-content:center; font-weight:bold;">
-                                ${data.pattern.turnout}%
-                            </div>
-                            <p style="text-align:center; margin-top:1rem;"><strong>Winner:</strong> ${data.pattern.winner}</p>
-                        `, '#f39c12')}
-
-                        ${section('4. Turnout Analysis', `
-                            <div style="height:100px; display:flex; align-items:flex-end; gap:0.5rem; background:rgba(0,0,0,0.1); padding:0.5rem; border-radius:4px;">
-                                <div style="flex:1; height:60%; background:var(--text-muted);"></div>
-                                <div style="flex:1; height:85%; background:var(--positive);"></div>
-                            </div>
-                            <p style="font-size:0.75rem; margin-top:0.5rem;">Current vs Avg: ${data.turnout_comparison}</p>
-                        `, '#06b6d4')}
+            const leaders = leadersData.leaders || [];
+            const partyColors = { BJP:'#FF9933', SP:'#e11d48', BSP:'#1d4ed8', INC:'#16a34a' };
+            const leadersHtml = `
+                <div class="glass-panel" style="border-top:3px solid #a78bfa;margin-bottom:1.2rem;">
+                    <h4 style="color:#a78bfa;font-size:0.9rem;margin-bottom:0.8rem;text-transform:uppercase;letter-spacing:1px;">🏛 Political Entities at this Booth</h4>
+                    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.5rem;">
+                        ${leaders.map(l => `
+                            <div onclick="window._loadBoothEntitySentiment('${boothId}','${l.entity_id}','${l.name}')"
+                                 style="cursor:pointer;padding:0.4rem 0.9rem;border-radius:20px;
+                                        border:1px solid ${partyColors[l.party]||'#6b7280'};
+                                        background:rgba(0,0,0,0.3);font-size:0.78rem;transition:0.2s;"
+                                 onmouseover="this.style.background='rgba(255,255,255,0.1)'"
+                                 onmouseout="this.style.background='rgba(0,0,0,0.3)'">
+                                <span style="color:${partyColors[l.party]||'#94a3b8'};font-weight:bold;">${l.party||''}</span>
+                                ${l.entity_type==='leader' ? '👤' : '🏳'} ${l.name}
+                                ${l.is_local ? '<span style="font-size:0.65rem;color:#4ade80;"> LOCAL</span>' : ''}
+                            </div>`).join('')}
                     </div>
+                    <p style="font-size:0.7rem;color:var(--text-muted);">Click any entity to view sentiment analysis</p>
+                </div>`;
 
-                    <div class="booth-col">
-                        ${section('5. Social Composition', `
-                            <p><strong>Dominant:</strong> ${data.social.dominant}</p>
-                            <p><strong>Type:</strong> ${data.social.type}</p>
-                        `, '#c084fc')}
+            container.innerHTML = metaHtml + leadersHtml + `<div id="booth-sentiment-panel"></div>`;
 
-                        ${section('6. Issue Tagging', `
-                            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:6px; border:1px dashed var(--border);">
-                                <span style="color:var(--secondary); font-weight:bold;">Primary Issue:</span><br>
-                                ${data.issue}
-                            </div>
-                        `, '#f472b6')}
-                    </div>
-                </div>
-            `;
+            if (leaders.length > 0) {
+                window._loadBoothEntitySentiment(boothId, leaders[0].entity_id, leaders[0].name);
+            }
+
         } catch (e) {
-            container.innerHTML = `<p style="color:var(--negative)">Error loading booth data.</p>`;
+            container.innerHTML = `<p style="color:var(--negative)">Error loading booth data: ${e.message}</p>`;
         }
     }
+
+    window._loadBoothEntitySentiment = async function(boothId, entityId, entityName) {
+        const panel = document.getElementById('booth-sentiment-panel');
+        if (!panel) return;
+        panel.innerHTML = '<div class="loading-spinner" style="margin:2rem auto;"></div>';
+        try {
+            const res = await fetch(`/api/up/sentiment/booth/${boothId}?entityId=${entityId}&time_window=last_7d`);
+            const data = await res.json();
+            const sentiments = data.sentiments || [];
+            const s = sentiments.find(x => x.entity_id === entityId) || sentiments[0];
+            const trendIcon = { improving:'↑', declining:'↓', stable:'→', volatile:'~' };
+            const domColor = { positive:'#4ade80', negative:'#ef4444', neutral:'#f59e0b' };
+
+            if (!s) {
+                panel.innerHTML = `
+                    <div class="glass-panel" style="border-top:3px solid #6b7280;text-align:center;padding:1.5rem;">
+                        <div style="font-size:2rem;">📊</div>
+                        <div style="color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem;">
+                            No data yet for <strong>${entityName}</strong> in this area.<br>
+                            <span style="font-size:0.75rem;">Run the sentiment pipeline to collect news.</span>
+                        </div>
+                    </div>`;
+                return;
+            }
+            const confPct = Math.round((s.confidence_adjusted || 0) * 100);
+            panel.innerHTML = `
+                <div class="glass-panel" style="border-top:3px solid ${domColor[s.dominant_sentiment]||'#6b7280'};">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                        <h4 style="color:${domColor[s.dominant_sentiment]};font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;">
+                            📊 Sentiment — ${entityName}
+                        </h4>
+                        <span style="font-size:0.7rem;background:rgba(167,139,250,0.15);color:#a78bfa;
+                               border:1px solid #a78bfa;padding:2px 8px;border-radius:10px;">ⓘ Interpolated Signal</span>
+                    </div>
+                    <div style="display:flex;gap:0.6rem;margin-bottom:1rem;">
+                        ${[['Positive','positive_pct','#4ade80'],['Neutral','neutral_pct','#f59e0b'],['Negative','negative_pct','#ef4444']].map(([lbl,key,col])=>`
+                            <div style="flex:1;text-align:center;padding:0.8rem;background:rgba(0,0,0,0.25);border-radius:8px;border-top:3px solid ${col};">
+                                <div style="font-size:1.8rem;font-weight:800;color:${col};">${((s[key])||0).toFixed(1)}%</div>
+                                <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;">${lbl}</div>
+                            </div>`).join('')}
+                    </div>
+                    <div style="display:flex;align-items:center;gap:1.2rem;font-size:0.82rem;margin-bottom:0.8rem;">
+                        <span>Dominant: <strong style="color:${domColor[s.dominant_sentiment]};">${s.dominant_sentiment}</strong></span>
+                        <span>Trend: <strong style="color:#60a5fa;">${trendIcon[s.trending]||'→'} ${s.trending}</strong></span>
+                        <span>Confidence: <strong>${confPct}%</strong></span>
+                        ${s.total_observations ? `<span style="color:var(--text-muted);font-size:0.75rem;">${s.total_observations} obs</span>` : ''}
+                    </div>
+                    <div style="background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.25);
+                                border-radius:6px;padding:0.6rem;font-size:0.7rem;color:#a78bfa;">
+                        ℹ️ ${s.interpolation_note || 'Aggregated from constituency-level data.'}
+                    </div>
+                </div>`;
+        } catch(e) {
+            panel.innerHTML = `<p style="color:var(--negative)">Error loading sentiment: ${e.message}</p>`;
+        }
+    };
+
 
     // Export to global scope
     window.initBoothModule = init;

@@ -1,0 +1,289 @@
+[
+  {
+    "entity_id": "party-bjp",
+    "name": "Bharatiya Janata Party",
+    "aliases": [
+      "BJP",
+      "भाजपा",
+      "बीजेपी",
+      "@BJP4India",
+      "@BJP4UP",
+      "यूपी भाजपा",
+      "Bharatiya Janata Party",
+      "भारतीय जनता पार्टी",
+      "कमल दल",
+      "lotus party",
+      "भाजपा सरकार",
+      "BJP govt",
+      "BJP leadership",
+      "उत्तर प्रदेश भाजपा"
+    ],
+    "entity_type": "party",
+    "level": "national",
+    "party": "BJP"
+  },
+  {
+    "entity_id": "leader-narendra-modi",
+    "name": "Narendra Modi",
+    "aliases": [
+      "Narendra Modi",
+      "PM Modi",
+      "मोदी",
+      "मोदी जी",
+      "मोदीजी",
+      "@narendramodi",
+      "नरेंद्र मोदी",
+      "नरेंद्र दामोदरदास मोदी",
+      "PM Narendra Modi",
+      "Modi ji",
+      "Modi Sarkar",
+      "मोदी सरकार"
+    ],
+    "entity_type": "leader",
+    "level": "national",
+    "party": "BJP"
+  },
+  {
+    "entity_id": "leader-yogi-adityanath",
+    "name": "Yogi Adityanath",
+    "aliases": [
+      "Yogi Adityanath",
+      "Yogi ji",
+      "योगी आदित्यनाथ",
+      "योगीजी",
+      "@myogiadityanath",
+      "CM Yogi",
+      "योगी जी",
+      "आदित्यनाथ",
+      "Mahant Yogi",
+      "महंत योगी",
+      "Yogi Govt",
+      "योगी सरकार",
+      "Chief Minister Yogi"
+    ],
+    "entity_type": "leader",
+    "level": "state",
+    "party": "BJP"
+  },
+  {
+    "entity_id": "leader-keshav-prasad-maurya",
+    "name": "Keshav Prasad Maurya",
+    "aliases": [
+      "Keshav Prasad Maurya",
+      "केशव प्रसाद मौर्य",
+      "KP Maurya",
+      "केपी मौर्य",
+      "Maurya ji",
+      "मौर्य जी",
+      "UP Deputy CM",
+      "उप मुख्यमंत्री मौर्य"
+    ],
+    "entity_type": "leader",
+    "level": "state",
+    "party": "BJP"
+  },
+  {
+    "entity_id": "leader-rajnath-singh",
+    "name": "Rajnath Singh",
+    "aliases": [
+      "Rajnath Singh",
+      "राजनाथ सिंह",
+      "Rajnath ji",
+      "राजनाथ जी",
+      "Defence Minister Singh",
+      "रक्षा मंत्री राजनाथ सिंह",
+      "राजनाथ सिंह जी"
+    ],
+    "entity_type": "leader",
+    "level": "national",
+    "party": "BJP"
+  },
+  {
+    "entity_id": "leader-amit-shah",
+    "name": "Amit Shah",
+    "aliases": [
+      "Amit Shah",
+      "अमित शाह",
+      "Amitbhai Shah",
+      "शाह जी",
+      "@AmitShah",
+      "Home Minister Shah",
+      "गृहमंत्री शाह",
+      "शाह साहब"
+    ],
+    "entity_type": "leader",
+    "level": "national",
+    "party": "BJP"
+  },
+  {
+    "entity_id": "leader-akhilesh-yadav",
+    "name": "Akhilesh Yadav",
+    "aliases": [
+      "Akhilesh Yadav",
+      "अखिलेश यादव",
+      "Netaji",
+      "नेताजी",
+      "@yadavakhilesh",
+      "Akhilesh ji",
+      "अखिलेश जी",
+      "SP chief",
+      "सपा प्रमुख",
+      "अखिलेश यादव जी",
+      "Mulayam's son"
+    ],
+    "entity_type": "leader",
+    "level": "state",
+    "party": "SP"
+  },
+  {
+    "entity_id": "leader-mayawati",
+    "name": "Mayawati",
+    "aliases": [
+      "Mayawati",
+      "मायावती",
+      "Mayawati ji",
+      "मायावती जी",
+      "BSP chief",
+      "बसपा प्रमुख",
+      "Behenji",
+      "बहनजी",
+      "Kumari Mayawati",
+      "कुमारी मायावती",
+      "माया जी"
+    ],
+    "entity_type": "leader",
+    "level": "state",
+    "party": "BSP"
+  },
+  {
+    "entity_id": "leader-rahul-gandhi",
+    "name": "Rahul Gandhi",
+    "aliases": [
+      "Rahul Gandhi",
+      "राहुल गांधी",
+      "Rahul ji",
+      "राहुल जी",
+      "@RahulGandhi",
+      "Rajiv Gandhi's son",
+      "राहुल बाबा",
+      "Pappu"
+    ],
+    "entity_type": "leader",
+    "level": "national",
+    "party": "INC"
+  },
+  {
+    "entity_id": "leader-priyanka-gandhi",
+    "name": "Priyanka Gandhi",
+    "aliases": [
+      "Priyanka Gandhi",
+      "प्रियंका गांधी",
+      "Priyanka Gandhi Vadra",
+      "प्रियंका गांधी वाड्रा",
+      "Priyanka ji",
+      "प्रियंका जी"
+    ],
+    "entity_type": "leader",
+    "level": "national",
+    "party": "INC"
+  },
+  {
+    "entity_id": "party-sp",
+    "name": "Samajwadi Party",
+    "aliases": [
+      "SP",
+      "समाजवादी पार्टी",
+      "सपा",
+      "Samajwadi",
+      "@samajwadi",
+      "SP party",
+      "साइकिल पार्टी",
+      "cycle party"
+    ],
+    "entity_type": "party",
+    "level": "state",
+    "party": "SP"
+  },
+  {
+    "entity_id": "party-bsp",
+    "name": "Bahujan Samaj Party",
+    "aliases": [
+      "BSP",
+      "बहुजन समाज पार्टी",
+      "बसपा",
+      "Bahujan",
+      "@BSPIndia",
+      "हाथी पार्टी",
+      "elephant party",
+      "मायावती पार्टी"
+    ],
+    "entity_type": "party",
+    "level": "state",
+    "party": "BSP"
+  },
+  {
+    "entity_id": "party-inc",
+    "name": "Indian National Congress",
+    "aliases": [
+      "Congress",
+      "INC",
+      "कांग्रेस",
+      "इंडियन नेशनल कांग्रेस",
+      "@INCIndia",
+      "Congress party",
+      "कांग्रेस पार्टी",
+      "हाथ पार्टी",
+      "hand party"
+    ],
+    "entity_type": "party",
+    "level": "national",
+    "party": "INC"
+  },
+  {
+    "entity_id": "leader-brajesh-pathak",
+    "name": "Brajesh Pathak",
+    "aliases": [
+      "Brajesh Pathak",
+      "बृजेश पाठक",
+      "Pathak ji",
+      "पाठक जी",
+      "Brijesh Pathak",
+      "ब्रजेश पाठक"
+    ],
+    "entity_type": "leader",
+    "level": "state",
+    "party": "BJP"
+  },
+  {
+    "entity_id": "leader-anupriya-patel",
+    "name": "Anupriya Patel",
+    "aliases": [
+      "Anupriya Patel",
+      "अनुप्रिया पटेल",
+      "Anupriya Singh Patel",
+      "अनुप्रिया सिंह पटेल",
+      "Apna Dal leader",
+      "अपना दल नेता",
+      "पटेल जी"
+    ],
+    "entity_type": "leader",
+    "level": "state",
+    "party": "Apna Dal (Sonelal)"
+  },
+  {
+    "entity_id": "leader-sanjay-nishad",
+    "name": "Sanjay Nishad",
+    "aliases": [
+      "Sanjay Nishad",
+      "संजय निषाद",
+      "Nishad ji",
+      "निषाद जी",
+      "Nishad Party chief",
+      "निषाद पार्टी प्रमुख",
+      "संजय निषाद पार्टी"
+    ],
+    "entity_type": "leader",
+    "level": "state",
+    "party": "Nishad Party"
+  }
+]

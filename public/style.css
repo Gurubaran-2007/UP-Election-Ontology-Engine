@@ -822,3 +822,213 @@ h3 {
         grid-template-columns: 1fr;
     }
 }
+
+/* Sentiment Dashboard Styles */
+.sentiment-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.sentiment-header h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--primary);
+}
+
+.sentiment-header p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.sentiment-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.sentiment-card {
+    background: rgba(15, 20, 35, 0.6);
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid var(--border);
+}
+
+.entity-name {
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+    color: var(--text-main);
+}
+
+.sentiment-bars {
+    display: flex;
+    height: 24px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.sentiment-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 30px;
+    transition: width 0.3s ease;
+}
+
+.sentiment-bar.positive {
+    background: var(--positive);
+    color: #fff;
+}
+
+.sentiment-bar.neutral {
+    background: #f59e0b;
+    color: #000;
+}
+
+.sentiment-bar.negative {
+    background: var(--negative);
+    color: #fff;
+}
+
+.sentiment-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+}
+
+.dominant {
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.dominant.positive {
+    background: rgba(34, 197, 94, 0.2);
+    color: var(--positive);
+}
+
+.dominant.neutral {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+.dominant.negative {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--negative);
+}
+
+.count {
+    color: var(--text-muted);
+}
+
+/* Alert Styles */
+.alert-card {
+    padding: 0.8rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 0.8rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.alert-severity {
+    font-weight: 700;
+    min-width: 60px;
+}
+
+.alert-message {
+    flex: 1;
+}
+
+.alert-time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.no-data, .no-alerts {
+    color: var(--text-muted);
+    text-align: center;
+    padding: 2rem;
+    font-style: italic;
+}
+
+/* Heatmap Styles */
+.heatmap-header {
+    margin-bottom: 1rem;
+}
+
+.heatmap-header h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--secondary);
+}
+
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.8rem;
+}
+
+.heatmap-cell {
+    padding: 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    border: 1px solid var(--border);
+}
+
+.heatmap-cell:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.cell-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.cell-sentiment {
+    font-size: 0.8rem;
+    margin-bottom: 0.3rem;
+}
+
+.cell-sentiment .pos {
+    color: var(--positive);
+}
+
+.cell-sentiment .neg {
+    color: var(--negative);
+}
+
+.cell-trend {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.cell-trend.positive {
+    background: rgba(34, 197, 94, 0.2);
+    color: var(--positive);
+}
+
+.cell-trend.negative {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--negative);
+}
+
+.cell-trend.neutral {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+.error-message {
+    text-align: center;
+    padding: 2rem;
+}
+

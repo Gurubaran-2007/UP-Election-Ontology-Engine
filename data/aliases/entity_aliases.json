@@ -1,0 +1,94 @@
+{
+  "entities": [
+    {
+      "id": "leader-yogi-adityanath",
+      "name": "Yogi Adityanath",
+      "type": "LEADER",
+      "aliases": ["yogi adityanath", "yogi", "योगी आदित्यनाथ", "योगी", "आदित्यनाथ", "cm yogi", "up cm", "chief minister yogi"]
+    },
+    {
+      "id": "leader-narendra-modi",
+      "name": "Narendra Modi",
+      "type": "LEADER",
+      "aliases": ["narendra modi", "modi", "pm modi", "नरेंद्र मोदी", "मोदी", "प्रधानमंत्री मोदी", "pm narendra modi"]
+    },
+    {
+      "id": "leader-akhilesh-yadav",
+      "name": "Akhilesh Yadav",
+      "type": "LEADER",
+      "aliases": ["akhilesh yadav", "akhilesh", "अखिलेश यादव", "अखिलेश", "netaji akhilesh", "sp chief"]
+    },
+    {
+      "id": "leader-mayawati",
+      "name": "Mayawati",
+      "type": "LEADER",
+      "aliases": ["mayawati", "मायावती", "maya kumari", "बसपा सुप्रीमो", "bsp chief"]
+    },
+    {
+      "id": "leader-priyanka-gandhi",
+      "name": "Priyanka Gandhi",
+      "type": "LEADER",
+      "aliases": ["priyanka gandhi", "प्रियंका गांधी", "priyanka gandhi vadra"]
+    },
+    {
+      "id": "leader-rahul-gandhi",
+      "name": "Rahul Gandhi",
+      "type": "LEADER",
+      "aliases": ["rahul gandhi", "राहुल गांधी", "राहुल", "rahul gandhi mp"]
+    },
+    {
+      "id": "leader-arvind-kejriwal",
+      "name": "Arvind Kejriwal",
+      "type": "LEADER",
+      "aliases": ["arvind kejriwal", "kejriwal", "अरविंद केजरीवाल", "केजरीवाल", "aap convenor"]
+    },
+    {
+      "id": "party-bjp",
+      "name": "BJP",
+      "type": "PARTY",
+      "aliases": ["bjp", "bharatiya janata party", "भाजपा", "भारतीय जनता पार्टी", "kamal", "lotus party"]
+    },
+    {
+      "id": "party-sp",
+      "name": "Samajwadi Party",
+      "type": "PARTY",
+      "aliases": ["sp", "samajwadi party", "सपा", "समाजवादी पार्टी", "cycle party", "samajwadi"]
+    },
+    {
+      "id": "party-bsp",
+      "name": "BSP",
+      "type": "PARTY",
+      "aliases": ["bsp", "bahujan samaj party", "बसपा", "बहुजन समाज पार्टी", "elephant party", "bahujan"]
+    },
+    {
+      "id": "party-congress",
+      "name": "Indian National Congress",
+      "type": "PARTY",
+      "aliases": ["congress", "inc", "indian national congress", "कांग्रेस", "इंडियन नेशनल कांग्रेस", "hand party"]
+    },
+    {
+      "id": "party-aap",
+      "name": "Aam Aadmi Party",
+      "type": "PARTY",
+      "aliases": ["aap", "aam aadmi party", "आप", "आम आदमी पार्टी", "broom party"]
+    },
+    {
+      "id": "party-rld",
+      "name": "Rashtriya Lok Dal",
+      "type": "PARTY",
+      "aliases": ["rld", "rashtriya lok dal", "राष्ट्रीय लोक दल", "जयंत चौधरी"]
+    },
+    {
+      "id": "alliance-nda",
+      "name": "NDA",
+      "type": "ALLIANCE",
+      "aliases": ["nda", "national democratic alliance", "एनडीए", "राष्ट्रीय जनतांत्रिक गठबंधन"]
+    },
+    {
+      "id": "alliance-india",
+      "name": "INDIA Alliance",
+      "type": "ALLIANCE",
+      "aliases": ["india alliance", "india bloc", "इंडिया गठबंधन", "विपक्षी गठबंधन"]
+    }
+  ]
+}

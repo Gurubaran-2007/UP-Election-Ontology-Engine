@@ -7,6 +7,20 @@
     // ── 9. Init on DOM ready ───────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
         // Functions now rely on static HTML in index.html
+
+        // Set up constituency click handler
+        const constituencyLinks = document.querySelectorAll('[onclick*="loadSentimentData"]');
+        constituencyLinks.forEach(link => {
+            const oldOnClick = link.onclick;
+            link.onclick = function(e) {
+                if (oldOnClick) oldOnClick.call(this, e);
+                // Propagate selection to AppState
+                const cid = this.getAttribute('onclick')?.match(/loadSentimentData\('([^']+)'/)?.[1];
+                if (cid && window.AppState) {
+                    window.AppState.setSelection({ constituencyId: cid, level: 'constituency' });
+                }
+            };
+        });
     });
 
     // ── 3. Close panel ─────────────────────────────────────────────
@@ -139,6 +153,14 @@
 
                 const name = d.properties.NAME_2 || d.properties.name || 'Unknown';
                 openDistrictPanel(name);
+
+                // Propagate district selection to AppState
+                if (window.AppState) {
+                    window.AppState.setSelection({
+                        district: name,
+                        level: 'district'
+                    });
+                }
             });
 
         // Add Regional Labels to the TOP layer
