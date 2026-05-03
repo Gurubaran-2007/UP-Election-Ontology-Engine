@@ -164,13 +164,55 @@ app.get('/api/up/region/:regionId/districts', (req, res) => {
         ]
     };
     const districts = regionMap[req.params.regionId] || [];
-    res.json(districts.sort()); // Sort alphabetically for better UI
+// UP Dashboard: Fetch Regions (NOW FULLY DYNAMIC)
+app.get('/api/up/booth/regions', async (req, res) => {
+    const session = driver.session();
+    try {
+        const result = await session.run(`
+            MATCH (r:Region)
+            OPTIONAL MATCH (d:District)-[:PART_OF]->(r)
+            RETURN r.name AS region, collect(DISTINCT d.name) AS districts
+            ORDER BY r.name
+        `);
+        
+        const regions = result.records.map(record => ({
+            name: record.get('region'),
+            districts: record.get('districts').filter(d => d !== null).sort()
+        }));
+
+        // If database is empty, provide a helpful message
+        if (regions.length === 0) {
+            return res.json([
+                { name: "System Ready", districts: ["Loading Data from Database..."] }
+            ]);
+        }
+
+        res.json(regions);
+    } catch (error) {
+        console.error('[REGIONS] Dynamic fetch failed:', error.message);
+        res.status(500).json({ error: 'Database connection failed' });
+    } finally {
+        await session.close();
+    }
 });
 
-app.get('/api/up/district/:district/constituencies', (req, res) => {
-    // In a real app, this would query Neo4j. For now, returning realistic samples for UP.
-    const samples = ['Constituency A', 'Constituency B', 'Constituency C', 'Central Assembly', 'Rural Assembly'];
-    res.json(samples.map(s => `${req.params.district} ${s}`));
+app.get('/api/up/district/:district/constituencies', async (req, res) => {
+    const session = driver.session();
+    try {
+        const result = await session.run(`
+            MATCH (c:Constituency)-[:LOCATED_IN]->(d:District {name: $district})
+            RETURN c.name AS name
+            ORDER BY c.name
+        `, { district: req.params.district });
+        
+        const constituencies = result.records.map(record => record.get('name'));
+        res.json(constituencies);
+    } catch (e) {
+        console.error('[CONSTITUENCIES] Fetch failed:', e.message);
+        res.status(500).json([]);
+    } finally {
+        await session.close();
+    }
 });
 
 app.get('/api/up/constituency/:constName/analysis', async (req, res) => {
