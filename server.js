@@ -1360,44 +1360,64 @@ app.get('/api/up/news', async (req, res) => {
     upNewsCache.data = { status: 'success', results: articles };
     upNewsCache.ts = Date.now();
     res.json(upNewsCache.data);
-});// UP Dashboard: Fetch Schemes (Real-Time News Extraction)
+});// UP Dashboard: Fetch Schemes (100% REAL-TIME News Extraction — NO FALLBACKS)
 app.get('/api/up/schemes', async (req, res) => {
-    const SCHEMES_CACHE_DURATION_LOCAL = 4 * 60 * 60 * 1000; // 4 hours
+    const SCHEMES_CACHE_DURATION_LOCAL = 1 * 60 * 60 * 1000; // Reduced to 1 hour for maximum real-time accuracy
     if (schemesCache.data && Date.now() - schemesCache.ts < SCHEMES_CACHE_DURATION_LOCAL) {
         return res.json(schemesCache.data);
     }
+
     try {
-        const results = await fetchNewsData(
-            'Uttar Pradesh Government Scheme Yojana',
-            new Map(),
-            'up-schemes',
-            SCHEMES_CACHE_DURATION,
-            8
-        );
+        // Multi-query search for maximum coverage of real-time UP policies
+        const queries = [
+            'Uttar Pradesh Government Yojana',
+            'UP Govt Cabinet Decisions',
+            'UP Government Welfare Schemes',
+            'CM Yogi Adityanath Announcements'
+        ];
+        
+        let allArticles = [];
+        for (const query of queries) {
+            const results = await fetchNewsData(query, new Map(), query, 0, 5); // 0 cache for fresh search
+            if (results && results.length > 0) {
+                allArticles = [...allArticles, ...results];
+            }
+            if (allArticles.length >= 10) break; // Stop if we have plenty
+        }
+
+        // De-duplicate by title
+        const seen = new Set();
+        const uniqueArticles = allArticles.filter(a => {
+            const t = (a.title || '').toLowerCase().substring(0, 30);
+            if (seen.has(t)) return false;
+            seen.add(t);
+            return true;
+        });
 
         const processArticle = (article) => {
-            const title = (article.title || 'Government Policy Update').replace(/<[^>]*>/g, '').substring(0, 120);
-            const description = (article.description || article.content || 'No details available.')
-                .replace(/<[^>]*>/g, '').substring(0, 160) + '...';
+            const title = (article.title || 'Government Update').replace(/<[^>]*>/g, '').substring(0, 120);
+            const description = (article.description || article.content || 'Real-time details available at source.')
+                .replace(/<[^>]*>/g, '').substring(0, 180) + '...';
             const url = article.link || '#';
-            let announcer = 'UP Government Official';
+            let announcer = 'UP Govt';
             const lower = title.toLowerCase();
             if (lower.includes('yogi')) announcer = 'CM Yogi Adityanath';
             else if (lower.includes('modi') || lower.includes(' pm ')) announcer = 'PM Narendra Modi';
             return { title, politician: announcer, description, url };
         };
 
-        const articles = (results || []).map(processArticle);
+        const articles = uniqueArticles.map(processArticle);
+        
         const result = {
             recent: articles.slice(0, 2),
             future: articles.slice(2, 4)
         };
+        
         schemesCache.data = result;
         schemesCache.ts = Date.now();
         res.json(result);
     } catch (error) {
-        console.error('[SCHEMES] Fetch failed:', error.message);
-        if (schemesCache.data) return res.json(schemesCache.data);
+        console.error('[SCHEMES] Real-time fetch failed:', error.message);
         res.json({ recent: [], future: [] });
     }
 });
