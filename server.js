@@ -222,10 +222,11 @@ app.get('/api/up/constituency/:constName/analysis', async (req, res) => {
     const session = driver.session();
     const name = req.params.constName;
     try {
-        // Fetch Real Candidates & Votes from Neo4j (Case-Insensitive)
+        // Fetch Real Candidates & Votes from Neo4j (Smart Fuzzy Match)
         const result = await session.run(`
             MATCH (can:Candidate)-[r:CONTESTED_IN]->(c:Constituency)
-            WHERE c.name =~ ("(?i)" + $name)
+            WHERE toLower(c.name) CONTAINS toLower($name) 
+               OR toLower($name) CONTAINS toLower(c.name)
             RETURN can.name AS name, can.party AS party, r.votes AS votes, c.total_electors AS total
             ORDER BY r.votes DESC
         `, { name });
