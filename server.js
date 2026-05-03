@@ -164,6 +164,9 @@ app.get('/api/up/region/:regionId/districts', (req, res) => {
         ]
     };
     const districts = regionMap[req.params.regionId] || [];
+    res.json(districts.sort());
+});
+
 // UP Dashboard: Fetch Regions (NOW FULLY DYNAMIC)
 app.get('/api/up/booth/regions', async (req, res) => {
     const session = driver.session();
