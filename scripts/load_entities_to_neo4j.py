@@ -1,11 +1,14 @@
 """Load entity aliases into Neo4j per PRD 4.5"""
 from neo4j import GraphDatabase
+from dotenv import load_dotenv
 import json
 import os
 
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+
 NEO4J_URI = os.getenv("NEO4J_URI", "neo4j://localhost:7687")
 NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "guru@9114")
+NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
 

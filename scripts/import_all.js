@@ -278,7 +278,7 @@ const regionMap = {
 try {
     for (let index = 0; index < districtNames.length; index++) {
         const name = districtNames[index];
-        const sample = upDistricts.find((d) => d.name === name) || {};
+        const sample = districtSamples.get(name.toLowerCase()) || {};
 
         // Find region
         let region = 'other';
@@ -1012,10 +1012,228 @@ async function importAffidavits() {
 }
 
 // ============================================================
-// STEP 9: Verify counts
+// STEP 9: Import rule definitions
+// ============================================================
+async function importRules() {
+    console.log('\n=== Step 9: Seeding Rule Definitions ===');
+    const session = driver.session();
+    try {
+        const rules = [
+            {
+                rule_id: 'RULE_V1_SEAT_STATUS',
+                name: 'Seat Priority Classification',
+                version: '1.0.0',
+                logic: "CASE WHEN margin_pct < 2 THEN 'tossup' WHEN margin_pct < 5 THEN 'competitive' ELSE 'safe' END",
+                output_property: 'seat_status'
+            },
+            {
+                rule_id: 'RULE_V1_CANDIDATE_RISK',
+                name: 'Candidate Risk Flagging',
+                version: '1.0.0',
+                logic: "CASE WHEN criminal_cases > 3 THEN 'multiple_cases' WHEN serious_cases > 0 THEN 'serious_cases_flagged' ELSE 'clean' END",
+                output_property: 'candidate_risk'
+            },
+            {
+                rule_id: 'RULE_V1_DELIVERY_STATUS',
+                name: 'Scheme Delivery Classification',
+                version: '1.0.0',
+                logic: "CASE WHEN coverage_pct < 30 THEN 'critical_gap' WHEN coverage_pct < 60 THEN 'partial' ELSE 'delivered' END",
+                output_property: 'delivery_status'
+            },
+            {
+                rule_id: 'RULE_V1_REC_CADRE',
+                name: 'Cadre Strengthening Trigger',
+                version: '1.0.0',
+                logic: "IF seat_status IN ['competitive','tossup'] AND delivery_status IN ['critical_gap','partial']",
+                output_property: 'CADRE_STRENGTHEN'
+            },
+            {
+                rule_id: 'RULE_V1_ORG_STATUS',
+                name: 'Organisation Health Classification',
+                version: '1.0.0',
+                logic: "CASE WHEN booth_coverage_pct >= 90 THEN 'strong' WHEN booth_coverage_pct >= 60 THEN 'moderate' ELSE 'weak' END",
+                output_property: 'org_status'
+            },
+            {
+                rule_id: 'RULE_V1_LEADERSHIP_VISIT',
+                name: 'Leadership Visit Priority Trigger',
+                version: '1.0.0',
+                logic: "IF seat_status IN ['tossup','competitive'] AND (org_status = 'weak' OR sentiment_trending = 'declining')",
+                output_property: 'LEADERSHIP_VISIT'
+            }
+        ];
+
+        for (const r of rules) {
+            await session.run(
+                `MERGE (rd:RuleDefinition {rule_id: $rule_id})
+                 SET rd.name = $name,
+                     rd.version = $version,
+                     rd.logic_expression = $logic,
+                     rd.output_property = $output_property,
+                     rd.source = 'PRD_V1_INTERNAL',
+                     rd.source_date = date('2026-05-03'),
+                     rd.ingested_at = datetime(),
+                     rd.confidence = 'high'`,
+                r
+            );
+        }
+        console.log(`  ✓ Seeded ${rules.length} RuleDefinition nodes`);
+    } catch (err) {
+        console.log(`  ! Error seeding rules: ${err.message}`);
+    } finally {
+        await session.close();
+    }
+}
+
+// ============================================================
+// STEP 10: Governance — Scheme + SchemeDelivery nodes
+// ============================================================
+async function importSchemes() {
+    console.log('\n=== Step 10: Importing Schemes + Delivery Stubs ===');
+    const session = driver.session();
+    const nodeProvenance = buildNodeProvenance('GOVT_INDIA', '2026-05-03', null, 'medium');
+
+    try {
+        const schemes = [
+            { scheme_id: 'PM_AWAS_YOJANA', name: 'PM Awas Yojana (Gramin)',   ministry: 'Ministry of Rural Development', target_group: 'BPL households',   launch_year: 2016 },
+            { scheme_id: 'MGNREGA',         name: 'Mahatma Gandhi NREGS',       ministry: 'Ministry of Rural Development', target_group: 'Rural wage-seekers', launch_year: 2005 },
+            { scheme_id: 'PM_KISAN',         name: 'PM Kisan Samman Nidhi',     ministry: 'Ministry of Agriculture',       target_group: 'Small farmers',      launch_year: 2019 },
+            { scheme_id: 'UJJWALA',          name: 'PM Ujjwala Yojana',         ministry: 'Ministry of Petroleum',         target_group: 'BPL women',          launch_year: 2016 },
+        ];
+
+        for (const s of schemes) {
+            await session.run(
+                `MERGE (sc:Scheme {scheme_id: $scheme_id})
+                 SET sc.name = $name, sc.ministry = $ministry,
+                     sc.target_group = $target_group, sc.launch_year = $launch_year,
+                     sc.source = $source, sc.source_date = date($source_date),
+                     sc.ingested_at = datetime($ingested_at)`,
+                { ...s, ...nodeProvenance }
+            );
+        }
+        console.log(`  ✓ Created ${schemes.length} Scheme nodes`);
+
+        // Seed SchemeDelivery stubs per constituency using UP state averages (NFHS-5)
+        // Real per-constituency data must replace these when sourced from government portals
+        const deliveryDefaults = {
+            PM_AWAS_YOJANA: { coverage_pct: 61, delivery_status: 'partial' },
+            MGNREGA:         { coverage_pct: 54, delivery_status: 'partial' },
+            PM_KISAN:        { coverage_pct: 72, delivery_status: 'partial' },
+            UJJWALA:         { coverage_pct: 68, delivery_status: 'partial' },
+        };
+
+        const constResult = await session.run(`MATCH (ls:LokSabhaConstituency) RETURN ls.ls_id AS ls_id`);
+        let deliveryCount = 0;
+
+        for (const rec of constResult.records) {
+            const ls_id = rec.get('ls_id');
+            for (const [scheme_id, defaults] of Object.entries(deliveryDefaults)) {
+                const delivery_id = `DEL-${ls_id}-${scheme_id}`;
+                await session.run(
+                    `MERGE (sd:SchemeDelivery {delivery_id: $delivery_id})
+                     SET sd.constituency_id  = $ls_id,
+                         sd.scheme_id        = $scheme_id,
+                         sd.coverage_pct     = $coverage_pct,
+                         sd.delivery_status  = $delivery_status,
+                         sd.data_quality     = 'estimated',
+                         sd.source           = 'NFHS5_UP_AVERAGE',
+                         sd.source_date      = date('2021-12-01'),
+                         sd.ingested_at      = datetime()
+                     WITH sd
+                     MATCH (ls:LokSabhaConstituency {ls_id: $ls_id})
+                     MATCH (sc:Scheme {scheme_id: $scheme_id})
+                     MERGE (ls)-[:HAS_DELIVERY]->(sd)
+                     MERGE (sc)-[:DELIVERED_IN]->(sd)`,
+                    { delivery_id, ls_id, scheme_id, ...defaults }
+                );
+                deliveryCount++;
+            }
+        }
+        console.log(`  ✓ Seeded ${deliveryCount} SchemeDelivery stubs (UP state averages — replace with real data)`);
+
+    } catch (err) {
+        console.log(`  ! Error importing schemes: ${err.message}`);
+    } finally {
+        await session.close();
+    }
+}
+
+// ============================================================
+// STEP 11: Decision — evaluate RULE_V1_SEAT_STATUS → SeatClassification
+// NOTE: Reads ElectionResult nodes created by import_tcpd.js.
+//       If run before import_tcpd.js, 0 nodes will be created — re-run after.
+// ============================================================
+async function evaluateSeatClassifications() {
+    console.log('\n=== Step 11: Evaluating Seat Classifications (RULE_V1_SEAT_STATUS) ===');
+    const session = driver.session();
+    const nodeProvenance = buildNodeProvenance('RULE_V1_SEAT_STATUS', '2026-05-03', null, 'high');
+
+    try {
+        const result = await session.run(
+            `MATCH (ls:LokSabhaConstituency)-[:HAS_RESULT]->(er:ElectionResult)
+             WHERE er.election_id = 'LS2024' AND er.margin_pct IS NOT NULL
+             RETURN ls.ls_id AS ls_id,
+                    toFloat(er.margin_pct) AS margin_pct,
+                    er.winner_party_id AS winner_party_id`
+        );
+
+        if (result.records.length === 0) {
+            console.log('  ⚠ No LS2024 ElectionResult nodes found — run import_tcpd.js first, then re-run this script');
+            return;
+        }
+
+        let created = 0;
+        for (const record of result.records) {
+            const ls_id = record.get('ls_id');
+            const margin_pct = record.get('margin_pct');
+            const winner_party_id = record.get('winner_party_id') || 'unknown';
+
+            const seat_status = margin_pct < 2 ? 'tossup'
+                              : margin_pct < 5 ? 'competitive'
+                              : 'safe';
+
+            const classification_id = `SC-${ls_id}-LS2024`;
+
+            await session.run(
+                `MERGE (sc:SeatClassification {classification_id: $classification_id})
+                 SET sc.constituency_id  = $ls_id,
+                     sc.election_id      = 'LS2024',
+                     sc.seat_status      = $seat_status,
+                     sc.margin_pct       = $margin_pct,
+                     sc.incumbent_party  = $winner_party_id,
+                     sc.rule_version     = 'RULE_V1_SEAT_STATUS',
+                     sc.source           = $source,
+                     sc.source_date      = date($source_date),
+                     sc.ingested_at      = datetime($ingested_at),
+                     sc.confidence       = $confidence
+                 WITH sc
+                 MATCH (ls:LokSabhaConstituency {ls_id: $ls_id})
+                 MERGE (ls)-[:HAS_CLASSIFICATION]->(sc)
+                 WITH sc
+                 MATCH (rd:RuleDefinition {rule_id: 'RULE_V1_SEAT_STATUS'})
+                 MERGE (sc)-[:TRIGGERED_BY]->(rd)`,
+                { classification_id, ls_id, seat_status, margin_pct, winner_party_id, ...nodeProvenance }
+            );
+            created++;
+        }
+        console.log(`  ✓ Created/updated ${created} SeatClassification nodes`);
+        const tossup     = result.records.filter(r => r.get('margin_pct') <  2).length;
+        const competitive = result.records.filter(r => r.get('margin_pct') >= 2 && r.get('margin_pct') < 5).length;
+        const safe       = result.records.filter(r => r.get('margin_pct') >= 5).length;
+        console.log(`    tossup: ${tossup}  competitive: ${competitive}  safe: ${safe}`);
+
+    } catch (err) {
+        console.log(`  ! Error evaluating seat classifications: ${err.message}`);
+    } finally {
+        await session.close();
+    }
+}
+
+// ============================================================
+// STEP 12: Verify counts
 // ============================================================
 async function verifyCounts() {
-    console.log('\n=== Step 9: Verification ===');
+    console.log('\n=== Step 12: Verification ===');
 
     const queries = [
         ['District', 'MATCH (d:District) RETURN count(d) AS count'],
@@ -1029,9 +1247,12 @@ async function verifyCounts() {
         ['Turnout', 'MATCH (t:Turnout) RETURN count(t) AS count'],
         ['Issue', 'MATCH (i:Issue) RETURN count(i) AS count'],
         ['Affidavit', 'MATCH (aff:Affidavit) RETURN count(aff) AS count'],
+        ['Scheme', 'MATCH (s:Scheme) RETURN count(s) AS count'],
         ['SchemeDelivery', 'MATCH (sd:SchemeDelivery) RETURN count(sd) AS count'],
+        ['IssueObservation', 'MATCH (io:IssueObservation) RETURN count(io) AS count'],
         ['SeatClassification', 'MATCH (sc:SeatClassification) RETURN count(sc) AS count'],
         ['DecisionRecommendation', 'MATCH (dr:DecisionRecommendation) RETURN count(dr) AS count'],
+        ['RuleDefinition', 'MATCH (rd:RuleDefinition) RETURN count(rd) AS count'],
         ['MediaTopic', 'MATCH (mt:MediaTopic) RETURN count(mt) AS count'],
         ['HAS_VS links', 'MATCH ()-[:HAS_VS]->() RETURN count(*) AS count'],
         ['CONTAINS links', 'MATCH ()-[:CONTAINS]->() RETURN count(*) AS count'],
@@ -1070,6 +1291,9 @@ async function main() {
         await importConstituencyResults();
         await importTurnout();
         await importAffidavits();
+        await importRules();
+        await importSchemes();
+        await evaluateSeatClassifications();
         await verifyCounts();
 
         console.log('\n✓ Import complete!');

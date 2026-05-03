@@ -8,12 +8,19 @@ import os
 import io
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-sys.path.insert(0, os.path.dirname(__file__))
+# Add the project root (one level up from scripts/) to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from sentiment_engine.src.collectors.newsdata import poll_all_queries
 from sentiment_engine.src.processors.sentiment import classify_sentiment
 from sentiment_engine.src.processors.entity_resolution import resolve_entities
-from sentiment_engine.src.database.neo4j_ingest import upsert_sentiment_observation, close
+from sentiment_engine.src.database.neo4j_ingest import (
+    upsert_sentiment_observation,
+    upsert_issue_observation,
+    compute_constituency_aggregation,
+    close,
+)
+from sentiment_engine.src.alerts.alert_engine import check_alerts
 
 MAX_NEWS_ARTICLES = 20
 
@@ -30,6 +37,8 @@ def run_pipeline():
         return
 
     count = 0
+    aggregation_pairs = set()  # (constituency_id, entity_id) for post-loop aggregation
+
     for i, article in enumerate(articles):
         text = f"{article.get('title', '')}. {article.get('description', '')}"
         if not text.strip():
@@ -56,15 +65,48 @@ def run_pipeline():
             "vader_score": sentiment.get('vader_score'),
             "vader_label": sentiment.get('vader_label')
         }
-        
+
         try:
             upsert_sentiment_observation(obs)
             count += 1
             print(f"  -> {obs['sentiment']} ({obs['confidence']:.2%}) [{obs['language']}]")
+
+            # Queue aggregation for each constituency × entity pair
+            cid = obs.get("constituency_id")
+            for ent in entities:
+                eid = ent.get("entity_id")
+                if cid and eid:
+                    aggregation_pairs.add((cid, eid))
+
+            # Create IssueObservation if topic is recognisable
+            upsert_issue_observation(obs)
+
         except Exception as e:
             print(f"  -> Error ingesting: {e}")
 
     print(f"[NEO4J] Successfully ingested {count} observations")
+
+    # Aggregate sentiment per constituency × entity
+    print(f"[NEO4J] Computing SentimentAggregation for {len(aggregation_pairs)} pairs...")
+    agg_count = 0
+    for cid, eid in aggregation_pairs:
+        try:
+            result = compute_constituency_aggregation(cid, eid)
+            if result:
+                agg_count += 1
+        except Exception as e:
+            print(f"  -> Aggregation error ({cid}, {eid}): {e}")
+    print(f"[NEO4J] Computed {agg_count} SentimentAggregation nodes")
+
+    print("[ALERTS] Checking alert rules...")
+    try:
+        alerts = check_alerts()
+        high = [a for a in alerts if a["severity"] == "HIGH"]
+        print(f"[ALERTS] {len(alerts)} alerts triggered ({len(high)} HIGH severity)")
+        for a in high:
+            print(f"  [HIGH] {a['alert_id']}: {a['message']}")
+    except Exception as e:
+        print(f"[ALERTS] Error running alert engine: {e}")
 
     close()
     print("[PIPELINE] Done.")

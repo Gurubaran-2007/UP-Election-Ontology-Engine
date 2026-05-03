@@ -2,13 +2,13 @@
   "name": "up-election-ontology-engine",
   "version": "1.0.0",
   "description": "UP Election Political Strategy Ontology Engine — powered by Census 2011, Neo4j & Sarvam AI",
-  "main": "server.js",
+  "main": "src/server.js",
   "engines": {
     "node": ">=18.0.0"
   },
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node src/server.js",
+    "dev": "node src/server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

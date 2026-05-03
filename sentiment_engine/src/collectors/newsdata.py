@@ -12,6 +12,8 @@ for _k in NEWSDATA_KEYS:
 
 def _get_key():
     global _key_index
+    if not NEWSDATA_KEYS:
+        return None
     for i in range(len(NEWSDATA_KEYS)):
         idx = (_key_index + i) % len(NEWSDATA_KEYS)
         if not _key_exhausted[NEWSDATA_KEYS[idx]]:
@@ -26,6 +28,9 @@ def _get_key():
 def fetch_news(query, max_results=10, constituency=None):
     """Fetch news articles using NewsData API with key rotation per PRD 2.2.1"""
     key = _get_key()
+    if not key:
+        print("[NEWS] No NEWSDATA_API_KEYS configured — skipping fetch")
+        return []
     url = "https://newsdata.io/api/1/news"
     params = {
         "apikey": key,

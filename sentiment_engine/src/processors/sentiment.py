@@ -1,13 +1,21 @@
-import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from sentiment_engine.config.settings import SENTIMENT_MODEL, MAX_SENTIMENT_INPUT_LENGTH, BATCH_SIZE, TOPIC_KEYWORDS
 from sentiment_engine.src.processors.language_detection import detect_language
 
-
-tokenizer = AutoTokenizer.from_pretrained(SENTIMENT_MODEL)
-model = AutoModelForSequenceClassification.from_pretrained(SENTIMENT_MODEL)
-model.eval()
+# torch/transformers are optional — install via: .venv/bin/pip install torch transformers
+try:
+    import torch
+    from transformers import AutoTokenizer, AutoModelForSequenceClassification
+    _tokenizer = AutoTokenizer.from_pretrained(SENTIMENT_MODEL)
+    _model = AutoModelForSequenceClassification.from_pretrained(SENTIMENT_MODEL)
+    _model.eval()
+    _TRANSFORMER_AVAILABLE = True
+    print("[SENTIMENT] DistilBERT model loaded.")
+except Exception as e:
+    _TRANSFORMER_AVAILABLE = False
+    _tokenizer = None
+    _model = None
+    print(f"[SENTIMENT] torch/transformers not available — using VADER only. ({e})")
 
 vader = SentimentIntensityAnalyzer()
 
@@ -26,6 +34,7 @@ def classify_sentiment(text):
         "topic": classify_topic(text),
     }
 
+    # VADER for English
     if lang == "en":
         vader_score = vader.polarity_scores(text)["compound"]
         result["vader_score"] = vader_score
@@ -35,23 +44,32 @@ def classify_sentiment(text):
         result["sentiment"] = result["vader_label"]
         return result
 
-    # Run transformer for hi and hi-en-mixed
-    with torch.no_grad():
-        inputs = tokenizer(
-            text,
-            truncation=True,
-            max_length=MAX_SENTIMENT_INPUT_LENGTH,
-            padding=True,
-            return_tensors="pt",
-        )
-        outputs = model(**inputs)
-        probs = torch.softmax(outputs.logits, dim=1)[0]
-        pred = torch.argmax(probs).item()
-        confidence = probs[pred].item()
-
-    result["sentiment"] = LABEL_MAP[pred]
-    result["confidence"] = round(confidence, 4)
-    result["model"] = "distilbert-multilingual-v2.0"
+    # Transformer for Hindi / mixed — fall back to VADER if not installed
+    if _TRANSFORMER_AVAILABLE:
+        import torch
+        with torch.no_grad():
+            inputs = _tokenizer(
+                text,
+                truncation=True,
+                max_length=MAX_SENTIMENT_INPUT_LENGTH,
+                padding=True,
+                return_tensors="pt",
+            )
+            outputs = _model(**inputs)
+            probs = torch.softmax(outputs.logits, dim=1)[0]
+            pred = torch.argmax(probs).item()
+            confidence = probs[pred].item()
+        result["sentiment"] = LABEL_MAP[pred]
+        result["confidence"] = round(confidence, 4)
+        result["model"] = "distilbert-multilingual-v2.0"
+    else:
+        # VADER fallback for non-English when transformer unavailable
+        vader_score = vader.polarity_scores(text)["compound"]
+        result["vader_score"] = vader_score
+        result["vader_label"] = _vader_to_label(vader_score)
+        result["sentiment"] = result["vader_label"]
+        result["confidence"] = abs(vader_score)
+        result["model"] = "vader-fallback-v1.0"
 
     return result
 
@@ -61,31 +79,35 @@ def classify_batch(texts):
     results = []
     for i in range(0, len(texts), BATCH_SIZE):
         batch = texts[i: i + BATCH_SIZE]
-        with torch.no_grad():
-            inputs = tokenizer(
-                batch,
-                truncation=True,
-                max_length=MAX_SENTIMENT_INPUT_LENGTH,
-                padding=True,
-                return_tensors="pt",
-            )
-            outputs = model(**inputs)
-            probs = torch.softmax(outputs.logits, dim=1)
-            preds = torch.argmax(probs, dim=1).tolist()
-            confidences = probs.max(dim=1).values.tolist()
+
+        if _TRANSFORMER_AVAILABLE:
+            import torch
+            with torch.no_grad():
+                inputs = _tokenizer(
+                    batch,
+                    truncation=True,
+                    max_length=MAX_SENTIMENT_INPUT_LENGTH,
+                    padding=True,
+                    return_tensors="pt",
+                )
+                outputs = _model(**inputs)
+                probs = torch.softmax(outputs.logits, dim=1)
+                preds = torch.argmax(probs, dim=1).tolist()
+                confidences = probs.max(dim=1).values.tolist()
+        else:
+            preds = [1] * len(batch)      # neutral placeholder
+            confidences = [0.5] * len(batch)
 
         for text, pred, conf in zip(batch, preds, confidences):
             lang = detect_language(text)
-            vader_label = None
-            vader_score = None
-            if lang == "en":
-                vader_score = vader.polarity_scores(text)["compound"]
-                vader_label = _vader_to_label(vader_score)
+            vader_score = vader.polarity_scores(text)["compound"]
+            vader_label = _vader_to_label(vader_score)
+            if lang == "en" or not _TRANSFORMER_AVAILABLE:
                 results.append({
                     "text": text,
                     "sentiment": vader_label,
                     "confidence": abs(vader_score),
-                    "model": "vader-en-v1.0",
+                    "model": "vader-en-v1.0" if lang == "en" else "vader-fallback-v1.0",
                     "language": lang,
                     "vader_label": vader_label,
                     "vader_score": vader_score,

@@ -28,9 +28,10 @@
         document.getElementById('up-district-panel').style.width = '0';
         document.getElementById('up-map-selected-label').textContent = 'No district selected';
         if (window._upLastSelected) {
-            window._upLastSelected.style('fill', '');
+            window._upLastSelected.style('stroke', '#475569').style('stroke-width', '0.5px');
         }
     };
+    window.closeDistrictPanel = window._upMapClosePanel; // Alias for global access
 
     // ── 4. Regional Classification Logic ───────────────────────────
     const REGIONS = {

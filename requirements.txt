@@ -1,0 +1,8 @@
+neo4j>=5.0,<6.0
+python-dotenv>=1.0
+flask>=3.0
+flask-cors>=4.0
+vaderSentiment>=3.3
+langdetect>=1.0
+transformers>=4.40
+torch>=2.2

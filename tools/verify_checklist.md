@@ -122,7 +122,7 @@ curl "http://localhost:3000/api/up/sentiment/heatmap?entity_id=party-bjp"
 # Check Neo4j has data
 python -c "
 from neo4j import GraphDatabase
-driver = GraphDatabase.driver('neo4j://localhost:7687', auth=('neo4j','guru@9114'))
+driver = GraphDatabase.driver('neo4j://localhost:7687', auth=('neo4j', os.getenv('NEO4J_PASSWORD')))
 with driver.session() as s:
     r = s.run('MATCH (o:SentimentObservation) RETURN count(o) AS c')
     print('SentimentObservation nodes:', r.single()['c'])
