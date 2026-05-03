@@ -32,7 +32,7 @@ setInterval(async () => {
 // 1. Neo4j Database Configuration
 // ==========================================
 const uri      = process.env.NEO4J_URI      || 'neo4j://localhost:7687';
-const user     = process.env.NEO4J_USER     || 'neo4j';
+const user     = process.env.NEO4J_USER     || process.env.NEO4J_USERNAME || 'neo4j';
 const password = process.env.NEO4J_PASSWORD || 'guru@9114';
 
 // Auto-detect encryption: AuraDB uses neo4j+s:// (TLS), local uses neo4j://
@@ -321,6 +321,7 @@ app.get('/api/up/booth/:boothId/analysis', async (req, res) => {
 
 app.get('/api/status', async (req, res) => {
     let dbStatus = 'Disconnected';
+    let dbError = null;
     let aiStatus = 'Disconnected';
 
     const withTimeout = (promise, ms) =>
@@ -329,28 +330,18 @@ app.get('/api/status', async (req, res) => {
     // Check DB
     try {
         const session = driver.session();
-        await withTimeout(session.run('RETURN 1'), 3000);
+        await withTimeout(session.run('RETURN 1'), 5000);
         await session.close();
         dbStatus = 'Connected';
     } catch (err) {
+        dbError = err.message;
         console.error("Neo4j connection error:", err.message);
-    }
-
-    // Check AI — verify Sarvam AI API connection
-    try {
-        const sarvamStatus = await withTimeout(fetch('https://api.sarvam.ai/v1/models', {
-            headers: { 'api-subscription-key': SARVAM_API_KEY }
-        }), 3000);
-        if (sarvamStatus.ok) {
-            aiStatus = 'Connected';
-        }
-    } catch (err) {
-        console.error("Sarvam AI connection error:", err.message);
     }
 
     res.json({ 
         status: 'Server is running', 
-        database: dbStatus, 
+        database: dbStatus,
+        databaseError: dbError,
         ai: aiStatus 
     });
 });
