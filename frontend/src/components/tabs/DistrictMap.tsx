@@ -177,6 +177,10 @@ export default function DistrictMap() {
     const W = containerRef.current.clientWidth  || 800;
     const H = containerRef.current.clientHeight || 620;
 
+    // Store so highlightOnMap can restore fills without needing a full redraw
+    getFillRef.current = getFill;
+    getNameRef.current = getName;
+
     const svg = d3.select(svgRef.current).attr('viewBox', `0 0 ${W} ${H}`).style('background', '#020617');
     svg.selectAll('*').remove();
 
@@ -196,12 +200,14 @@ export default function DistrictMap() {
       .enter().append('path')
       .attr('d', path as any)
       .attr('fill', (d: any) => getFill(getName(d)))
-      .attr('stroke', '#1e293b')
+      .attr('stroke', '#0f172a')
       .attr('stroke-width', 0.7)
       .style('cursor', 'pointer')
       .on('mouseover', function (_: MouseEvent, d: any) {
         const name = getName(d);
-        d3.select(this).attr('stroke', '#f97316').attr('stroke-width', 1.5);
+        const selected = isActive && isActive(name);
+        // Only tint on hover if not already the solid-selected feature
+        if (!selected) d3.select(this).attr('fill', '#fb923c').attr('stroke', '#f97316').attr('stroke-width', 1.2);
         const [mx, my] = d3.pointer(_, containerRef.current);
         setTooltip({ x: mx, y: my, text: name });
       })
@@ -211,9 +217,11 @@ export default function DistrictMap() {
       })
       .on('mouseout', function (_: MouseEvent, d: any) {
         const name = getName(d);
+        const selected = isActive && isActive(name);
         d3.select(this)
-          .attr('stroke', isActive && isActive(name) ? '#f97316' : '#1e293b')
-          .attr('stroke-width', isActive && isActive(name) ? 1.5 : 0.7);
+          .attr('fill',         selected ? '#f97316' : getFill(name))
+          .attr('stroke',       selected ? '#ea580c' : '#0f172a')
+          .attr('stroke-width', selected ? 1.5       : 0.7);
         setTooltip(null);
       })
       .on('click', (_: MouseEvent, d: any) => onClick(getName(d)));
@@ -235,18 +243,15 @@ export default function DistrictMap() {
       });
   }, []);
 
-  // ── Highlight selected path on map ────────────────────────────────────────
+  // ── Solid-fill highlight on map ───────────────────────────────────────────
   const highlightOnMap = useCallback((name: string) => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || !getNameRef.current || !getFillRef.current) return;
+    const gn = getNameRef.current;
+    const gf = getFillRef.current;
     d3.select(svgRef.current).selectAll('path')
-      .attr('stroke', (d: any) => {
-        const n = d?.properties?.ST_NM || d?.properties?.name || d?.properties?.DISTRICT || '';
-        return n === name ? '#f97316' : '#1e293b';
-      })
-      .attr('stroke-width', (d: any) => {
-        const n = d?.properties?.ST_NM || d?.properties?.name || d?.properties?.DISTRICT || '';
-        return n === name ? 2 : 0.7;
-      });
+      .attr('fill', (d: any) => gn(d) === name ? '#f97316' : gf(gn(d)))
+      .attr('stroke', (d: any) => gn(d) === name ? '#ea580c' : '#0f172a')
+      .attr('stroke-width', (d: any) => gn(d) === name ? 1.5 : 0.7);
   }, []);
 
   // ── Load India ────────────────────────────────────────────────────────────
