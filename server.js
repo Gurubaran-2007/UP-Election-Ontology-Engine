@@ -249,7 +249,7 @@ app.get('/api/up/constituency/:name/analysis', async (req, res) => {
         const candidates = voteResult.records.map(r => ({
             name: r.get('name') || "N/A",
             party: r.get('party') || "Independent",
-            votes: r.get('totalVotes') || 0,
+            votes: Number(r.get('totalVotes') || 0),
             education: "N/A",
             assets: "N/A",
             cases: 0
@@ -258,12 +258,12 @@ app.get('/api/up/constituency/:name/analysis', async (req, res) => {
         const booths = boothResult.records.map(r => ({
             id: r.get('name') || "B-0",
             name: r.get('name') || "Booth",
-            electors: r.get('electors') || 0,
-            turnout: r.get('turnout') || 0
+            electors: Number(r.get('electors') || 0),
+            turnout: Number(r.get('turnout') || 0)
         }));
 
-        const totalVotes = candidates.reduce((sum, c) => sum + c.votes, 0);
-        const totalElectors = booths.reduce((sum, b) => sum + b.electors, 0);
+        const totalVotes = candidates.reduce((sum, c) => sum + Number(c.votes), 0);
+        const totalElectors = booths.reduce((sum, b) => sum + Number(b.electors), 0);
         const winner = candidates[0] || { name: "N/A", party: "N/A", votes: 0 };
 
         const finalData = {
