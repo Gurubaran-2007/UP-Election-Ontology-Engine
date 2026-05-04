@@ -3,6 +3,19 @@ export interface StatusData {
   ai: string;
 }
 
+export interface ConstituencyResult {
+  ls_id: string;
+  ls_name: string;
+  election_id?: string;
+  winner?: string;
+  party_id?: string;
+  vote_share?: number | null;
+  margin_pct?: number | null;
+  margin_votes?: number | null;
+  total_votes?: number | null;
+  vidhan_sabha_segments?: { vs_id: string; name: string; reservation?: string }[];
+}
+
 export interface DistrictData {
   leader: { name?: string; party?: string; designation?: string; since?: string; note?: string };
   population: { total?: number; rural?: number; urban?: number; density?: string; literacy?: string; sex_ratio?: string; male?: number; female?: number };
@@ -10,6 +23,7 @@ export interface DistrictData {
   headlines: string[];
   census?: Record<string, number>;
   source?: string;
+  constituencies?: ConstituencyResult[];
 }
 
 export interface StrategyResult {

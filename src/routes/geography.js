@@ -25,7 +25,98 @@ router.get('/region/:regionId/districts', async (req, res) => {
     }
 });
 
-// /api/up/district/:district/constituencies
+// /api/up/district/:district — full district intelligence panel data
+// Returns: { leader, population, demographics, headlines, census, constituencies }
+router.get('/district/:district', async (req, res) => {
+    const district = req.params.district;
+    try {
+        const session = driver.session();
+        const result = await session.run(
+            `MATCH (d:District)
+             WHERE toLower(d.name) = toLower($district)
+             OPTIONAL MATCH (d)-[:CONTAINS|HAS_LS]->(ls:LokSabhaConstituency)
+             OPTIONAL MATCH (ls)-[:HAS_RESULT]->(er:ElectionResult)
+             OPTIONAL MATCH (ls)-[:HAS_VS]->(vs:VidhanSabhaConstituency)
+             WITH d, ls, er,
+                  collect(DISTINCT vs { .vs_id, .name, .reservation }) AS vsSegs
+             ORDER BY ls.ls_no
+             RETURN d.name            AS district_name,
+                    d.population      AS population,
+                    d.rural_pop       AS rural_pop,
+                    d.urban_pop       AS urban_pop,
+                    d.literacy_rate   AS literacy_rate,
+                    d.density         AS density,
+                    d.sex_ratio       AS sex_ratio,
+                    ls.ls_id          AS ls_id,
+                    ls.name           AS ls_name,
+                    er.election_id    AS election_id,
+                    er.winner         AS winner,
+                    er.winner_party_id AS party_id,
+                    er.winner_vote_share AS vote_share,
+                    er.margin_pct     AS margin_pct,
+                    er.margin_votes   AS margin_votes,
+                    er.total_valid_votes AS total_votes,
+                    vsSegs`,
+            { district }
+        );
+        await session.close();
+
+        if (result.records.length === 0) {
+            return res.status(404).json({ error: `No district named "${district}" found in the graph.` });
+        }
+
+        const first = result.records[0];
+        const distName = first.get('district_name');
+
+        // Build constituency list from records
+        const constituencies = result.records
+            .filter(r => r.get('ls_id'))
+            .map(r => ({
+                ls_id:   r.get('ls_id'),
+                ls_name: r.get('ls_name'),
+                election_id:  r.get('election_id'),
+                winner:       r.get('winner'),
+                party_id:     r.get('party_id'),
+                vote_share:   r.get('vote_share') ? parseFloat(r.get('vote_share')) : null,
+                margin_pct:   r.get('margin_pct') ? parseFloat(r.get('margin_pct')) : null,
+                margin_votes: r.get('margin_votes') ? parseInt(r.get('margin_votes')) : null,
+                total_votes:  r.get('total_votes')  ? parseInt(r.get('total_votes'))  : null,
+                vidhan_sabha_segments: (r.get('vsSegs') || []).filter(v => v && v.vs_id && v.name),
+            }));
+
+        // Deduplicate by ls_id
+        const seen = new Set();
+        const uniqueConstituencies = constituencies.filter(c => {
+            if (seen.has(c.ls_id)) return false;
+            seen.add(c.ls_id);
+            return true;
+        });
+
+        // Population from district node properties
+        const pop = {
+            total:     first.get('population')    ? parseInt(first.get('population'))    : null,
+            rural:     first.get('rural_pop')      ? parseInt(first.get('rural_pop'))      : null,
+            urban:     first.get('urban_pop')      ? parseInt(first.get('urban_pop'))      : null,
+            literacy:  first.get('literacy_rate')  || null,
+            density:   first.get('density')        || null,
+            sex_ratio: first.get('sex_ratio')      || null,
+        };
+
+        res.json({
+            district:        distName,
+            leader:          { name: null, party: null, designation: 'MP', since: null, note: null },
+            population:      pop,
+            demographics:    [],
+            headlines:       [],
+            census:          {},
+            constituencies:  uniqueConstituencies,
+            source:          'Neo4j Graph (ECI data)',
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 router.get('/district/:district/constituencies', async (req, res) => {
     const district = req.params.district;
 

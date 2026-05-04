@@ -1,11 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     checkServerStatus();
 
-    const strategyForm = document.getElementById('strategy-form');
-    if(strategyForm) {
-        strategyForm.addEventListener('submit', handleStrategySubmit);
-    }
-
     const aiSearchBtn = document.getElementById('ai-search-btn');
     if(aiSearchBtn) {
         aiSearchBtn.addEventListener('click', handleAISearch);

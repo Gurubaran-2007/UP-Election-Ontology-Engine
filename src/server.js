@@ -43,6 +43,7 @@ const electionsRoutes = require('./routes/elections');
 const proxyRoutes = require('./routes/proxy');
 const statusRoutes = require('./routes/status');
 const stateRoutes = require('./routes/state');
+const metricsRoutes = require('./routes/metrics');
 
 // Mount routes
 // Generic state API — /api/state/:stateCode/*
@@ -59,6 +60,7 @@ app.use('/api/up/schemes', schemesRoutes);
 app.use('/api/up', electionsRoutes); // constituency/.../results, candidates, competitive, recommendation
 app.use('/proxy/myneta', proxyRoutes);
 app.use('/api', statusRoutes); // /api/status, /api/state-info/:state
+app.use('/api/metrics', metricsRoutes); // /api/metrics/up/ls2024/by-district, /api/metrics/india/ls2024-summary
 
 // ==========================================
 // Sentiment Pipeline Cron (every 6 hours)

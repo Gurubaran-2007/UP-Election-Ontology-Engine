@@ -10,10 +10,10 @@
       .venv/bin/pip install torch transformers
       ```
 
-## Governance Layer (not yet coded)
+## Decision Layer (Phase 3 - not yet coded)
 
-- [ ] IssueObservation nodes linked to constituencies
-- [ ] Scheme + SchemeDelivery nodes (PM Awas Yojana, MGNREGA)
+- [ ] **Strategy Builder** — Frontend interface for generating political implementation plans
+- [ ] **AI Strategy Prediction** — Deterministic narration grounded in graph demographic data
 - [ ] SeatClassification computation from margin_pct + delivery_status
 - [ ] DecisionRecommendation + EvidenceBundle nodes
 - [ ] TRIGGERED_BY relationship from DecisionRecommendation → RuleDefinition

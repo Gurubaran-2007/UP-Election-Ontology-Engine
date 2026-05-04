@@ -39,10 +39,9 @@
             <nav class="sidebar-nav">
                 <ul>
                     <li><a href="#" data-target="india-map-tab" class="tab-link active">India Map</a></li>
-                    <li><a href="#" data-target="up-map-tab" class="tab-link" data-i18n="nav_map">UP District Map</a></li>
+                    <li><a href="#" data-target="up-map-tab" class="tab-link active" data-i18n="nav_map">UP District Map</a></li>
                     <li><a href="#" data-target="up-dashboard-tab" class="tab-link" data-i18n="nav_up">Uttar Pradesh Schemes</a></li>
                     <li><a href="#" data-target="up-booth-tab" class="tab-link">UP Constituency & Booth</a></li>
-                    <li><a href="#" data-target="strategy-tab" class="tab-link" data-i18n="nav_strategy">Strategy Builder & Prediction</a></li>
                     <li><a href="#" data-target="ai-search-tab" class="tab-link" data-i18n="nav_ai_search">AI Search</a></li>
                     <li><a href="#" data-target="up-social-tab" class="tab-link" data-i18n="nav_social">UP Social Media</a></li>
                     <li><a href="#" data-target="sentiment-tab" class="tab-link">Sentiment Analysis</a></li>
@@ -244,106 +243,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Tab 2: Strategy Builder & Prediction Dashboard -->
-            <section id="strategy-tab" class="tab-content slide-up" style="display: none;">
-                <div class="card">
-                    <h2 data-i18n="strategy_title">Strategy Builder</h2>
-                    <p data-i18n="strategy_desc">Enter the details of the proposed political implementation plan to analyze public sentiment.</p>
-                    <form id="strategy-form">
-                        <div class="form-group">
-                            <label for="plan-title" data-i18n="plan_title_label">Plan Title</label>
-                            <input type="text" id="plan-title" data-i18n-placeholder="plan_title_placeholder" placeholder="e.g. Free Laptop Distribution Scheme" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="plan-description" data-i18n="plan_desc_label">Implementation Details</label>
-                            <textarea id="plan-description" rows="3" data-i18n-placeholder="plan_desc_placeholder" placeholder="Describe the policy, target audience, and key highlights..." required></textarea>
-                        </div>
-                        <button type="submit" class="btn-primary" data-i18n="analyze_btn">Analyze Strategy Impact</button>
-                    </form>
-                </div>
-
-                <!-- Prediction Dashboard Output (Initially showing placeholder) -->
-                <div class="card mt-2">
-                    <h2 data-i18n="dash_title">Prediction & Sentiment Analysis Dashboard</h2>
-                    
-                    <!-- Textual Analysis (Full Width Top) -->
-                    <div class="analysis-text-box glass-panel mb-2">
-                        <h3 data-i18n="dash_ai_pred">AI Strategy Prediction</h3>
-                        <div id="ai-prediction-content">
-                            <p style="color:var(--text-muted);" data-i18n="dash_placeholder">No strategy analyzed yet. Please submit a strategy above to generate an analysis.</p>
-                        </div>
-                    </div>
-
-                    <!-- Graphical Representation (Full Width Bottom) -->
-                    <div class="graph-box glass-panel mb-2">
-                        <h3 data-i18n="dash_graph_title">Public Sentiment Graph</h3>
-                        <div id="d3-graph-container" class="d3-container" style="height: 500px; width: 100%;">
-                            <div class="placeholder-text" style="text-align: center; color:var(--text-muted); margin-top: 20%;" data-i18n="dash_graph_placeholder">Awaiting Data...</div>
-                        </div>
-                        <p class="graph-caption" data-i18n="dash_graph_caption">Graphical representation of expected positive vs negative impact in various demographics. (Node Size = Impact, Node Color = Sentiment)</p>
-                    </div>
-
-                    <!-- Analysis Grid: Support & Resistance -->
-                    <div class="analysis-grid mt-2">
-                        <div class="glass-panel support-box">
-                            <h3 style="color:#2ecc71;">✅ Support Analysis (Who & Why)</h3>
-                            <div id="support-content">
-                                <p style="color:var(--text-muted);">Submit a strategy to see support breakdown.</p>
-                            </div>
-                        </div>
-                        <div class="glass-panel resistance-box">
-                            <h3 style="color:#ff4d4d;">🛑 Resistance Analysis (Who & Why)</h3>
-                            <div id="resistance-content">
-                                <p style="color:var(--text-muted);">Submit a strategy to see resistance breakdown.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Analysis Grid: Demography & Roadmap -->
-                    <div class="analysis-grid mt-2">
-                        <div class="glass-panel demography-box">
-                            <h3 style="color:var(--secondary);">🧬 Demographic Study</h3>
-                            <div id="demography-content">
-                                <p style="color:var(--text-muted);">Awaiting demographic impact analysis...</p>
-                            </div>
-                            <div id="success-summary-box" class="mt-1" style="background:rgba(255,255,255,0.05); padding:1rem; border-radius:8px; border:1px solid var(--border);">
-                                <strong style="color:var(--primary); display:block; margin-bottom:0.5rem;">🎯 Success Justification:</strong>
-                                <div id="success-summary-content" style="font-size:0.9rem; line-height:1.6;">Awaiting summary...</div>
-                            </div>
-                        </div>
-                        <div class="glass-panel roadmap-box">
-                            <h3 style="color:#f39c12;">🚀 Roadmap to 100% Success</h3>
-                            <div id="roadmap-content">
-                                <p style="color:var(--text-muted);">Submit a strategy to see improvement suggestions.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Tab: UP Constituency & Booth -->
-            <section id="up-booth-tab" class="tab-content fade-in" style="display: none;">
-                <div class="card" style="padding:0; overflow:hidden; min-height:85vh; display:flex; flex-direction:column;">
-                    
-                    <!-- View Header with Back Arrow -->
-                    <div id="booth-view-header" style="padding:1.2rem 2rem; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:1.5rem;">
-                        <button id="booth-back-btn" style="display:none; background:transparent; border:1px solid var(--border); color:var(--text); width:35px; height:35px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;">
-                            <span style="font-size:1.4rem;">←</span>
-                        </button>
-                        <div>
-                            <h2 id="booth-view-title" style="margin:0; font-size:1.6rem;">UP Constituency & Booth</h2>
-                            <p id="booth-view-subtitle" style="margin:0; color:var(--text-muted); font-size:0.85rem;">Select a region to begin deep-dive analysis</p>
-                        </div>
-                    </div>
-
-                    <!-- Dynamic Content Container -->
-                    <div id="booth-dynamic-container" style="flex:1; padding:2rem; overflow-y:auto;">
-                        <!-- Content will be injected here by booth.js -->
-                        <div class="loading-spinner" style="margin: 20% auto;"></div>
                     </div>
                 </div>
             </section>

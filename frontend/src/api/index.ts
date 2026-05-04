@@ -44,3 +44,47 @@ export const getOperationalSnapshot = getUPDashboard;
 
 export const getUPWeather = () => api.get('/up/weather').then(r => r.data);
 export const getActiveStateWeather = getUPWeather;
+
+export const getIndiaLS2024Summary = () =>
+  api.get('/metrics/india/ls2024-summary').then(r => r.data);
+
+export const getUPDistrictResults = () =>
+  api.get('/metrics/up/ls2024/by-district').then(r => r.data);
+
+// ── Constituency deep-dive ──────────────────────────────────────────────────
+
+export const getConstituencyResults = (name: string) =>
+  api.get(`/up/constituency/${encodeURIComponent(name)}/results`).then(r => r.data);
+
+export const getConstituencyClassification = (name: string) =>
+  api.get(`/up/constituency/${encodeURIComponent(name)}/classification`).then(r => r.data);
+
+export const getConstituencyAffidavit = (name: string, election = 'LS2024') =>
+  api.get(`/up/constituency/${encodeURIComponent(name)}/affidavit?election=${election}`).then(r => r.data);
+
+export const getConstituencyIssues = (name: string) =>
+  api.get(`/up/constituency/${encodeURIComponent(name)}/issues`).then(r => r.data);
+
+export const getConstituencySchemes = (name: string) =>
+  api.get(`/up/constituency/${encodeURIComponent(name)}/schemes`).then(r => r.data);
+
+export const getConstituencyRecommendations = (name: string) =>
+  api.get(`/up/constituency/${encodeURIComponent(name)}/recommendations`).then(r => r.data);
+
+// ── Recommendations ─────────────────────────────────────────────────────────
+
+export const getRecommendationEvidence = (recId: string) =>
+  api.get(`/up/recommendation/${encodeURIComponent(recId)}/evidence`).then(r => r.data);
+
+export const reviewRecommendation = (
+  recId: string,
+  body: { reviewed_by: string; status: string; notes?: string }
+) => api.post(`/up/recommendation/${encodeURIComponent(recId)}/review`, body).then(r => r.data);
+
+// ── Seat-level aggregates (map choropleth) ───────────────────────────────────
+
+export const getAllSeatsClassified = () =>
+  api.get('/metrics/up/ls2024/classifications').then(r => r.data);
+
+export const getCompetitiveSeats = (marginPct = 5) =>
+  api.get(`/up/seats/competitive?margin_pct=${marginPct}`).then(r => r.data);
