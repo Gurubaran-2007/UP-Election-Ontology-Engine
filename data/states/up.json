@@ -1,0 +1,32 @@
+{
+  "state_code": "UP",
+  "state_name": "Uttar Pradesh",
+  "state_name_hi": "उत्तर प्रदेश",
+  "neo4j_id": "state_UP",
+  "ls_seat_count": 80,
+  "vs_seat_count": 403,
+  "regions": [
+    "West UP", "Central UP", "East UP", "Bundelkhand", "Purvanchal",
+    "Awadh", "Brij", "Rohilkhand"
+  ],
+  "data_dir": "data/states/UP",
+  "data_files": {
+    "ls2024_results": "data/states/UP/ls2024_results.csv",
+    "ls2019_results": "data/states/UP/ls2019_results.csv",
+    "ls2019_constituency_results": "data/states/UP/ls2019_constituency_results.csv",
+    "vs2022_results": "data/states/UP/vs2022_results.csv",
+    "ls_vs_mapping": "data/mappings/up_ls_vs_mapping.json",
+    "entities": "data/aliases/up_entities.json"
+  },
+  "india_data_files": {
+    "ls2024_all": "data/eci/india_ls2024_results.csv",
+    "ls2024_winners": "data/eci/india_ls2024_winners.csv"
+  },
+  "api_prefix": "/api/up",
+  "languages": ["hi", "en"],
+  "tcpd": {
+    "state_name": "Uttar Pradesh",
+    "ge_file": "TCPD_GE_Uttar_Pradesh",
+    "ae_file": "TCPD_AE_Uttar_Pradesh"
+  }
+}

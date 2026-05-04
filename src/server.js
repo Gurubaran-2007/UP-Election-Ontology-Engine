@@ -12,35 +12,10 @@ app.use(cors());
 // ==========================================
 // Middleware: API Key Security (PRD §7.6)
 // ==========================================
-const API_KEY = process.env.INTERNAL_API_KEY;
-
-const apiKeyAuth = (req, res, next) => {
-    // Skip auth for GET routes (Public Dashboards)
-    if (req.method === 'GET') return next();
-
-    const providedKey = req.headers['x-api-key'] || req.query.api_key;
-    if (!API_KEY) {
-        console.warn('[AUTH] INTERNAL_API_KEY not configured. Allowing access for development.');
-        return next();
-    }
-
-    if (providedKey !== API_KEY) {
-        return res.status(401).json({ 
-            error: 'Unauthorized', 
-            message: 'A valid X-API-KEY header is required for this action.' 
-        });
-    }
-    next();
-};
+const { apiKeyAuth } = require('./middleware/auth');
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
-
-// Apply auth to all analytical/write routes globally if needed, 
-// or let routers handle it. For now, matching original server logic:
-app.post('/api/strategy', apiKeyAuth);
-app.post('/api/analyze', apiKeyAuth);
-app.post('/api/search', apiKeyAuth);
 
 // ==========================================
 // Self-Ping: Keep Render free tier awake
@@ -67,8 +42,14 @@ const schemesRoutes = require('./routes/schemes');
 const electionsRoutes = require('./routes/elections');
 const proxyRoutes = require('./routes/proxy');
 const statusRoutes = require('./routes/status');
+const stateRoutes = require('./routes/state');
 
 // Mount routes
+// Generic state API — /api/state/:stateCode/*
+app.use('/api/state', stateRoutes);
+app.use('/api/states', stateRoutes); // /api/states → list all
+
+// UP aliases (backward compatibility)
 app.use('/api/up', geographyRoutes); // /api/up/region, /api/up/district, /api/up/geo
 app.use('/api/up/booth', boothRoutes);
 app.use('/api/up/sentiment', sentimentRoutes);

@@ -4,5 +4,12 @@ flask>=3.0
 flask-cors>=4.0
 vaderSentiment>=3.3
 langdetect>=1.0
-transformers>=4.40
-torch>=2.2
+requests>=2.31
+
+# Shapefile → GeoJSON conversion (used by scripts/convert_shapefiles.py)
+pyshp>=2.3
+shapely>=2.0
+
+# Optional — heavy (~2GB), install separately when ready:
+# transformers>=4.40
+# torch>=2.2

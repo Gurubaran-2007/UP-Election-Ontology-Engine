@@ -318,7 +318,7 @@ MediaTopic {
   source_outlet   STRING
   pub_date        DATE
   constituency_id STRING
-  sentiment       ENUM[positive, negative, neutral]  -- aggregate, not individual
+  sentiment       ENUM[positive, negative, neutral]  -- derived strictly from NLP classification engine, not individual profiling
   source_url      STRING
 }
 ```
@@ -331,16 +331,34 @@ SeatClassification {
   constituency_id     STRING
   election_id         STRING
   -- All fields below are rule-produced, not AI-generated
-  seat_status         ENUM[safe, leaning, competitive, tossup, lost]
+  seat_status         ENUM[safe, leaning, competitive, tossup]
   turnout_trend       ENUM[improving, stable, declining, sharply_declining]
   vote_share_trend    ENUM[consolidating, stable, eroding, sharp_erosion]
-  delivery_status     ENUM[on_target, near_target, partial, critical_gap]
-  candidate_risk      ENUM[clean, cases_declared, multiple_cases, serious_cases_flagged]
+  delivery_status     ENUM[on_target, near_target, partial_coverage, critical_gap]
+  candidate_risk      ENUM[clean, cases_declared, multiple_cases_flagged, serious_cases_flagged]
   org_status          ENUM[strong, moderate, weak, absent]
   -- Provenance
   rule_version        STRING  DEFAULT "v1.0"
   computed_at         DATETIME
   input_sources       LIST[STRING]      -- which nodes fed each field
+}
+
+RuleDefinition {
+  rule_id           STRING  UNIQUE      -- "R-01", "R-02"
+  rule_version      STRING              -- "v1.0"
+  rule_name         STRING              -- "GOVERNANCE_PUSH"
+  description       STRING
+  action_type       ENUM[GOVERNANCE_PUSH, REPLACE_CANDIDATE, REINFORCE_CANDIDATE, CADRE_STRENGTHEN, ALLIANCE_REVIEW, COMMUNICATIONS_EMPHASIS, LEADERSHIP_VISIT]
+  priority          ENUM[HIGH, MEDIUM, LOW]
+  conditions        STRING              -- Cypher CASE expression or JSON
+  input_fields      LIST[STRING]
+  layer             ENUM[civic, governance, decision]
+  created_at        DATETIME
+  created_by        STRING
+  bias_audited      BOOLEAN
+  bias_audit_date   DATE
+  bias_audit_notes  STRING
+  deprecated_at     DATETIME
 }
 
 DecisionRecommendation {
@@ -395,6 +413,7 @@ Every relationship carries: `source`, `source_date`, `confidence`.
 (Party)                     -[:PART_OF_ALLIANCE {election_id}]-> (Alliance)
 
 -- Governance
+-- Note: (Constituency) here acts as a shared base label that resolves to either (LokSabhaConstituency) or (VidhanSabhaConstituency)
 (Constituency)              -[:HAS_ISSUE {election_id}]->   (Issue)
 (IssueObservation)          -[:OBSERVES]->                  (Issue)
 (IssueObservation)          -[:IN_CONSTITUENCY]->           (Constituency)
@@ -404,6 +423,7 @@ Every relationship carries: `source`, `source_date`, `confidence`.
 (MediaTopic)                -[:COVERS]->                    (Constituency)
 
 -- Decision
+-- Note: (Constituency) here acts as a shared base label that resolves to either (LokSabhaConstituency) or (VidhanSabhaConstituency)
 (SeatClassification)        -[:CLASSIFIES]->                (Constituency)
 (DecisionRecommendation)    -[:TARGETS]->                   (Constituency)
 (DecisionRecommendation)    -[:BASED_ON]->                  (EvidenceBundle)
@@ -553,6 +573,7 @@ Rule R-03: REINFORCE_CANDIDATE
 Rule R-04: CADRE_STRENGTHEN
   IF org_status IN [weak, absent]
   AND seat_status IN [competitive, tossup, leaning]
+  AND turnout_trend IN [declining, sharply_declining]
   THEN recommend CADRE_STRENGTHEN, priority MEDIUM
 
 Rule R-05: ALLIANCE_REVIEW
@@ -566,6 +587,18 @@ Rule R-06: COMMUNICATIONS_EMPHASIS
   AND issue_observation_count > 3
   AND candidate_risk = clean
   THEN recommend COMMUNICATIONS_EMPHASIS, priority MEDIUM
+
+Rule R-07: ORG_STATUS_CLASSIFICATION
+  IF OrgUnit.strength = 'absent' THEN 'absent'
+  IF OrgUnit.strength = 'weak' THEN 'weak'
+  IF OrgUnit.strength = 'moderate' THEN 'moderate'
+  IF OrgUnit.strength = 'strong' THEN 'strong'
+
+Rule R-08: LEADERSHIP_VISIT
+  IF seat_status IN [competitive, tossup]
+  AND vote_share_trend IN [eroding, sharp_erosion]
+  AND org_status = 'strong'
+  THEN recommend LEADERSHIP_VISIT, priority HIGH
 ```
 
 Rules are stored as `RuleDefinition` nodes in Neo4j so they can be queried and versioned.

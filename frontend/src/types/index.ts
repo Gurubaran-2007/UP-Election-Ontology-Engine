@@ -58,3 +58,18 @@ export type TabId =
   | 'social'
   | 'election-watch'
   | 'palette-lab';
+
+// Map drill-down levels
+export type MapLevel = 'india' | 'state' | 'district';
+
+export interface MapSelection {
+  level: MapLevel;
+  stateCode?: string;      // e.g. 'UP'
+  stateName?: string;      // e.g. 'Uttar Pradesh'
+  districtName?: string;
+}
+
+// States that have district-level data
+export const CONFIGURED_STATES: Record<string, { code: string; label: string }> = {
+  'Uttar Pradesh': { code: 'UP', label: 'Uttar Pradesh' },
+};

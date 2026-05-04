@@ -1,18 +1,30 @@
 // import_tcpd.js — Import TCPD Lok Dhaba data into Neo4j
 //
 // Usage:
-//   node scripts/import_tcpd.js --election LS2019   (ElectionResult + Candidate + Turnout for 80 LS seats)
-//   node scripts/import_tcpd.js --election VS2022   (ElectionResult + Candidate + Turnout for 403 VS seats)
+//   node scripts/import_tcpd.js --election LS2019 [--state UP]
+//   node scripts/import_tcpd.js --election VS2022 [--state UP]
+//   node scripts/import_tcpd.js --election LS2024 [--state UP]
 //
-// Input files (data/eci/):
-//   up_ls2019_results.csv  → LS2019 (extracted from TCPD_GE gz, year=2019 only)
-//   up_vs2022_results.csv  → VS2022 (extracted from TCPD_AE gz, year=2022 only)
+// Input files (data/states/<STATE_CODE>/):
+//   ls2019_results.csv  → LS2019
+//   vs2022_results.csv  → VS2022
+//   ls2024_results.csv  → LS2024
 
 require('dotenv').config();
 const neo4j = require('neo4j-driver');
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
+
+// Resolve state from CLI flag or default to UP
+const stateArg = process.argv.find((a, i) => process.argv[i - 1] === '--state') || 'UP';
+const STATE_CODE = stateArg.toUpperCase();
+const STATE_CONFIG_PATH = path.join(__dirname, '..', 'data', 'states', `${STATE_CODE.toLowerCase()}.json`);
+if (!fs.existsSync(STATE_CONFIG_PATH)) {
+    console.error(`✗ No state config found at ${STATE_CONFIG_PATH}`);
+    process.exit(1);
+}
+const STATE_CONFIG = JSON.parse(fs.readFileSync(STATE_CONFIG_PATH, 'utf8'));
 
 const URI      = process.env.NEO4J_URI      || 'neo4j://localhost:7687';
 const USER     = process.env.NEO4J_USER     || 'neo4j';
@@ -23,40 +35,44 @@ if (!PASSWORD) {
     process.exit(1);
 }
 
-const DATA_DIR = path.join(__dirname, '..', 'data', 'eci');
+// Data dir is now state-specific
+const DATA_DIR = path.join(__dirname, '..', STATE_CONFIG.data_dir);
 
 // ── Config per election ──────────────────────────────────────────────────────
 
+const idPrefix = STATE_CONFIG.state_code + '-';
+const vsIdPrefix = STATE_CONFIG.state_code + '-VS-';
+
 const ELECTION_CONFIG = {
     LS2019: {
-        file:        'up_ls2019_results.csv',
+        file:        'ls2019_results.csv',
         year:        '2019',
         election_id: 'LS2019',
         node_label:  'LokSabhaConstituency',
         id_field:    'ls_id',
-        id_prefix:   'UP-',
+        id_prefix:   idPrefix,
         source:      'TCPD_LOK_DHABA_GE',
         source_date: '2019-05-23',
         confidence:  'medium',
     },
     VS2022: {
-        file:        'up_vs2022_results.csv',
+        file:        'vs2022_results.csv',
         year:        '2022',
         election_id: 'VS2022',
         node_label:  'VidhanSabhaConstituency',
         id_field:    'vs_id',
-        id_prefix:   'UP-VS-',
+        id_prefix:   vsIdPrefix,
         source:      'TCPD_LOK_DHABA_AE',
         source_date: '2022-03-10',
         confidence:  'medium',
     },
     LS2024: {
-        file:        'up_ls2024_results.csv',
+        file:        'ls2024_results.csv',
         year:        '2024',
         election_id: 'LS2024',
         node_label:  'LokSabhaConstituency',
         id_field:    'ls_id',
-        id_prefix:   'UP-',
+        id_prefix:   idPrefix,
         source:      'OPENCITY_IN_ECI_2024',
         source_date: '2024-06-04',
         confidence:  'medium',

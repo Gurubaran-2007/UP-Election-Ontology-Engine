@@ -59,7 +59,7 @@ Imports districts, constituencies (80 LS + 403 VS), parties, alliances, election
 issues, scheme stubs, and rule definitions. Takes ~30 seconds.
 
 ```bash
-node scripts/import_all.js
+node scripts/import_all.js --state UP
 ```
 
 **What gets created:**
@@ -88,9 +88,9 @@ Imports candidates, results, turnout, and incumbent flags for all three election
 Run each election separately. Takes ~10–60 seconds per election.
 
 ```bash
-node scripts/import_tcpd.js --election LS2019
-node scripts/import_tcpd.js --election VS2022
-node scripts/import_tcpd.js --election LS2024
+node scripts/import_tcpd.js --election LS2019 --state UP
+node scripts/import_tcpd.js --election VS2022 --state UP
+node scripts/import_tcpd.js --election LS2024 --state UP
 ```
 
 **What gets created per election:**
@@ -101,16 +101,28 @@ node scripts/import_tcpd.js --election LS2024
 | VS2022 | ~4442 | 403 | 403 |
 | LS2024 | ~931 | 80 | 80 |
 
-**Source files** (must exist in `data/eci/`):
+**Source files** (must exist in `data/states/UP/`):
 
 ```
-data/eci/up_ls2019_results.csv    ← from TCPD Lok Dhaba GE dataset (year=2019, state=UP)
-data/eci/up_vs2022_results.csv    ← from TCPD AE dataset (year=2022, state=UP)
-data/eci/up_ls2024_results.csv    ← from opencity.in / ECI (80 PC results)
+data/states/UP/ls2019_results.csv    ← from TCPD Lok Dhaba GE dataset (year=2019, state=UP)
+data/states/UP/vs2022_results.csv    ← from TCPD AE dataset (year=2022, state=UP)
+data/states/UP/ls2024_results.csv    ← from opencity.in / ECI (80 PC results)
 ```
 
 > The repo ships with all three CSV files. If they are missing, see `docs/datasources.md`
 > for download instructions.
+
+**To add another state later:**
+```bash
+# 1. Create config
+cp data/states/up.json data/states/mh.json   # edit for Maharashtra
+# 2. Place CSVs
+mkdir -p data/states/MH
+# 3. Drop in ls2024_results.csv, vs_results.csv etc.
+# 4. Run
+node scripts/import_all.js --state MH
+node scripts/import_tcpd.js --election LS2024 --state MH
+```
 
 ---
 
@@ -120,7 +132,7 @@ After LS2024 ElectionResult nodes exist, Step 11 will compute `SeatClassificatio
 nodes for all 80 seats using `RULE_V1_SEAT_STATUS` (margin < 2% = tossup, < 5% = competitive):
 
 ```bash
-node scripts/import_all.js
+node scripts/import_all.js --state UP
 ```
 
 Expected output from Step 11:
@@ -163,7 +175,7 @@ by the Express server's built-in `setInterval` cron (no separate cron job needed
 ## 8. Verify the graph
 
 ```bash
-node scripts/import_all.js   # Step 12 prints counts for all node types
+node scripts/import_all.js --state UP   # Step 12 prints counts for all node types
 ```
 
 Or query Neo4j Browser directly:
@@ -187,11 +199,11 @@ RETURN ls.name, er.winner, er.margin_pct, sc.seat_status, count(sd) AS schemes;
 ```
 1. npm install
 2. python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-3. node scripts/import_all.js                          # base graph
+3. node scripts/import_all.js --state UP                          # base graph
 4. node scripts/import_tcpd.js --election LS2019
 5. node scripts/import_tcpd.js --election VS2022
 6. node scripts/import_tcpd.js --election LS2024
-7. node scripts/import_all.js                          # re-run for SeatClassification
+7. node scripts/import_all.js --state UP                          # re-run for SeatClassification
 8. .venv/bin/python scripts/load_entities_to_neo4j.py  # leader entities
 9. .venv/bin/python run_sentiment_pipeline.py           # first news fetch
 10. node server.js                                      # start API server

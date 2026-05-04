@@ -1,11 +1,21 @@
 // import_all.js — Master import script for local Neo4j
-// Run: node scripts/import_all.js
-// Prerequisites: Neo4j running on localhost:7687, data files in data/ directory
+// Run: node scripts/import_all.js [--state UP]
+// Prerequisites: Neo4j running on localhost:7687, data files in data/states/<CODE>/ directory
 
 require('dotenv').config();
 const neo4j = require('neo4j-driver');
 const fs = require('fs');
 const path = require('path');
+
+// Resolve state from CLI flag or default to UP
+const stateArg = process.argv.find((a, i) => process.argv[i - 1] === '--state') || 'UP';
+const STATE_CODE = stateArg.toUpperCase();
+const STATE_CONFIG_PATH = path.join(__dirname, '..', 'data', 'states', `${STATE_CODE.toLowerCase()}.json`);
+if (!fs.existsSync(STATE_CONFIG_PATH)) {
+    console.error(`✗ No state config found at ${STATE_CONFIG_PATH}`);
+    process.exit(1);
+}
+const STATE_CONFIG = JSON.parse(fs.readFileSync(STATE_CONFIG_PATH, 'utf8'));
 
 const URI = process.env.NEO4J_URI || 'neo4j://localhost:7687';
 const USER = process.env.NEO4J_USER || 'neo4j';
@@ -199,6 +209,7 @@ async function createConstraints() {
         `CREATE CONSTRAINT bundle_id_unique IF NOT EXISTS FOR (eb:EvidenceBundle) REQUIRE eb.bundle_id IS UNIQUE`,
         `CREATE CONSTRAINT topic_id_unique IF NOT EXISTS FOR (mt:MediaTopic) REQUIRE mt.topic_id IS UNIQUE`,
         `CREATE CONSTRAINT rule_id_unique IF NOT EXISTS FOR (rd:RuleDefinition) REQUIRE rd.rule_id IS UNIQUE`,
+        `CREATE CONSTRAINT state_code_unique IF NOT EXISTS FOR (s:State) REQUIRE s.state_code IS UNIQUE`,
     ];
 
     for (const c of constraints) {
@@ -221,6 +232,38 @@ async function createConstraints() {
         } catch (err) {
             console.log(`  ! Index: ${err.message}`);
         }
+    }
+}
+
+// ============================================================
+// STEP 1b: Create State node
+// ============================================================
+async function createStateNode() {
+    console.log('\n=== Step 1b: Creating State Node ===');
+    const stateConfigPath = path.join(DATA_DIR, 'states', 'up.json');
+    const config = JSON.parse(fs.readFileSync(stateConfigPath, 'utf8'));
+    const session = driver.session();
+    try {
+        await session.run(
+            `MERGE (s:State {state_code: $state_code})
+             SET s.state_name = $state_name,
+                 s.state_name_hi = $state_name_hi,
+                 s.ls_seat_count = $ls_seat_count,
+                 s.vs_seat_count = $vs_seat_count,
+                 s.source = 'ECI',
+                 s.source_date = '2026-05-03',
+                 s.confidence = 'high'`,
+            {
+                state_code: config.state_code,
+                state_name: config.state_name,
+                state_name_hi: config.state_name_hi,
+                ls_seat_count: neo4j.int(config.ls_seat_count),
+                vs_seat_count: neo4j.int(config.vs_seat_count),
+            }
+        );
+        console.log(`  ✓ State node: ${config.state_name} (${config.state_code})`);
+    } finally {
+        await session.close();
     }
 }
 
@@ -430,11 +473,12 @@ async function importConstituencies() {
                  SET ls.name = $name,
                      ls.reservation = $reservation,
                      ls.ls_no = $ls_no,
+                     ls.state_code = $state_code,
                      ls.source = $source,
                      ls.source_date = date($source_date),
                      ls.ingested_at = datetime($ingested_at),
                      ls.confidence = $confidence`,
-                lsNode
+                { ...lsNode, state_code: STATE_CODE }
             );
             lsCount++;
         }
@@ -463,6 +507,7 @@ async function importConstituencies() {
                      SET vs.name = $name,
                          vs.reservation = $reservation,
                          vs.ls_id = $ls_id,
+                         vs.state_code = $state_code,
                          vs.source = $source,
                          vs.source_date = date($source_date),
                          vs.ingested_at = datetime($ingested_at),
@@ -476,6 +521,7 @@ async function importConstituencies() {
                      }]->(vs)`,
                     {
                         ...vsNode,
+                        state_code: STATE_CODE,
                         rel_source: relProvenance.source,
                         rel_source_date: relProvenance.source_date,
                         rel_confidence: relProvenance.confidence,
@@ -508,6 +554,19 @@ async function importConstituencies() {
             }
         }
         console.log(`  ✓ Created ${districtLinkCount} District→LS links`);
+
+        // Link all constituencies to State node
+        const stateResult = await session.run(
+            `MATCH (s:State {state_code: $stateCode})
+             MATCH (ls:LokSabhaConstituency {state_code: $stateCode})
+             MERGE (ls)-[:BELONGS_TO_STATE]->(s)
+             WITH s
+             MATCH (vs:VidhanSabhaConstituency {state_code: $stateCode})
+             MERGE (vs)-[:BELONGS_TO_STATE]->(s)
+             RETURN count(*) AS linked`,
+            { stateCode: STATE_CODE }
+        );
+        console.log(`  ✓ Linked constituencies to State node`);
 
     } finally {
         await session.close();
@@ -642,9 +701,9 @@ async function importIssues() {
 async function importConstituencyResults() {
     console.log('\n=== Step 6: Importing 2019 LS Constituency Results ===');
 
-    const resultsPath = path.join(DATA_DIR, 'eci', 'up_ls2019_constituency_results.json');
+    const resultsPath = path.join(__dirname, '..', STATE_CONFIG.data_files.ls2019_constituency_results.replace('.csv', '.json'));
     if (!fs.existsSync(resultsPath)) {
-        console.log('  ✗ UP 2019 results file not found.');
+        console.log(`  ✗ ${STATE_CODE} 2019 results file not found at ${resultsPath}`);
         console.log('  → Run: node scripts/extract_up_data.js first');
         return;
     }
@@ -835,15 +894,16 @@ async function importConstituencyResults() {
 async function importTurnout() {
     console.log('\n=== Step 7: Importing Turnout ===');
 
+    const stateDataDir = path.join(__dirname, '..', STATE_CONFIG.data_dir);
     const candidatePaths = [
-        path.join(DATA_DIR, 'eci', 'up_ls2019_turnout.json'),
-        path.join(DATA_DIR, 'manual', 'up_ls2019_turnout.json'),
+        path.join(stateDataDir, 'ls2019_turnout.json'),
+        path.join(DATA_DIR, 'manual', `${STATE_CODE.toLowerCase()}_ls2019_turnout.json`),
     ];
     const turnoutPath = candidatePaths.find((filePath) => fs.existsSync(filePath));
 
     if (!turnoutPath) {
         console.log('  ! No turnout source file found. Skipping Turnout import.');
-        console.log('  ! Expected JSON path: data/eci/up_ls2019_turnout.json or data/manual/up_ls2019_turnout.json');
+        console.log(`  ! Expected: ${candidatePaths[0]}`);
         return;
     }
 
@@ -936,7 +996,10 @@ async function importTurnout() {
 async function importAffidavits() {
     console.log('\n=== Step 8: Importing Affidavits ===');
 
-    const affPath = path.join(DATA_DIR, 'manual', 'up_ls2019_affidavits.csv');
+    const stateDataDir = path.join(__dirname, '..', STATE_CONFIG.data_dir);
+    const affPath = fs.existsSync(path.join(stateDataDir, 'ls2019_affidavits.csv'))
+        ? path.join(stateDataDir, 'ls2019_affidavits.csv')
+        : path.join(DATA_DIR, 'manual', `${STATE_CODE.toLowerCase()}_ls2019_affidavits.csv`);
     if (!fs.existsSync(affPath)) {
         console.log('  ! Affidavit source file not found. Skipping.');
         return;
@@ -1284,6 +1347,7 @@ async function main() {
     try {
         requireEnv('NEO4J_PASSWORD', PASSWORD);
         await createConstraints();
+        await createStateNode();
         await importDistricts();
         await importConstituencies();
         await importElections();

@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const driver = require('../config/db');
+const fs = require('fs');
+const path = require('path');
 
 // /api/up/region/:regionId/districts
 router.get('/region/:regionId/districts', async (req, res) => {
@@ -162,6 +164,34 @@ router.get('/geo', async (req, res) => {
         }
     }
     res.status(503).json({ error: 'GeoJSON unavailable. Check server internet connection.' });
+});
+
+// /api/geo/india — India states GeoJSON
+const INDIA_STATES_PATH = path.join(__dirname, '..', '..', 'public', 'maps', 'india_states.geojson');
+let _indiaGeoCache = null;
+
+router.get('/geo/india', (req, res) => {
+    if (_indiaGeoCache) return res.json(_indiaGeoCache);
+    if (!fs.existsSync(INDIA_STATES_PATH)) {
+        return res.status(503).json({ error: 'India GeoJSON not found. Run scripts/convert_shapefiles.py first.' });
+    }
+    _indiaGeoCache = JSON.parse(fs.readFileSync(INDIA_STATES_PATH, 'utf8'));
+    res.json(_indiaGeoCache);
+});
+
+// /api/geo/districts/:stateCode — district GeoJSON for a given state
+const _districtGeoCache = new Map();
+
+router.get('/geo/districts/:stateCode', (req, res) => {
+    const code = req.params.stateCode.toUpperCase();
+    if (_districtGeoCache.has(code)) return res.json(_districtGeoCache.get(code));
+    const filePath = path.join(__dirname, '..', '..', 'public', 'maps', `${code}_districts.geojson`);
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: `District map for "${code}" not available yet.` });
+    }
+    const geo = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    _districtGeoCache.set(code, geo);
+    res.json(geo);
 });
 
 module.exports = router;

@@ -64,17 +64,17 @@ Tracks all cleanup required before Phase 1 implementation begins. Based on `PRD.
 - [x] Remove fabricated mock data from `GET /api/up/constituency/:constName/analysis`
 - [x] Remove broken `axios` dependency usage — `axios` is not installed; routes using it always throw `ReferenceError` and fall back to mock data
 - [x] Replace mock district constituencies response in `GET /api/up/district/:district/constituencies` with real graph traversal
-- [ ] Fix `closeDistrictPanel()` undefined reference in `public/upmap.js`
-- [ ] Add authentication middleware for all `DecisionRecommendation` write endpoints (PRD §7.6)
-- [ ] Enforce `reviewed_by` + `reviewed_at` check before status can be set to `actioned` (PRD §7.2, requirement D-03)
+- [x] Fix `closeDistrictPanel()` undefined reference in `public/upmap.js`
+- [x] Add authentication middleware for all `DecisionRecommendation` write endpoints (PRD §7.6)
+- [x] Enforce `reviewed_by` + `reviewed_at` check before status can be set to `actioned` (PRD §7.2, requirement D-03)
 
 ---
 
 ## Priority 4 — `data/` Files
 
 - [x] `data/mappings/community_blocks.json` is excluded from the active import path until redesigned
-- [ ] `data/eci/elections.json` — `type` field uses `"Lok Sabha"` / `"Vidhan Sabha"` strings; must be changed to `"LS"` / `"VS"` to match PRD schema ENUM
-- [ ] `data/eci/elections.json` — contains partisan seat counts (`bjp_seats`, `sp_seats`, etc.) at top level; remove these fields
+- [x] `data/eci/elections.json` — `type` field uses `"Lok Sabha"` / `"Vidhan Sabha"` strings; must be changed to `"LS"` / `"VS"` to match PRD schema ENUM
+- [x] `data/eci/elections.json` — contains partisan seat counts (`bjp_seats`, `sp_seats`, etc.) at top level; remove these fields
 
 ---
 
@@ -82,15 +82,15 @@ Tracks all cleanup required before Phase 1 implementation begins. Based on `PRD.
 
 These are gaps in the PRD schema itself, identified by ONTOLOGY_ANALYSIS.md. Fix before writing import scripts for new node types.
 
-- [ ] Define `RuleDefinition` node schema — referenced in PRD §4.4 and requirement D-04 but never defined with fields
-- [ ] Resolve `seat_status = "lost"` — listed in `SeatClassification` ENUM but no rule produces it; either write the rule or remove the value
-- [ ] Fix ENUM mismatch: rule outputs `"multiple_cases_flagged"` but schema ENUM says `"multiple_cases"` — pick one
-- [ ] Fix ENUM mismatch: rule outputs `"partial_coverage"` but schema ENUM says `"partial"` — pick one
-- [ ] Write org_status classification rule (R-07) — `SeatClassification.org_status` has no producing rule in Rule Set v1.0
-- [ ] Write `LEADERSHIP_VISIT` triggering rule (R-08) — action type exists but has no rule
-- [ ] Integrate `turnout_trend` into at least one decision rule — currently classified but never consumed
-- [ ] Replace generic `(Constituency)` label in PRD §4.2 relationship definitions with explicit labels — add dual `:LokSabhaConstituency:Constituency` label strategy or enumerate which label each relationship applies to
-- [ ] Define `MediaTopic.sentiment` computation method — field exists in schema but computation is undefined; risk of violating PRD §1.2 exclusion on individual-level sentiment
+- [x] Define `RuleDefinition` node schema — referenced in PRD §4.4 and requirement D-04 but never defined with fields
+- [x] Resolve `seat_status = "lost"` — listed in `SeatClassification` ENUM but no rule produces it; either write the rule or remove the value
+- [x] Fix ENUM mismatch: rule outputs `"multiple_cases_flagged"` but schema ENUM says `"multiple_cases"` — pick one
+- [x] Fix ENUM mismatch: rule outputs `"partial_coverage"` but schema ENUM says `"partial"` — pick one
+- [x] Write org_status classification rule (R-07) — `SeatClassification.org_status` has no producing rule in Rule Set v1.0
+- [x] Write `LEADERSHIP_VISIT` triggering rule (R-08) — action type exists but has no rule
+- [x] Integrate `turnout_trend` into at least one decision rule — currently classified but never consumed
+- [x] Replace generic `(Constituency)` label in PRD §4.2 relationship definitions with explicit labels — add dual `:LokSabhaConstituency:Constituency` label strategy or enumerate which label each relationship applies to
+- [x] Define `MediaTopic.sentiment` computation method — field exists in schema but computation is undefined; risk of violating PRD §1.2 exclusion on individual-level sentiment
 
 ---
 

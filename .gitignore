@@ -24,3 +24,8 @@ Thumbs.db
 # Editor
 .vscode/
 *.swp
+
+
+# virtial environment
+.venv/
+venv/

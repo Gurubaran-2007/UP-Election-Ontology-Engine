@@ -22,11 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 landingPage.style.display = 'none';
                 document.getElementById('app-container').style.display = 'flex';
-                // Automatically load UP Dashboard on entry
-                if(!window.upDashboardLoaded) {
-                    loadUPDashboard();
-                    window.upDashboardLoaded = true;
-                }
+                // Load India map (default first tab)
+                setTimeout(() => {
+                    if (typeof window._initIndiaMap === 'function') window._initIndiaMap();
+                }, 200);
             }, 500); // match animation duration
         });
     }
@@ -67,6 +66,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (targetId === 'up-map-tab') {
                     setTimeout(() => {
                         if (typeof window._initUPMap === 'function') window._initUPMap();
+                    }, 150);
+                }
+
+                // Lazy-load India Map
+                if (targetId === 'india-map-tab') {
+                    setTimeout(() => {
+                        if (typeof window._initIndiaMap === 'function') window._initIndiaMap();
                     }, 150);
                 }
             }

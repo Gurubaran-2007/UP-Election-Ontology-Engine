@@ -3,25 +3,7 @@ const router = express.Router();
 const driver = require('../config/db');
 
 // Middleware: API Key Security (PRD §7.6)
-const apiKeyAuth = (req, res, next) => {
-    // Skip auth for GET routes (Public Dashboards)
-    if (req.method === 'GET') return next();
-
-    const API_KEY = process.env.INTERNAL_API_KEY;
-    const providedKey = req.headers['x-api-key'] || req.query.api_key;
-    if (!API_KEY) {
-        console.warn('[AUTH] INTERNAL_API_KEY not configured. Allowing access for development.');
-        return next();
-    }
-
-    if (providedKey !== API_KEY) {
-        return res.status(401).json({ 
-            error: 'Unauthorized', 
-            message: 'A valid X-API-KEY header is required for this action.' 
-        });
-    }
-    next();
-};
+const { apiKeyAuth } = require('../middleware/auth');
 
 // /api/up/constituency/:name/results
 router.get('/constituency/:name/results', async (req, res) => {

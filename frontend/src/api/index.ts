@@ -10,6 +10,11 @@ export const getDistrictData = (name: string) =>
 
 export const getUPGeo = () => api.get('/up/geo').then(r => r.data);
 
+export const getIndiaGeo = () => api.get('/up/geo/india').then(r => r.data);
+
+export const getStateDistrictGeo = (stateCode: string) =>
+  api.get(`/up/geo/districts/${stateCode}`).then(r => r.data);
+
 export const getUPNews = () => api.get<{ status: string; results: NewsItem[] }>('/up/news').then(r => r.data);
 
 export const getChannelLive = (handle: string) =>

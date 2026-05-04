@@ -38,7 +38,8 @@
             </div>
             <nav class="sidebar-nav">
                 <ul>
-                    <li><a href="#" data-target="up-map-tab" class="tab-link active" data-i18n="nav_map">UP District Map</a></li>
+                    <li><a href="#" data-target="india-map-tab" class="tab-link active">India Map</a></li>
+                    <li><a href="#" data-target="up-map-tab" class="tab-link" data-i18n="nav_map">UP District Map</a></li>
                     <li><a href="#" data-target="up-dashboard-tab" class="tab-link" data-i18n="nav_up">Uttar Pradesh Schemes</a></li>
                     <li><a href="#" data-target="up-booth-tab" class="tab-link">UP Constituency & Booth</a></li>
                     <li><a href="#" data-target="strategy-tab" class="tab-link" data-i18n="nav_strategy">Strategy Builder & Prediction</a></li>
@@ -94,8 +95,87 @@
                 </div>
             </section>
 
+            <!-- Tab: India Map -->
+            <section id="india-map-tab" class="tab-content active fade-in">
+                <div class="card" style="padding: 0; overflow: hidden; position: relative;">
+                    <!-- Header -->
+                    <div style="padding: 1.5rem 2rem; background: linear-gradient(135deg, rgba(255,153,51,0.15), rgba(19,78,74,0.2)); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h2 style="margin:0; font-size:1.8rem;">🇮🇳 India — National Overview</h2>
+                            <p style="margin:0.3rem 0 0; color:var(--text-muted); font-size:0.9rem;">Macro intelligence, voter segments &amp; state drill-downs</p>
+                        </div>
+                        <div id="india-coming-soon" style="font-size:0.85rem; color:var(--secondary); font-weight:600; background: rgba(255,153,51,0.1); padding: 6px 14px; border-radius: 20px; border: 1px solid var(--secondary); opacity:0; transition: opacity 0.3s;"></div>
+                    </div>
+
+                    <!-- Top Row: Macro Political Metrics -->
+                    <div style="display: flex; gap: 1rem; padding: 1.5rem 2rem 0; background: var(--bg-dark);">
+                        <div style="flex:1; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; text-align: center;">
+                            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.4rem;">Parliamentary Seats</div>
+                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary);">543</div>
+                        </div>
+                        <div style="flex:1; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; text-align: center;">
+                            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.4rem;">Ruling Alliance</div>
+                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary);">NDA</div>
+                        </div>
+                        <div style="flex:1; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; text-align: center;">
+                            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.4rem;">National Turnout Trend</div>
+                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--positive);">67.4% <span style="font-size: 0.8rem;">(▲ 1.2%)</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Second Row: National Demographic Segments Overlay -->
+                    <div style="padding: 1.5rem 2rem 1rem; background: var(--bg-dark);">
+                        <div style="font-size: 0.85rem; text-transform: uppercase; color: var(--secondary); margin-bottom: 0.8rem; font-weight: bold;">National Segments</div>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <div style="flex:1; min-width:180px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem; cursor: pointer;" title="Youth weakness concentrated in Maharashtra, Bihar, Karnataka">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
+                                    <strong style="color:var(--text-main);">Youth (18-25)</strong>
+                                    <span style="color:var(--negative); font-size:0.8rem;">▼ 2.1%</span>
+                                </div>
+                                <div style="font-size:0.75rem; color:var(--text-muted);">Share: 18% | Support: Flat</div>
+                            </div>
+                            <div style="flex:1; min-width:180px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
+                                    <strong style="color:var(--text-main);">Women</strong>
+                                    <span style="color:var(--positive); font-size:0.8rem;">▲ 4.5%</span>
+                                </div>
+                                <div style="font-size:0.75rem; color:var(--text-muted);">Share: 48% | Turnout: High</div>
+                            </div>
+                            <div style="flex:1; min-width:180px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
+                                    <strong style="color:var(--text-main);">Urban</strong>
+                                    <span style="color:var(--positive); font-size:0.8rem;">▲ 1.8%</span>
+                                </div>
+                                <div style="font-size:0.75rem; color:var(--text-muted);">Share: 35% | Improving vs Rural</div>
+                            </div>
+                            <div style="flex:1; min-width:180px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
+                                    <strong style="color:var(--text-main);">SC/ST/OBC</strong>
+                                    <span style="color:var(--text-muted); font-size:0.8rem;">▬ Flat</span>
+                                </div>
+                                <div style="font-size:0.75rem; color:var(--text-muted);">Share: 68% | Support: Stable</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Map container -->
+                    <div style="position: relative; height: 85vh; min-height: 600px; background: var(--bg-dark);">
+                        <!-- Tooltip -->
+                        <div id="india-map-tooltip" style="position:absolute; background:rgba(15,23,42,0.95); color:#f1f5f9; padding:8px 14px; border-radius:8px; border:1px solid var(--border); font-size:0.82rem; pointer-events:none; opacity:0; transition:opacity 0.15s; z-index:10;"></div>
+
+                        <!-- SVG target -->
+                        <div id="india-map-svg" style="width:100%; height:100%;">
+                            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center;">
+                                <div class="loading-spinner"></div>
+                                <p style="color:var(--text-muted); margin-top:1rem;">Loading India Map...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- Tab: UP District Map -->
-            <section id="up-map-tab" class="tab-content active fade-in">
+            <section id="up-map-tab" class="tab-content fade-in" style="display:none;">
                 <div class="card" style="padding: 0; overflow: hidden; position: relative;">
                     <!-- Header -->
                     <div style="padding: 1.5rem 2rem; background: linear-gradient(135deg, rgba(255,153,51,0.15), rgba(19,78,74,0.2)); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
@@ -404,6 +484,7 @@
 
     <script src="state.js"></script>
     <script src="script.js"></script>
+    <script src="indiamap.js"></script>
     <script src="upmap.js"></script>
     <script src="upsocial.js"></script>
     <script src="booth.js"></script>
