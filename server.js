@@ -268,9 +268,9 @@ app.get('/api/up/constituency/:constName/analysis', async (req, res) => {
             turnout: record.get('turnout').toInt()
         }));
 
-        const totalVotes = candidates.reduce((sum, c) => sum + c.votes, 0);
-        const totalElectors = booths.reduce((sum, b) => sum + b.electors, 0);
-        const winner = candidates[0];
+        const totalVotes = candidates.reduce((sum, c) => sum + (c.votes || 0), 0);
+        const totalElectors = booths.reduce((sum, b) => sum + (b.electors || 0), 0);
+        const winner = candidates[0] || { name: "N/A", party: "N/A", votes: 0 };
 
         res.json({
             basic: { 
@@ -280,7 +280,7 @@ app.get('/api/up/constituency/:constName/analysis', async (req, res) => {
             results: { 
                 winner: winner.name, 
                 party: winner.party, 
-                vote_share: totalVotes > 0 ? Math.round((winner.votes / totalVotes) * 100) : 0,
+                vote_share: totalVotes > 0 ? Math.round(((winner.votes || 0) / totalVotes) * 100) : 0,
                 chart_data: candidates.slice(0, 5).map(c => ({ label: c.name.split(' ')[0], val: c.votes }))
             },
             candidates: candidates.slice(0, 10),
@@ -289,7 +289,7 @@ app.get('/api/up/constituency/:constName/analysis', async (req, res) => {
             trends: { graph_explanation: `This result is aggregated from ${booths.length} individual polling stations.` },
             graph_explanation: "The connection between Polling Station locations and Party performance is now live.",
             alerts: ["100% Ground Truth Aggregated"],
-            booths: booths.slice(0, 50) // Showing top 50 booths for performance
+            booths: booths.slice(0, 50)
         });
     } catch (e) {
         console.error('[ANALYSIS] Error:', e.message);
