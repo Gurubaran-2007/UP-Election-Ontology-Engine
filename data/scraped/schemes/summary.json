@@ -1,0 +1,131 @@
+{
+  "total_schemes": 23,
+  "districts_with_data": 0,
+  "financial_year": "2024-2025",
+  "sources_scraped": [
+    "schemes",
+    "mgnrega",
+    "fc_grants",
+    "pfms",
+    "beneficiaries"
+  ],
+  "schemes": [
+    {
+      "code": "MGNREGA",
+      "name": "MGNREGA - Mahatma Gandhi National Rural Employment Guarantee Act",
+      "type": "Central"
+    },
+    {
+      "code": "PMGSY",
+      "name": "PMGSY - Pradhan Mantri Gram Sadak Yojana",
+      "type": "Central"
+    },
+    {
+      "code": "PMAY",
+      "name": "PMAY - Pradhan Mantri Awas Yojana (Rural)",
+      "type": "Central"
+    },
+    {
+      "code": "PMAY-Urban",
+      "name": "PMAY - Pradhan Mantri Awas Yojana (Urban)",
+      "type": "Central"
+    },
+    {
+      "code": "JJM",
+      "name": "JJM - Jal Jeevan Mission",
+      "type": "Central"
+    },
+    {
+      "code": "SBM-G",
+      "name": "SBM - Swachh Bharat Mission (Gramin)",
+      "type": "Central"
+    },
+    {
+      "code": "SBM-U",
+      "name": "SBM - Swachh Bharat Mission (Urban)",
+      "type": "Central"
+    },
+    {
+      "code": "PM-KISAN",
+      "name": "PM-KISAN - Pradhan Mantri Kisan Samman Nidhi",
+      "type": "Central"
+    },
+    {
+      "code": "KCC",
+      "name": "KCC - Kisan Credit Card",
+      "type": "Central"
+    },
+    {
+      "code": "PMFBY",
+      "name": "PMFBY - Pradhan Mantri Fasal Bima Yojana",
+      "type": "Central"
+    },
+    {
+      "code": "SCD",
+      "name": "SCD - Saansad Adarsh Gram Yojana",
+      "type": "Central"
+    },
+    {
+      "code": "NSAP",
+      "name": "NSAP - National Social Assistance Programme",
+      "type": "Central"
+    },
+    {
+      "code": "ICDS",
+      "name": "ICDS - Integrated Child Development Services",
+      "type": "Central"
+    },
+    {
+      "code": "NFSA",
+      "name": "NFSA - National Food Security Act",
+      "type": "Central"
+    },
+    {
+      "code": "MDM",
+      "name": "MDM - Mid Day Meal",
+      "type": "Central"
+    },
+    {
+      "code": "NRLM",
+      "name": "NRLM - National Rural Livelihood Mission",
+      "type": "Central"
+    },
+    {
+      "code": "DAY-NRLM",
+      "name": "DAY-NRLM - Deendayal Antyodaya Yojana",
+      "type": "Central"
+    },
+    {
+      "code": "PM-Dev",
+      "name": "PM-Dev - Prime Minister's Development Initiative",
+      "type": "State"
+    },
+    {
+      "code": "Kanya",
+      "name": "Kanya Sumangala Yojana",
+      "type": "State"
+    },
+    {
+      "code": "Ladli",
+      "name": "Ladli Laxmi Yojana",
+      "type": "State"
+    },
+    {
+      "code": "RGGVY",
+      "name": "Rajiv Gandhi Gramin Vidyutikaran Yojana",
+      "type": "State"
+    },
+    {
+      "code": "SP",
+      "name": "Sadak Pension Yojana",
+      "type": "State"
+    },
+    {
+      "code": "VR",
+      "name": "Vidrang Yojana",
+      "type": "State"
+    }
+  ],
+  "sample_district_data": [],
+  "total_pfms_expenditure_lakhs": 16871.48
+}

@@ -1,0 +1,25 @@
+{
+  "sources": [
+    {
+      "name": "Economic Data (GVA)",
+      "file": "data/Merged_Annually_Quarterly.csv",
+      "records": 7797,
+      "type": "state-level economic indicators"
+    },
+    {
+      "name": "Block-wise Expenditure",
+      "file": "data/BlockWiseExpenditureReport_2025-2026.xls",
+      "type": "block level expenditure"
+    },
+    {
+      "name": "ECI Election Data",
+      "file": "data/eci/vs2022/detailed_results.csv",
+      "type": "election results"
+    },
+    {
+      "name": "ECI Election Data",
+      "file": "data/eci/india_ls2024_results.csv",
+      "type": "election results"
+    }
+  ]
+}

@@ -660,28 +660,35 @@ function DistrictPanel({ data, lsResults }: { data: DistrictData; lsResults: any
       {/* LS Election Results from graph */}
       {constituencies.length > 0 && (
         <SectionCard title="Election Results" icon="🗳️">
-          {constituencies.map((seg: any) => (
+          {constituencies.map((seg: any) => {
+            const terms = seg.results?.length ? seg.results : [seg];
+            return (
             <Box key={seg.ls_id} sx={{ mb: 1.25, pb: 1.25, borderBottom: '1px solid rgba(148,163,184,0.08)', '&:last-child': { mb: 0, pb: 0, border: 'none' } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.4 }}>
                 <Typography sx={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 600 }}>{seg.ls_name}</Typography>
-                {seg.election_id && <Typography sx={{ fontSize: '0.6rem', color: '#475569', background: 'rgba(255,255,255,0.06)', px: 0.8, py: 0.2, borderRadius: 0.75 }}>{seg.election_id}</Typography>}
+                <Typography sx={{ fontSize: '0.6rem', color: '#475569', background: 'rgba(255,255,255,0.06)', px: 0.8, py: 0.2, borderRadius: 0.75 }}>
+                  {terms.length} term{terms.length === 1 ? '' : 's'}
+                </Typography>
               </Box>
-              {seg.winner ? (
-                <>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                    <Box sx={{ width: 10, height: 10, borderRadius: '50%', background: PARTY_COLORS[seg.party_id] ?? '#475569', flexShrink: 0 }} />
-                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#f1f5f9', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {seg.winner}
-                    </Typography>
-                    <Chip label={PARTY_LABELS[seg.party_id] ?? seg.party_id?.toUpperCase() ?? 'N/A'} size="small"
-                      sx={{ background: `${PARTY_COLORS[seg.party_id] ?? '#475569'}33`, color: PARTY_COLORS[seg.party_id] ?? '#94a3b8', fontSize: '0.62rem', height: 18, fontWeight: 700 }} />
+              {terms.some((term: any) => term.winner) ? (
+                terms.map((term: any) => (
+                  <Box key={`${seg.ls_id}-${term.election_id || 'result'}`} sx={{ mt: 0.65, p: 0.65, borderRadius: 1, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(148,163,184,0.08)' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                      <Typography sx={{ width: 42, fontSize: '0.62rem', color: '#64748b', fontWeight: 800 }}>{term.election_id || 'Result'}</Typography>
+                      <Box sx={{ width: 10, height: 10, borderRadius: '50%', background: PARTY_COLORS[term.party_id] ?? '#475569', flexShrink: 0 }} />
+                      <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#f1f5f9', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {term.winner || 'No winner data'}
+                      </Typography>
+                      <Chip label={PARTY_LABELS[term.party_id] ?? term.party_id?.toUpperCase() ?? 'N/A'} size="small"
+                        sx={{ background: `${PARTY_COLORS[term.party_id] ?? '#475569'}33`, color: PARTY_COLORS[term.party_id] ?? '#94a3b8', fontSize: '0.62rem', height: 18, fontWeight: 700 }} />
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1.5, mt: 0.35, pl: 5.25, flexWrap: 'wrap' }}>
+                      {term.vote_share != null && <Typography sx={{ fontSize: '0.65rem', color: '#64748b' }}>Vote share <b style={{ color: '#cbd5e1' }}>{Number(term.vote_share).toFixed(1)}%</b></Typography>}
+                      {term.margin_pct != null && <Typography sx={{ fontSize: '0.65rem', color: '#64748b' }}>Margin <b style={{ color: Number(term.margin_pct) < 5 ? '#fbbf24' : '#cbd5e1' }}>{Number(term.margin_pct).toFixed(1)}%</b></Typography>}
+                      {term.margin_votes != null && <Typography sx={{ fontSize: '0.65rem', color: '#64748b' }}>({Number(term.margin_votes).toLocaleString('en-IN')} votes)</Typography>}
+                    </Box>
                   </Box>
-                  <Box sx={{ display: 'flex', gap: 1.5, mt: 0.4 }}>
-                    {seg.vote_share != null && <Typography sx={{ fontSize: '0.65rem', color: '#64748b' }}>Vote share <b style={{ color: '#cbd5e1' }}>{Number(seg.vote_share).toFixed(1)}%</b></Typography>}
-                    {seg.margin_pct != null && <Typography sx={{ fontSize: '0.65rem', color: '#64748b' }}>Margin <b style={{ color: Number(seg.margin_pct) < 5 ? '#fbbf24' : '#cbd5e1' }}>{Number(seg.margin_pct).toFixed(1)}%</b></Typography>}
-                    {seg.margin_votes != null && <Typography sx={{ fontSize: '0.65rem', color: '#64748b' }}>({Number(seg.margin_votes).toLocaleString('en-IN')} votes)</Typography>}
-                  </Box>
-                </>
+                ))
               ) : (
                 <Typography sx={{ fontSize: '0.78rem', color: '#475569', fontStyle: 'italic' }}>No result data in graph</Typography>
               )}
@@ -702,7 +709,8 @@ function DistrictPanel({ data, lsResults }: { data: DistrictData; lsResults: any
                 </Box>
               )}
             </Box>
-          ))}
+            );
+          })}
         </SectionCard>
       )}
 

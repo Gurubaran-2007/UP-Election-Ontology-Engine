@@ -48,12 +48,12 @@ router.get('/up/ls2024/by-district', async (req, res) => {
   if (_upCache && Date.now() - _upCacheTs < 3_600_000) return res.json(_upCache);
   try {
     const session = driver.session();
-    const result = await session.run(`
-      MATCH (d:District)-[:CONTAINS|HAS_LS]->(ls:LokSabhaConstituency)
+    
+    // First try the ideal path with ElectionResult nodes
+    let result = await session.run(`
+      MATCH (d:District)-[:CONTAINS|HAS_LS|HAS_LOK_SABHA_SEAT]->(ls:LokSabhaConstituency)
             -[:HAS_RESULT]->(er:ElectionResult)
       WHERE er.election_id IN ['LS2024', 'LS2019']
-      WITH d, ls, er ORDER BY er.election_id DESC
-      WITH d, ls, head(collect(er)) AS er
       RETURN d.name               AS district,
              ls.ls_id             AS ls_id,
              ls.name              AS ls_name,
@@ -62,29 +62,81 @@ router.get('/up/ls2024/by-district', async (req, res) => {
              er.winner_party_id   AS party_id,
              er.winner_vote_share AS vote_share,
              er.margin_pct        AS margin_pct
-      ORDER BY d.name, ls.ls_id
+      ORDER BY d.name, ls.ls_id, er.election_id DESC
     `);
+
+    // If no results with ElectionResult nodes, fall back to data on LokSabhaConstituency directly
+    if (result.records.length === 0) {
+      result = await session.run(`
+        MATCH (ls:LokSabhaConstituency)
+        OPTIONAL MATCH (d:District)-[:CONTAINS|HAS_LS|HAS_LOK_SABHA_SEAT]->(ls)
+        RETURN d.name               AS district,
+               ls.ls_id             AS ls_id,
+               ls.name              AS ls_name,
+               ls.election_year    AS election_year,
+               ls.winning_candidate AS winner,
+               ls.winning_party    AS party_id
+        ORDER BY ls.ls_id
+      `);
+    }
     await session.close();
 
+    // If we still have no data, try loading from CSV directly as fallback
+    if (result.records.length === 0) {
+      return res.json({ data: {}, seats: {}, party_colors: PARTY_COLORS, note: 'No election data in database' });
+    }
+
+    // Check if we got ElectionResult data or direct node data
+    const hasElectionId = result.records[0].get('election_id') !== null;
+    
     const data = {};
     result.records.forEach(r => {
-      const d = r.get('district');
-      if (!data[d]) data[d] = [];
-      data[d].push({
+      const d = r.get('district') || 'Unknown';
+      const electionId = hasElectionId ? r.get('election_id') : `LS${r.get('election_year')}`;
+      if (!data[d]) data[d] = {};
+      if (!data[d][electionId]) data[d][electionId] = [];
+      
+      // Map party names to IDs
+      let partyId = r.get('party_id');
+      if (partyId) {
+        const partyNameToId = {
+          'Bharatiya Janata Party': 'bjp',
+          'Indian National Congress': 'inc',
+          'Samajwadi Party': 'sp',
+          'Bahujan Samaj Party': 'bsp',
+          'Rashtriya Lok Dal': 'rld',
+          'Apna Dal (Soneylal)': 'adal',
+        };
+        partyId = partyNameToId[partyId] || partyId.toLowerCase().replace(/\s+/g, '_');
+      }
+      
+      const row = {
         ls_id:      r.get('ls_id'),
         ls_name:    r.get('ls_name'),
         winner:     r.get('winner'),
-        party_id:   r.get('party_id'),
-        vote_share: r.get('vote_share'),
-        margin_pct: r.get('margin_pct'),
-      });
+        party_id:   partyId,
+        vote_share: r.get('vote_share') != null ? Number(r.get('vote_share')) : null,
+        margin_pct: r.get('margin_pct') != null ? Number(r.get('margin_pct')) : null,
+      };
+      const exists = data[d][electionId].some((item) =>
+        item.ls_id === row.ls_id && item.election_id === row.election_id && item.winner === row.winner
+      );
+      if (!exists) data[d][electionId].push(row);
     });
 
-    // Count distinct LS seats per party (deduplicate across districts)
+    const processedData = {};
+    Object.keys(data).forEach(district => {
+      processedData[district] = {
+        LS2024: data[district].LS2024 || data[district]['LS2024'] || [],
+        LS2019: data[district].LS2019 || data[district]['LS2019'] || [],
+      };
+    });
+
+    // Count distinct LS seats per party (deduplicate across districts) - use LS2024 data for current seats
     const seen = new Set();
     const seats = {};
-    Object.values(data).forEach(segs => {
-      segs.forEach(s => {
+    Object.values(processedData).forEach((elections) => {
+      elections.LS2024?.forEach((s) => {
         if (!seen.has(s.ls_id)) {
           seen.add(s.ls_id);
           seats[s.party_id] = (seats[s.party_id] || 0) + 1;
@@ -92,7 +144,7 @@ router.get('/up/ls2024/by-district', async (req, res) => {
       });
     });
 
-    _upCache = { data, seats, party_colors: PARTY_COLORS };
+    _upCache = { data: processedData, seats, party_colors: PARTY_COLORS };
     _upCacheTs = Date.now();
     res.json(_upCache);
   } catch (e) {

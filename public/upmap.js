@@ -3,10 +3,50 @@
 // ============================================================
 
 (function () {
-
+    // ── Party Color Mapping ─────────────────────────────────────
+    const PARTY_COLORS = {
+        'bjp': '#ff6600',     // BJP - Orange
+        'sp': '#00bfff',     // SP - Blue (light)
+        'bsp': '#800000',    // BSP - Maroon
+        'inc': '#00ff00',    // INC - Green
+        'rlp': '#ff3333',   // RLP - Red
+        'rld': '#ff6600',   // RLD - Orange (alliance)
+        'apd': '#ffff00',    // APD - Yellow
+        'ajsp': '#800080',   // AJSP - Purple
+        'other': '#888888'   // Other - Gray
+    };
+    
+    function getPartyColor(partyId) {
+        return PARTY_COLORS[partyId?.toLowerCase()] || PARTY_COLORS['other'];
+    }
+    
+    // District election data cache
+    let _districtElectionData = {};
+    let _mapColorMode = 'party'; // 'party' or 'region'
+    
+    // Fetch all district election data for map coloring
+    async function fetchDistrictElectionData() {
+        try {
+            const res = await fetch('/api/up/districts/summary');
+            const data = await res.json();
+            
+            // Build lookup cache
+            _districtElectionData = {};
+            (data.districts || []).forEach(d => {
+                _districtElectionData[d.district?.toLowerCase()] = d;
+            });
+            console.log('[UP Map] Loaded election data for', Object.keys(_districtElectionData).length, 'districts');
+        } catch (e) {
+            console.error('[UP Map] Failed to load election data:', e.message);
+        }
+    }
+    
     // ── 9. Init on DOM ready ───────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
         // Functions now rely on static HTML in index.html
+        
+        // Fetch election data for map coloring
+        fetchDistrictElectionData();
 
         // Set up constituency click handler
         const constituencyLinks = document.querySelectorAll('[onclick*="loadSentimentData"]');
@@ -63,6 +103,28 @@
         }
         return { region: 'Other', color: '#cbd5e1' };
     }
+    
+    // Get fill color based on current mode (party or region)
+    function getDistrictFillColor(districtName) {
+        if (_mapColorMode === 'party' && _districtElectionData[districtName?.toLowerCase()]) {
+            const data = _districtElectionData[districtName.toLowerCase()];
+            return getPartyColor(data.winner) || '#888888';
+        }
+        // Default to region coloring
+        return getDistrictRegion(districtName).color;
+    }
+    
+    // Toggle map color mode
+    window._upMapToggleColorMode = function(mode) {
+        _mapColorMode = mode;
+        // Re-render map if it exists
+        if (window._upMapGeoJson) {
+            renderUPMap(window._upMapGeoJson);
+        }
+        // Update legend visibility
+        document.getElementById('party-legend').style.display = mode === 'party' ? 'block' : 'none';
+        document.getElementById('region-legend').style.display = mode === 'region' ? 'block' : 'none';
+    };
 
     // ── 5. Render D3 Map ────────────────────────────────────────────
     function renderUPMap(geojson) {
@@ -111,6 +173,19 @@
         
         svg.call(zoom);
 
+        // Create tooltip div
+        const tooltip = d3.select('body').append('div')
+            .attr('id', 'map-tooltip')
+            .style('position', 'absolute')
+            .style('background', 'rgba(0,0,0,0.9)')
+            .style('color', '#fff')
+            .style('padding', '8px 12px')
+            .style('border-radius', '6px')
+            .style('font-size', '12px')
+            .style('pointer-events', 'none')
+            .style('display', 'none')
+            .style('z-index', '9999');
+
         const regionLabels = [
             { text: 'Western U.P.', x: width * 0.15, y: height * 0.55 },
             { text: 'Rohilkhand', x: width * 0.40, y: height * 0.10 },
@@ -119,28 +194,54 @@
             { text: 'Purvanchal', x: width * 0.85, y: height * 0.78 }
         ];
 
+        // Store geojson globally for re-rendering
+        window._upMapGeoJson = geojson;
+
         pathGroup.selectAll('path')
             .data(geojson.features)
             .enter()
             .append('path')
             .attr('d', pathGenerator)
             .attr('class', 'district-path')
-            .style('fill', d => getDistrictRegion(d.properties.NAME_2 || d.properties.name).color)
+            .style('fill', d => getDistrictFillColor(d.properties.NAME_2 || d.properties.name))
             .style('stroke', '#475569')
             .style('stroke-width', '0.5px')
             .style('cursor', 'pointer')
             .on('mouseover', function (event, d) {
+                const name = d.properties.NAME_2 || d.properties.name;
+                const data = _districtElectionData[name?.toLowerCase()];
+                
+                // Build tooltip content
+                let tooltipContent = `<strong>${name}</strong><br/>`;
+                if (data) {
+                    tooltipContent += `Winner: <span style="color:${getPartyColor(data.winner)}">${data.winner?.toUpperCase()}</span><br/>`;
+                    tooltipContent += `Seats: ${data.ls_seats} LS, ${data.vs_seats || 0} VS<br/>`;
+                    if (data.turnout) tooltipContent += `Turnout: ${data.turnout}%`;
+                } else {
+                    tooltipContent += `<span style="color:#888">No data</span>`;
+                }
+                
+                tooltip.html(tooltipContent)
+                    .style('display', 'block')
+                    .style('left', (event.pageX + 15) + 'px')
+                    .style('top', (event.pageY - 10) + 'px');
+                
                 d3.select(this)
                     .transition().duration(150)
-                    .style('fill', 'rgba(255,153,51,0.5)')
+                    .style('fill', 'rgba(255,153,51,0.7)')
                     .style('stroke', '#000')
                     .style('stroke-width', '1.5px');
             })
-            .on('mouseout', function (event, d) {
+            .on('mousemove', function(event) {
+                tooltip.style('left', (event.pageX + 15) + 'px')
+                       .style('top', (event.pageY - 10) + 'px');
+            })
+.on('mouseout', function (event, d) {
+                tooltip.style('display', 'none');
                 const isSelected = window._upLastSelected && window._upLastSelected.node() === this;
                 d3.select(this)
                     .transition().duration(150)
-                    .style('fill', getDistrictRegion(d.properties.NAME_2 || d.properties.name).color)
+                    .style('fill', getDistrictFillColor(d.properties.NAME_2 || d.properties.name))
                     .style('stroke', isSelected ? 'var(--primary)' : '#475569')
                     .style('stroke-width', isSelected ? '2px' : '0.5px');
             })
@@ -214,8 +315,30 @@
     // ── 6. Fetch district data from server ──────────────────────────
     async function fetchDistrictData(name) {
         try {
-            const res = await fetch(`/api/up/district/${encodeURIComponent(name)}`);
-            const data = await res.json();
+            // Fetch both detailed data and summary in parallel
+            const [resDetail, resSummary] = await Promise.all([
+                fetch(`/api/up/district/${encodeURIComponent(name)}`),
+                fetch(`/api/up/district/${encodeURIComponent(name)}/summary`).catch(() => null)
+            ]);
+            
+            const data = await resDetail.json();
+            const summary = resSummary ? await resSummary.json().catch(() => null) : null;
+            
+            // Merge summary data into the main data object
+            if (summary) {
+                data.election = {
+                    seats: summary.seat_count,
+                    seats_by_party: summary.seats_by_party,
+                    dominant_party: summary.dominant_party,
+                    winner_2024: summary.winner_2024,
+                    avg_winner_share: summary.avg_winner_share,
+                    avg_margin: summary.avg_margin,
+                    turnout_2024: summary.turnout_2024,
+                    turnout_change: summary.turnout_change,
+                    source: 'Neo4j Graph'
+                };
+            }
+            
             renderDistrictPanel(data);
         } catch (e) {
             document.getElementById('up-dist-content').innerHTML = `<p style="color:var(--negative)">Failed to load district data. Please retry.</p>`;
@@ -225,12 +348,32 @@
     }
 
     // ── 7. Render panel data ────────────────────────────────────────
+    
+    // Party color mapping
+    const PARTY_COLORS = {
+        'bjp': '#ff6600',     // BJP - Orange
+        'sp': '#00bfff',     // SP - Blue (light)
+        'bsp': '#800000',    // BSP - Maroon
+        'inc': '#00ff00',    // INC - Green
+        'rlp': '#ff3333',   // RLP - Red
+        'rld': '#ff6600',   // RLD - Orange (alliance)
+        'apd': '#ffff00',    // APD - Yellow
+        'ajsp': '#800080',   // AJSP - Purple
+        'n注': '#ff00ff',   // NOTA
+        'other': '#888888'   // Other - Gray
+    };
+    
+    function getPartyColor(partyId) {
+        return PARTY_COLORS[partyId?.toLowerCase()] || PARTY_COLORS['other'];
+    }
+    
     function renderDistrictPanel(d) {
         const leader  = d.leader   || {};
         const pop     = d.population || {};
         const demo    = d.demographics || [];
         const news    = d.headlines   || [];
         const census  = d.census      || {};
+        const election = d.election || {};
 
         // ── stat box helper ───────────────────────────────────────────────
         const statBox = (value, label, color) => `
@@ -297,6 +440,55 @@
                 <p style="color:#94a3b8;font-size:.85rem;margin:0;">Loading breakdown from AI...</p>
                </div>`;
 
+        // ── Election Summary ─────────────────────────────────────
+        let electionSection = '';
+        if (election.seats) {
+            const seatItems = Object.entries(election.seats_by_party || {})
+                .sort((a, b) => b[1] - a[1])
+                .map(([party, count]) => `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:.4rem .6rem;background:${getPartyColor(party)}20;border-left:3px solid ${getPartyColor(party)};border-radius:6px;margin-bottom:.3rem;">
+                    <span style="font-weight:700;color:#fff;font-size:.85rem;text-transform:uppercase;">${party}</span>
+                    <span style="font-weight:800;color:${getPartyColor(party)};font-size:.95rem;">${count} seat${count > 1 ? 's' : ''}</span>
+                </div>`).join('');
+            
+            const marginStatus = election.avg_margin < 5 ? 'Competitive' : election.avg_margin < 15 ? 'Leaning' : 'Safe';
+            const turnoutArrow = election.turnout_change > 0 ? '↑' : election.turnout_change < 0 ? '↓' : '→';
+            const turnoutColor = election.turnout_change > 0 ? '#22c55e' : election.turnout_change < 0 ? '#ef4444' : '#94a3b8';
+            
+            electionSection = `
+            <div class="up-dist-section">
+                <div class="up-dist-section-title">🗳️ LS 2024 Election Summary</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.6rem;">
+<div style="background:rgba(15,15,25,0.85);border:1.5px solid ${getPartyColor(election.dominant_party)}40;border-radius:10px;padding:.9rem .7rem;text-align:center;">
+                        <div style="font-size:1.1rem;font-weight:800;color:${getPartyColor(election.dominant_party)};">${election.seats}</div>
+                        <div style="font-size:.7rem;color:#cbd5e1;margin-top:.35rem;font-weight:600;letter-spacing:.4px;text-transform:uppercase;">LS Seats</div>
+                    </div>
+                    <div style="background:rgba(15,15,25,0.85);border:1.5px solid ${getPartyColor(election.dominant_party)}40;border-radius:10px;padding:.9rem .7rem;text-align:center;">
+                        <div style="font-size:1.1rem;font-weight:800;color:${getPartyColor(election.dominant_party)};">${election.vs_seats || 0}</div>
+                        <div style="font-size:.7rem;color:#cbd5e1;margin-top:.35rem;font-weight:600;letter-spacing:.4px;text-transform:uppercase;">VS Seats</div>
+                    </div>
+                    <div style="background:rgba(15,15,25,0.85);border:1.5px solid #fbbf2420;border-radius:10px;padding:.9rem .7rem;text-align:center;">
+                        <div style="font-size:1.1rem;font-weight:800;color:#fbbf24;">${election.avg_margin?.toFixed(1)}%</div>
+                        <div style="font-size:.7rem;color:#cbd5e1;margin-top:.35rem;font-weight:600;text-transform:uppercase;">Avg Margin</div>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.6rem;">
+                    <div style="background:rgba(15,15,25,0.85);border:1.5px solid #22c55e20;border-radius:10px;padding:.9rem .7rem;text-align:center;">
+                        <div style="font-size:1.1rem;font-weight:800;color:#22c55e;">${election.turnout_2024?.toFixed(1)}%</div>
+                        <div style="font-size:.7rem;color:#cbd5e1;margin-top:.35rem;font-weight:600;text-transform:uppercase;">Turnout</div>
+                    </div>
+                    <div style="background:rgba(15,15,25,0.85);border:1.5px solid ${turnoutColor}20;border-radius:10px;padding:.9rem .7rem;text-align:center;">
+                        <div style="font-size:1.1rem;font-weight:800;color:${turnoutColor};">${turnoutArrow}${Math.abs(election.turnout_change || 0).toFixed(1)}%</div>
+                        <div style="font-size:.7rem;color:#cbd5e1;margin-top:.35rem;font-weight:600;text-transform:uppercase;">vs 2019</div>
+                    </div>
+                </div>
+                <div style="margin-top:.6rem;background:rgba(15,15,25,0.7);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:.8rem;">
+                    <div style="font-size:.75rem;color:#f1f5f9;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:.5rem;">Seats by Party</div>
+                    ${seatItems}
+                </div>
+            </div>`;
+        }
+
         // ── News items ───────────────────────────────────────────
         const newsItems = news.length > 0
             ? news.map((h, i) => `
@@ -310,6 +502,7 @@
         document.getElementById('up-dist-content').innerHTML = `
 
             <!-- Political Leadership -->
+            ${electionSection}
             <div class="up-dist-section">
                 <div class="up-dist-section-title">🏛️ Political Leadership</div>
                 <div style="background:rgba(10,10,20,0.85);border:1.5px solid rgba(255,153,51,0.35);border-radius:12px;padding:1.1rem;">
