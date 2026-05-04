@@ -292,17 +292,17 @@ app.get('/api/up/constituency/:name/analysis', async (req, res) => {
 
         res.json(finalData);
     } catch (e) {
-        console.error('[FATAL ANALYSIS ERROR]', e.message);
-        // Return a dummy object that matches the frontend's expectations so it doesn't crash
+        console.error('[CRITICAL ANALYSIS FAILURE]', e);
+        // Return the actual error message so we can see it on the screen
         res.json({
-            basic: { total_voters: "Syncing...", urban_rural: "N/A" },
+            basic: { total_voters: "ERROR: " + e.message, urban_rural: "Check Console" },
             results: { winner: "N/A", party: "N/A", vote_share: 0, chart_data: [] },
             candidates: [],
-            demographics: { dominant_caste: "N/A", religion_dist: "N/A", youth_pop: "N/A" },
+            demographics: { dominant_caste: "N/A", religion_dist: e.stack.substring(0, 50), youth_pop: "N/A" },
             issues: [],
-            trends: { graph_explanation: "Data is loading..." },
+            trends: { graph_explanation: "The server encountered a technical error." },
             graph_explanation: "...",
-            alerts: ["System Syncing"],
+            alerts: ["System Error: " + e.message],
             booths: []
         });
     } finally {
