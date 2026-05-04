@@ -236,6 +236,24 @@
                             <div id="constituency-graph-container" style="height:350px; background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:12px; position:relative; overflow:hidden;">
                                 <div class="loading-spinner-small" style="position:absolute; top:50%; left:50%;"></div>
                             </div>
+                            <!-- LEGEND ADDED HERE -->
+                            <div style="display:flex; gap:1rem; margin-top:1rem; justify-content:center; font-size:0.75rem;">
+                                <div style="display:flex; align-items:center; gap:0.4rem;">
+                                    <div style="width:10px; height:10px; border-radius:50%; background:var(--primary);"></div>
+                                    <span style="color:var(--text-muted);">Region</span>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:0.4rem;">
+                                    <div style="width:10px; height:10px; border-radius:50%; background:var(--secondary);"></div>
+                                    <span style="color:var(--text-muted);">Candidate</span>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:0.4rem;">
+                                    <div style="width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,0.2);"></div>
+                                    <span style="color:var(--text-muted);">Booth</span>
+                                </div>
+                            </div>
+                            <p style="text-align:center; font-size:0.7rem; color:var(--secondary); margin-top:1rem; font-style:italic;">
+                                (Tip: You can drag the nodes with your mouse to explore the network!)
+                            </p>
                         `)}
 
                         ${section('8. Smart Alerts', `
@@ -429,60 +447,83 @@
         try {
             const res = await fetch(`/api/up/booth/${boothId}/analysis`);
             const data = await res.json();
+            if (data.error) throw new Error(data.error);
 
             const section = (title, content, color="#FF9933") => `
-                <div class="glass-panel" style="border-top: 2px solid ${color}; margin-bottom:1.2rem;">
-                    <h4 style="color:${color}; font-size:0.9rem; margin-bottom:1rem; text-transform:uppercase;">${title}</h4>
+                <div class="glass-panel" style="border-top: 2px solid ${color}; margin-bottom:1.2rem; padding:1.5rem;">
+                    <h4 style="color:${color}; font-size:0.9rem; margin-bottom:1.2rem; text-transform:uppercase; letter-spacing:1px;">${title}</h4>
                     ${content}
                 </div>
             `;
 
             container.innerHTML = `
-                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:1.2rem;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:1.5rem;">
                     <div class="booth-col">
-                        ${section('1. Booth Basic Info', `
-                            <p><strong>ID:</strong> ${data.basic.id}</p>
-                            <p><strong>Location:</strong> ${data.basic.location}</p>
-                            <p><strong>Linked:</strong> ${data.basic.constituency}</p>
+                        ${section('1. Station Identity', `
+                            <div style="display:flex; flex-direction:column; gap:1rem;">
+                                <div><label style="color:var(--text-muted); font-size:0.75rem;">NAME</label><div style="font-weight:bold; font-size:1.1rem;">${data.basic.location}</div></div>
+                                <div><label style="color:var(--text-muted); font-size:0.75rem;">REGION</label><div style="color:var(--primary);">${data.basic.constituency}</div></div>
+                                <div style="padding:0.8rem; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid var(--border);">
+                                    ID: <code style="color:var(--secondary);">${data.basic.id}</code>
+                                </div>
+                            </div>
                         `, '#60a5fa')}
                         
-                        ${section('2. Voter Data', `
-                            <p><strong>Total:</strong> ${data.voters.total}</p>
-                            <p><strong>Ratio:</strong> ${data.voters.ratio}</p>
-                            <p><strong>Ages:</strong> ${data.voters.age_groups}</p>
+                        ${section('2. Elector Demographics', `
+                            <div style="text-align:center; padding:1rem;">
+                                <div style="font-size:2rem; font-weight:900; color:#fff;">${data.voters.total}</div>
+                                <div style="color:var(--text-muted); font-size:0.8rem;">TOTAL REGISTERED ELECTORS</div>
+                                <div style="margin-top:1.5rem; height:8px; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden;">
+                                    <div style="width:65%; height:100%; background:var(--positive);"></div>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; margin-top:0.5rem; font-size:0.7rem; color:var(--text-muted);">
+                                    <span>GENDER RATIO: ${data.voters.ratio}</span>
+                                    <span>AGE: ${data.voters.age_groups}</span>
+                                </div>
+                            </div>
                         `, '#4ade80')}
+                    </div>
 
-                        ${section('7. Risk Indicators', `
-                            ${data.risks.map(r => `<div style="color:#ef4444; font-weight:bold; margin-bottom:0.4rem;">🚨 ${r}</div>`).join('')}
+                    <div class="booth-col">
+                        ${section('3. Voting Behavior', `
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:1rem; padding:1rem;">
+                                <div style="position:relative; height:140px; width:140px;">
+                                    <svg viewBox="0 0 36 36" style="width:140px; height:140px;">
+                                        <path style="stroke:rgba(255,255,255,0.1); stroke-width:3; fill:none;" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                        <path style="stroke:var(--primary); stroke-width:3; stroke-dasharray: ${data.pattern.turnout}, 100; fill:none; stroke-linecap:round;" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    </svg>
+                                    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:1.8rem; font-weight:800;">${data.pattern.turnout}%</div>
+                                </div>
+                                <div style="text-align:center;">
+                                    <span style="color:var(--text-muted); font-size:0.75rem;">BOOTH TURNOUT</span>
+                                    <div style="margin-top:1rem; color:var(--positive); font-weight:bold;">WINNER: ${data.pattern.winner}</div>
+                                </div>
+                            </div>
+                        `, '#f39c12')}
+
+                        ${section('4. Risk Indicators', `
+                            <div style="display:flex; flex-direction:column; gap:0.8rem;">
+                                ${data.risks.map(r => `
+                                    <div style="padding:0.8rem; background:rgba(239,68,68,0.1); border:1px solid #ef4444; border-radius:6px; font-size:0.85rem; color:#f87171;">
+                                        ⚠️ ${r}
+                                    </div>
+                                `).join('')}
+                            </div>
                         `, '#ef4444')}
                     </div>
 
                     <div class="booth-col">
-                        ${section('3. Voting Pattern', `
-                            <div style="height:120px; width:120px; border-radius:50%; border:15px solid var(--primary); margin:0 auto; display:flex; align-items:center; justify-content:center; font-weight:bold;">
-                                ${data.pattern.turnout}%
-                            </div>
-                            <p style="text-align:center; margin-top:1rem;"><strong>Winner:</strong> ${data.pattern.winner}</p>
-                        `, '#f39c12')}
-
-                        ${section('4. Turnout Analysis', `
-                            <div style="height:100px; display:flex; align-items:flex-end; gap:0.5rem; background:rgba(0,0,0,0.1); padding:0.5rem; border-radius:4px;">
-                                <div style="flex:1; height:60%; background:var(--text-muted);"></div>
-                                <div style="flex:1; height:85%; background:var(--positive);"></div>
-                            </div>
-                            <p style="font-size:0.75rem; margin-top:0.5rem;">Current vs Avg: ${data.turnout_comparison}</p>
-                        `, '#06b6d4')}
-                    </div>
-
-                    <div class="booth-col">
                         ${section('5. Social Composition', `
-                            <p><strong>Dominant:</strong> ${data.social.dominant}</p>
-                            <p><strong>Type:</strong> ${data.social.type}</p>
+                            <div style="background:rgba(255,255,255,0.03); padding:1rem; border-radius:8px;">
+                                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.4rem;">DOMINANT GROUP</div>
+                                <div style="font-weight:bold; color:var(--secondary); font-size:1.2rem;">${data.social.dominant}</div>
+                                <div style="margin-top:1rem; font-size:0.8rem; color:var(--text-muted);">${data.social.type} Category</div>
+                            </div>
                         `, '#c084fc')}
 
-                        ${section('6. Issue Tagging', `
-                            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:6px; border:1px dashed var(--border);">
-                                <span style="color:var(--secondary); font-weight:bold;">Primary Issue:</span><br>
+                        ${section('6. Ground Intelligence', `
+                            <div style="background:rgba(255,255,255,0.02); border:1px dashed var(--border); padding:1rem; border-radius:8px; line-height:1.6; font-size:0.9rem;">
+                                <span style="color:var(--primary); font-weight:bold; display:block; margin-bottom:0.5rem;">PRIMARY LOCAL ISSUE</span>
                                 ${data.issue}
                             </div>
                         `, '#f472b6')}
