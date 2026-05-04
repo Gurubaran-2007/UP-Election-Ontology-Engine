@@ -16,7 +16,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'map',            label: 'District Map',     sublabel: '75 districts',        Icon: MapIcon },
+  { id: 'map',            label: 'National Map',     sublabel: '75 districts',        Icon: MapIcon },
   { id: 'booth',          label: 'Constituency',     sublabel: 'Booth drill-down',    Icon: AccountBalanceIcon },
   { id: 'strategy',       label: 'Strategy Builder', sublabel: 'AI impact analysis',  Icon: AutoGraphIcon },
   { id: 'ai-search',      label: 'AI Search',        sublabel: 'Sarvam intelligence', Icon: ManageSearchIcon },

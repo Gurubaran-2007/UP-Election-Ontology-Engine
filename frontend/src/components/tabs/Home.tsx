@@ -334,7 +334,7 @@ export default function Home({ onNavigate }: Props) {
             </Stack>
 
             <Typography sx={{ color: '#f8fafc', fontSize: { xs: '1.85rem', md: '2.65rem' }, fontWeight: 950, lineHeight: 1.05, maxWidth: 760 }}>
-              National political intelligence command center.
+              National political intelligence ontology.
             </Typography>
             <Typography sx={{ color: '#94a3b8', fontSize: { xs: '0.92rem', md: '1rem' }, lineHeight: 1.7, maxWidth: 700, mt: 1.6 }}>
               Track seats, surface risk signals, search institutional memory, and move from statewide context to booth-level action without leaving the analyst workspace.
@@ -355,7 +355,7 @@ export default function Home({ onNavigate }: Props) {
                   '&:hover': { background: '#fb923c' },
                 }}
               >
-                Open District Map
+                Open National Map
               </Button>
               <Button
                 variant="outlined"
