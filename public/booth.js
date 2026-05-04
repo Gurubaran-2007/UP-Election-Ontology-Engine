@@ -418,11 +418,6 @@
         }
     }
 
-        } catch (e) {
-            container.innerHTML = `<p style="color:var(--negative)">Error generating constituency intelligence.</p>`;
-        }
-    }
-
     window._boothPushDetail = (id, name) => pushView(showBoothAnalysis, [id, name]);
 
     // ── VIEW 5: BOOTH ANALYSIS ───────────────────────────────────────
