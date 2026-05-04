@@ -11,7 +11,6 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AutoGraphIcon from '@mui/icons-material/AutoGraph';
 import BallotIcon from '@mui/icons-material/Ballot';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 import FeedIcon from '@mui/icons-material/Feed';
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
 import LocationCityIcon from '@mui/icons-material/LocationCity';
@@ -51,13 +50,13 @@ interface ModuleCard {
 }
 
 const toneMap = {
-  orange: { accent: '#f97316', soft: 'rgba(249,115,22,0.14)', line: 'rgba(249,115,22,0.42)' },
-  green: { accent: '#22c55e', soft: 'rgba(34,197,94,0.13)', line: 'rgba(34,197,94,0.36)' },
-  blue: { accent: '#38bdf8', soft: 'rgba(56,189,248,0.13)', line: 'rgba(56,189,248,0.36)' },
-  violet: { accent: '#a78bfa', soft: 'rgba(167,139,250,0.14)', line: 'rgba(167,139,250,0.38)' },
-  rose: { accent: '#fb7185', soft: 'rgba(251,113,133,0.14)', line: 'rgba(251,113,133,0.38)' },
-  cyan: { accent: '#22d3ee', soft: 'rgba(34,211,238,0.13)', line: 'rgba(34,211,238,0.36)' },
-  amber: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.13)', line: 'rgba(245,158,11,0.36)' },
+  orange: { accent: '#f97316', soft: 'rgba(249,115,22,0.12)', line: 'rgba(249,115,22,0.32)' },
+  green: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', line: 'rgba(22,163,74,0.28)' },
+  blue: { accent: '#1d4ed8', soft: 'rgba(29,78,216,0.10)', line: 'rgba(29,78,216,0.28)' },
+  violet: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', line: 'rgba(124,58,237,0.28)' },
+  rose: { accent: '#e11d48', soft: 'rgba(225,29,72,0.10)', line: 'rgba(225,29,72,0.28)' },
+  cyan: { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)', line: 'rgba(8,145,178,0.28)' },
+  amber: { accent: '#ca8a04', soft: 'rgba(202,138,4,0.10)', line: 'rgba(202,138,4,0.28)' },
 };
 
 const STATS: StatCardProps[] = [
@@ -107,24 +106,14 @@ const MODULES: ModuleCard[] = [
     tone: 'blue',
   },
   {
-    id: 'dashboard',
-    title: 'Command Center',
-    description: 'Review the operational picture across governance and election signals.',
-    action: 'Review Signals',
-    metric: 'Live overview',
-    preview: ['Scheme watch', 'Weather risk', 'Policy events'],
-    Icon: DashboardIcon,
-    tone: 'orange',
-  },
-  {
     id: 'booth',
-    title: 'Constituency Explorer',
-    description: 'Move from region to district, constituency, booth, and local issues.',
-    action: 'Track Seat',
-    metric: 'Booth depth',
-    preview: ['Issue heatmaps', 'Candidate context', 'Voter profile'],
+    title: 'Constituency Command',
+    description: 'Combine statewide signals with constituency, booth, and local issue drilldowns.',
+    action: 'Open Workflow',
+    metric: 'Merged center',
+    preview: ['Scheme watch', 'Weather risk', 'Booth drilldown'],
     Icon: AccountBalanceIcon,
-    tone: 'violet',
+    tone: 'orange',
   },
   {
     id: 'strategy',
@@ -190,11 +179,11 @@ const STRATEGY_SIGNALS = [
 function SectionHeader({ title, action }: { title: string; action?: string }) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.75 }}>
-      <Typography sx={{ color: '#f8fafc', fontSize: '0.9rem', fontWeight: 800 }}>
+      <Typography sx={{ color: '#0f172a', fontSize: '0.9rem', fontWeight: 850 }}>
         {title}
       </Typography>
       {action && (
-        <Typography sx={{ color: '#64748b', fontSize: '0.72rem', fontWeight: 700 }}>
+        <Typography sx={{ color: '#64748b', fontSize: '0.72rem', fontWeight: 750 }}>
           {action}
         </Typography>
       )}
@@ -210,11 +199,12 @@ function StatCard({ label, value, detail, trend, Icon, tone }: StatCardProps) {
       elevation={0}
       sx={{
         background: 'rgba(15,23,42,0.86)',
-        border: '1px solid rgba(148,163,184,0.15)',
+        backgroundColor: '#ffffff',
+        border: '1px solid #d8e0ea',
         borderRadius: 2,
         p: 2,
         minHeight: 142,
-        boxShadow: '0 16px 50px rgba(0,0,0,0.20)',
+        boxShadow: '0 14px 34px rgba(15,23,42,0.08)',
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.2 }}>
@@ -227,17 +217,17 @@ function StatCard({ label, value, detail, trend, Icon, tone }: StatCardProps) {
           sx={{
             height: 24,
             color: colors.accent,
-            background: 'rgba(2,6,23,0.42)',
+            background: colors.soft,
             border: `1px solid ${colors.line}`,
             fontSize: '0.66rem',
             fontWeight: 800,
           }}
         />
       </Box>
-      <Typography sx={{ color: '#f8fafc', fontSize: '1.55rem', fontWeight: 900, lineHeight: 1 }}>
+      <Typography sx={{ color: '#0f172a', fontSize: '1.55rem', fontWeight: 900, lineHeight: 1 }}>
         {value}
       </Typography>
-      <Typography sx={{ color: '#cbd5e1', fontSize: '0.78rem', fontWeight: 750, mt: 1 }}>
+      <Typography sx={{ color: '#334155', fontSize: '0.78rem', fontWeight: 750, mt: 1 }}>
         {label}
       </Typography>
       <Typography sx={{ color: '#64748b', fontSize: '0.72rem', lineHeight: 1.5, mt: 0.7 }}>
@@ -255,8 +245,8 @@ function ModuleCard({ module, onNavigate }: { module: ModuleCard; onNavigate: (t
       elevation={0}
       onClick={() => onNavigate(module.id)}
       sx={{
-        background: 'rgba(15,23,42,0.82)',
-        border: '1px solid rgba(148,163,184,0.15)',
+        background: '#ffffff',
+        border: '1px solid #d8e0ea',
         borderRadius: 2,
         p: 2,
         minHeight: 260,
@@ -267,8 +257,9 @@ function ModuleCard({ module, onNavigate }: { module: ModuleCard; onNavigate: (t
         '&:hover': {
           transform: 'translateY(-3px)',
           borderColor: colors.line,
-          background: 'rgba(15,23,42,0.96)',
-          '& .module-action': { color: '#f8fafc' },
+          background: '#fbfdff',
+          boxShadow: '0 16px 38px rgba(15,23,42,0.10)',
+          '& .module-action': { color: colors.accent },
           '& .module-arrow': { transform: 'translateX(4px)' },
         },
       }}
@@ -282,18 +273,18 @@ function ModuleCard({ module, onNavigate }: { module: ModuleCard; onNavigate: (t
         </Typography>
       </Box>
 
-      <Typography sx={{ color: '#f8fafc', fontWeight: 850, fontSize: '1rem', mt: 2 }}>
+      <Typography sx={{ color: '#0f172a', fontWeight: 850, fontSize: '1rem', mt: 2 }}>
         {module.title}
       </Typography>
-      <Typography sx={{ color: '#94a3b8', fontSize: '0.78rem', lineHeight: 1.55, mt: 0.75 }}>
+      <Typography sx={{ color: '#64748b', fontSize: '0.78rem', lineHeight: 1.55, mt: 0.75 }}>
         {module.description}
       </Typography>
 
-      <Box sx={{ my: 2, p: 1.25, borderRadius: 1.5, background: 'rgba(2,6,23,0.40)', border: '1px solid rgba(148,163,184,0.10)' }}>
+      <Box sx={{ my: 2, p: 1.25, borderRadius: 1.5, background: '#f8fafc', border: '1px solid #e2e8f0' }}>
         {module.preview.map((item, index) => (
           <Box key={item} sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.55 }}>
-            <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: index === 0 ? colors.accent : 'rgba(148,163,184,0.45)' }} />
-            <Typography sx={{ color: index === 0 ? '#cbd5e1' : '#64748b', fontSize: '0.72rem', fontWeight: index === 0 ? 750 : 600 }}>
+            <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: index === 0 ? colors.accent : '#cbd5e1' }} />
+            <Typography sx={{ color: index === 0 ? '#334155' : '#64748b', fontSize: '0.72rem', fontWeight: index === 0 ? 750 : 600 }}>
               {item}
             </Typography>
           </Box>
@@ -318,11 +309,11 @@ export default function Home({ onNavigate }: Props) {
         sx={{
           position: 'relative',
           overflow: 'hidden',
-          background: 'linear-gradient(135deg, rgba(2,6,23,0.98) 0%, rgba(15,23,42,0.98) 48%, rgba(30,41,59,0.96) 100%)',
-          border: '1px solid rgba(148,163,184,0.15)',
+          background: 'linear-gradient(135deg, #0B1220 0%, #111C33 54%, #1D4ED8 160%)',
+          border: '1px solid rgba(148,163,184,0.22)',
           borderRadius: 2,
           p: { xs: 2.2, md: 3 },
-          boxShadow: '0 24px 80px rgba(0,0,0,0.28)',
+          boxShadow: '0 22px 58px rgba(15,23,42,0.22)',
         }}
       >
         <Box
@@ -338,8 +329,8 @@ export default function Home({ onNavigate }: Props) {
         <Box sx={{ position: 'relative', display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.35fr) minmax(320px, 0.65fr)' }, gap: 3 }}>
           <Box>
             <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1, mb: 2 }}>
-              <Chip icon={<ShieldIcon />} label="UP political intelligence" size="small" sx={{ color: '#e2e8f0', background: 'rgba(15,23,42,0.82)', border: '1px solid rgba(148,163,184,0.18)', fontWeight: 800 }} />
-              <Chip icon={<NotificationsActiveIcon />} label="Live monitoring" size="small" sx={{ color: '#f97316', background: 'rgba(249,115,22,0.10)', border: '1px solid rgba(249,115,22,0.25)', fontWeight: 800 }} />
+              <Chip icon={<ShieldIcon />} label="UP political intelligence" size="small" sx={{ color: '#e2e8f0', background: 'rgba(15,23,42,0.82)', border: '1px solid rgba(148,163,184,0.22)', fontWeight: 800 }} />
+              <Chip icon={<NotificationsActiveIcon />} label="Live monitoring" size="small" sx={{ color: '#fed7aa', background: 'rgba(249,115,22,0.16)', border: '1px solid rgba(249,115,22,0.35)', fontWeight: 800 }} />
             </Stack>
 
             <Typography sx={{ color: '#f8fafc', fontSize: { xs: '1.85rem', md: '2.65rem' }, fontWeight: 950, lineHeight: 1.05, maxWidth: 760 }}>
@@ -356,7 +347,7 @@ export default function Home({ onNavigate }: Props) {
                 onClick={() => onNavigate('map')}
                 sx={{
                   background: '#f97316',
-                  color: '#111827',
+                  color: '#ffffff',
                   fontWeight: 900,
                   textTransform: 'none',
                   borderRadius: 1.5,
@@ -389,7 +380,7 @@ export default function Home({ onNavigate }: Props) {
             elevation={0}
             sx={{
               background: 'rgba(2,6,23,0.58)',
-              border: '1px solid rgba(148,163,184,0.16)',
+              border: '1px solid rgba(148,163,184,0.20)',
               borderRadius: 2,
               p: 2,
               alignSelf: 'stretch',
@@ -400,7 +391,7 @@ export default function Home({ onNavigate }: Props) {
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, background: 'rgba(15,23,42,0.92)', border: '1px solid rgba(148,163,184,0.16)', borderRadius: 1.5, px: 1.4, py: 1.2 }}>
               <SearchIcon sx={{ color: '#64748b', fontSize: 19 }} />
-              <Typography sx={{ color: '#cbd5e1', fontSize: '0.84rem', lineHeight: 1.4 }}>
+              <Typography sx={{ color: '#e2e8f0', fontSize: '0.84rem', lineHeight: 1.4 }}>
                 Show vulnerable seats in eastern UP
               </Typography>
             </Box>
@@ -424,16 +415,16 @@ export default function Home({ onNavigate }: Props) {
       </Box>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: '1.2fr 0.8fr' }, gap: 1.8 }}>
-        <Paper elevation={0} sx={{ background: 'rgba(15,23,42,0.86)', border: '1px solid rgba(148,163,184,0.15)', borderRadius: 2, p: 2 }}>
+        <Paper elevation={0} sx={{ background: '#ffffff', border: '1px solid #d8e0ea', borderRadius: 2, p: 2, boxShadow: '0 14px 34px rgba(15,23,42,0.08)' }}>
           <SectionHeader title="Trending Districts" action="Last 24 hours" />
           <Box sx={{ display: 'grid', gap: 1.15 }}>
             {TRENDING_DISTRICTS.map((district) => {
               const colors = toneMap[district.tone];
               return (
-                <Box key={district.name} sx={{ display: 'grid', gridTemplateColumns: 'minmax(110px, 0.8fr) minmax(120px, 1fr) 80px', gap: 1.5, alignItems: 'center', p: 1.2, borderRadius: 1.5, background: 'rgba(2,6,23,0.38)', border: '1px solid rgba(148,163,184,0.09)' }}>
-                  <Typography sx={{ color: '#f8fafc', fontSize: '0.82rem', fontWeight: 850 }}>{district.name}</Typography>
+                <Box key={district.name} sx={{ display: 'grid', gridTemplateColumns: 'minmax(110px, 0.8fr) minmax(120px, 1fr) 80px', gap: 1.5, alignItems: 'center', p: 1.2, borderRadius: 1.5, background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                  <Typography sx={{ color: '#0f172a', fontSize: '0.82rem', fontWeight: 850 }}>{district.name}</Typography>
                   <Box>
-                    <Typography sx={{ color: '#94a3b8', fontSize: '0.7rem', mb: 0.55 }}>{district.signal}</Typography>
+                    <Typography sx={{ color: '#64748b', fontSize: '0.7rem', mb: 0.55 }}>{district.signal}</Typography>
                     <LinearProgress variant="determinate" value={district.score} sx={{ height: 6, borderRadius: 99, backgroundColor: 'rgba(148,163,184,0.13)', '& .MuiLinearProgress-bar': { backgroundColor: colors.accent, borderRadius: 99 } }} />
                   </Box>
                   <Typography sx={{ color: colors.accent, fontSize: '0.78rem', fontWeight: 900, textAlign: 'right' }}>{district.score}</Typography>
@@ -443,15 +434,15 @@ export default function Home({ onNavigate }: Props) {
           </Box>
         </Paper>
 
-        <Paper elevation={0} sx={{ background: 'rgba(15,23,42,0.86)', border: '1px solid rgba(148,163,184,0.15)', borderRadius: 2, p: 2 }}>
+        <Paper elevation={0} sx={{ background: '#ffffff', border: '1px solid #d8e0ea', borderRadius: 2, p: 2, boxShadow: '0 14px 34px rgba(15,23,42,0.08)' }}>
           <SectionHeader title="Latest Media Alerts" action="3 active" />
           <Box sx={{ display: 'grid', gap: 1 }}>
             {MEDIA_ALERTS.map((alert) => (
-              <Box key={alert.title} sx={{ display: 'flex', gap: 1.2, p: 1.2, borderRadius: 1.5, background: 'rgba(2,6,23,0.38)', border: '1px solid rgba(148,163,184,0.09)' }}>
+              <Box key={alert.title} sx={{ display: 'flex', gap: 1.2, p: 1.2, borderRadius: 1.5, background: '#f8fafc', border: '1px solid #e2e8f0' }}>
                 <WarningAmberIcon sx={{ color: alert.level === 'High' ? '#f97316' : '#f59e0b', fontSize: 18, mt: 0.15 }} />
                 <Box>
                   <Typography sx={{ color: '#64748b', fontSize: '0.66rem', fontWeight: 850, textTransform: 'uppercase' }}>{alert.source}</Typography>
-                  <Typography sx={{ color: '#cbd5e1', fontSize: '0.76rem', lineHeight: 1.45, mt: 0.25 }}>{alert.title}</Typography>
+                  <Typography sx={{ color: '#334155', fontSize: '0.76rem', lineHeight: 1.45, mt: 0.25 }}>{alert.title}</Typography>
                 </Box>
               </Box>
             ))}
@@ -460,15 +451,15 @@ export default function Home({ onNavigate }: Props) {
       </Box>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: '0.8fr 1.2fr' }, gap: 1.8 }}>
-        <Paper elevation={0} sx={{ background: 'rgba(15,23,42,0.86)', border: '1px solid rgba(148,163,184,0.15)', borderRadius: 2, p: 2 }}>
+        <Paper elevation={0} sx={{ background: '#ffffff', border: '1px solid #d8e0ea', borderRadius: 2, p: 2, boxShadow: '0 14px 34px rgba(15,23,42,0.08)' }}>
           <SectionHeader title="Strategy Signals" action="Recommended actions" />
           <Box sx={{ display: 'grid', gap: 1 }}>
             {STRATEGY_SIGNALS.map((signal, index) => (
-              <Box key={signal} sx={{ display: 'flex', gap: 1.1, p: 1.15, borderRadius: 1.5, background: 'rgba(2,6,23,0.38)', border: '1px solid rgba(148,163,184,0.09)' }}>
-                <Box sx={{ width: 24, height: 24, borderRadius: 1, background: index === 0 ? toneMap.orange.soft : 'rgba(148,163,184,0.10)', color: index === 0 ? toneMap.orange.accent : '#94a3b8', display: 'grid', placeItems: 'center', fontSize: '0.72rem', fontWeight: 950 }}>
+              <Box key={signal} sx={{ display: 'flex', gap: 1.1, p: 1.15, borderRadius: 1.5, background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                <Box sx={{ width: 24, height: 24, borderRadius: 1, background: index === 0 ? toneMap.orange.soft : '#e2e8f0', color: index === 0 ? toneMap.orange.accent : '#64748b', display: 'grid', placeItems: 'center', fontSize: '0.72rem', fontWeight: 950 }}>
                   {index + 1}
                 </Box>
-                <Typography sx={{ color: '#cbd5e1', fontSize: '0.76rem', lineHeight: 1.55 }}>{signal}</Typography>
+                <Typography sx={{ color: '#334155', fontSize: '0.76rem', lineHeight: 1.55 }}>{signal}</Typography>
               </Box>
             ))}
           </Box>

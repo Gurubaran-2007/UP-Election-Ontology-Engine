@@ -1,6 +1,5 @@
 import { Box, Typography, Tooltip } from '@mui/material';
 import MapIcon from '@mui/icons-material/Map';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AutoGraphIcon from '@mui/icons-material/AutoGraph';
 import ManageSearchIcon from '@mui/icons-material/ManageSearch';
@@ -18,7 +17,6 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'map',            label: 'District Map',     sublabel: '75 districts',        Icon: MapIcon },
-  { id: 'dashboard',      label: 'Command Center',   sublabel: 'Live overview',       Icon: DashboardIcon },
   { id: 'booth',          label: 'Constituency',     sublabel: 'Booth drill-down',    Icon: AccountBalanceIcon },
   { id: 'strategy',       label: 'Strategy Builder', sublabel: 'AI impact analysis',  Icon: AutoGraphIcon },
   { id: 'ai-search',      label: 'AI Search',        sublabel: 'Sarvam intelligence', Icon: ManageSearchIcon },

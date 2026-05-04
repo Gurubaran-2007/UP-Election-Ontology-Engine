@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Box, Typography } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import MapIcon from '@mui/icons-material/Map';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AutoGraphIcon from '@mui/icons-material/AutoGraph';
 import ManageSearchIcon from '@mui/icons-material/ManageSearch';
@@ -17,7 +16,6 @@ import type { TabId } from '../../types';
 
 import Home            from '../tabs/Home';
 import DistrictMap       from '../tabs/DistrictMap';
-import UPDashboard       from '../tabs/UPDashboard';
 import ConstituencyBooth from '../tabs/ConstituencyBooth';
 import StrategyBuilder   from '../tabs/StrategyBuilder';
 import AISearch          from '../tabs/AISearch';
@@ -30,7 +28,6 @@ interface NavItem { id: TabId; label: string; Icon: SvgIconComponent }
 const NAV_ITEMS: NavItem[] = [
   { id: 'home',           label: 'Home',             Icon: HomeIcon },
   { id: 'map',            label: 'District Map',     Icon: MapIcon },
-  { id: 'dashboard',      label: 'Command Center',   Icon: DashboardIcon },
   { id: 'booth',          label: 'Constituency',     Icon: AccountBalanceIcon },
   { id: 'strategy',       label: 'Strategy Builder', Icon: AutoGraphIcon },
   { id: 'ai-search',      label: 'AI Search',        Icon: ManageSearchIcon },
@@ -64,7 +61,6 @@ export default function AppLayout() {
     switch (activeTab) {
       case 'home':           return <Home onNavigate={setActiveTab} />;
       case 'map':            return <DistrictMap />;
-      case 'dashboard':      return <UPDashboard />;
       case 'booth':          return <ConstituencyBooth />;
       case 'strategy':       return <StrategyBuilder />;
       case 'ai-search':      return <AISearch />;
@@ -75,19 +71,19 @@ export default function AppLayout() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: '#020617' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: '#0B1220' }}>
 
       {/* ── ROW 1: Brand bar ── */}
       <Box sx={{
         height: 58,
         minHeight: 58,
-        background: 'rgba(2,6,23,0.96)',
+        background: '#0B1220',
         display: 'flex',
         alignItems: 'center',
         px: { xs: 1.5, md: 3 },
         gap: 2,
         zIndex: 300,
-        borderBottom: '1px solid rgba(148,163,184,0.10)',
+        borderBottom: '1px solid rgba(148,163,184,0.16)',
       }}>
         {/* Tricolor + brand */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
@@ -100,7 +96,7 @@ export default function AppLayout() {
             <Typography sx={{ color: '#f1f5f9', fontWeight: 900, fontSize: '0.78rem', letterSpacing: 1.8, textTransform: 'uppercase', lineHeight: 1 }}>
               UP Ontology Engine
             </Typography>
-            <Typography sx={{ color: '#64748b', fontSize: '0.56rem', letterSpacing: 1.5, textTransform: 'uppercase' }}>
+            <Typography sx={{ color: '#94a3b8', fontSize: '0.56rem', letterSpacing: 1.5, textTransform: 'uppercase' }}>
               Intelligence workspace
             </Typography>
           </Box>
@@ -116,11 +112,11 @@ export default function AppLayout() {
           px: 1.4,
           py: 0.85,
           borderRadius: 1.5,
-          background: 'rgba(15,23,42,0.84)',
-          border: '1px solid rgba(148,163,184,0.14)',
+          background: 'rgba(15,23,42,0.88)',
+          border: '1px solid rgba(148,163,184,0.18)',
         }}>
-          <SearchIcon sx={{ color: '#64748b', fontSize: 18 }} />
-          <Typography sx={{ color: '#94a3b8', fontSize: '0.76rem', fontWeight: 600 }}>
+          <SearchIcon sx={{ color: '#94a3b8', fontSize: 18 }} />
+          <Typography sx={{ color: '#CBD5E1', fontSize: '0.76rem', fontWeight: 600 }}>
             Search seats, districts, alerts, strategies...
           </Typography>
         </Box>
@@ -133,7 +129,7 @@ export default function AppLayout() {
             px: 1.2,
             py: 0.7,
             borderRadius: 1.5,
-            background: 'rgba(34,197,94,0.08)',
+            background: 'rgba(34,197,94,0.10)',
             border: '1px solid rgba(34,197,94,0.18)',
           }}>
             <VerifiedIcon sx={{ color: '#22c55e', fontSize: 15 }} />
@@ -147,8 +143,8 @@ export default function AppLayout() {
             display: { xs: 'none', md: 'grid' },
             placeItems: 'center',
             borderRadius: 1.5,
-            background: 'rgba(15,23,42,0.84)',
-            border: '1px solid rgba(148,163,184,0.14)',
+            background: 'rgba(15,23,42,0.88)',
+            border: '1px solid rgba(148,163,184,0.18)',
           }}>
             <NotificationsNoneIcon sx={{ color: '#94a3b8', fontSize: 18 }} />
           </Box>
@@ -160,14 +156,14 @@ export default function AppLayout() {
       <Box sx={{
         height: 46,
         minHeight: 46,
-        background: 'rgba(2,6,23,0.96)',
+        background: '#0B1220',
         display: 'flex',
         alignItems: 'stretch',
         px: 2,
         gap: 0.5,
-        borderBottom: '1px solid rgba(148,163,184,0.10)',
+        borderBottom: '1px solid rgba(148,163,184,0.16)',
         zIndex: 200,
-        boxShadow: '0 10px 35px rgba(0,0,0,0.30)',
+        boxShadow: '0 12px 32px rgba(15,23,42,0.24)',
         overflowX: 'auto',
       }}>
         {NAV_ITEMS.map(({ id, label, Icon }) => {
@@ -184,10 +180,10 @@ export default function AppLayout() {
                 cursor: 'pointer',
                 position: 'relative',
                 borderRadius: '6px 6px 0 0',
-                background: isActive ? 'rgba(249,115,22,0.10)' : 'transparent',
+                background: isActive ? 'rgba(29,78,216,0.20)' : 'transparent',
                 transition: 'background 0.18s',
                 '&:hover': {
-                  background: isActive ? 'rgba(249,115,22,0.13)' : 'rgba(255,255,255,0.04)',
+                  background: isActive ? 'rgba(29,78,216,0.24)' : 'rgba(255,255,255,0.05)',
                 },
                 // Active bottom accent line
                 '&::after': isActive ? {
@@ -197,16 +193,16 @@ export default function AppLayout() {
                   left: 0,
                   right: 0,
                   height: 2,
-                  background: 'linear-gradient(90deg, #f97316, #38bdf8)',
+                  background: 'linear-gradient(90deg, #1D4ED8, #F97316)',
                   borderRadius: '2px 2px 0 0',
                 } : {},
               }}
             >
-              <Icon sx={{ fontSize: 15, color: isActive ? '#f97316' : '#64748b', flexShrink: 0 }} />
+              <Icon sx={{ fontSize: 15, color: isActive ? '#60A5FA' : '#94A3B8', flexShrink: 0 }} />
               <Typography sx={{
                 fontSize: '0.76rem',
                 fontWeight: isActive ? 700 : 500,
-                color: isActive ? '#f1f5f9' : '#64748b',
+                color: isActive ? '#f8fafc' : '#CBD5E1',
                 whiteSpace: 'nowrap',
                 letterSpacing: isActive ? 0.2 : 0,
               }}>
@@ -224,7 +220,7 @@ export default function AppLayout() {
         sx={{
           flex: 1,
           overflowY: 'auto',
-          background: 'radial-gradient(circle at 22% 0%, rgba(56,189,248,0.08), transparent 28%), radial-gradient(circle at 76% 8%, rgba(249,115,22,0.08), transparent 26%), var(--bg)',
+          background: 'linear-gradient(180deg, #F8FAFC 0%, var(--bg) 42%, #E2E8F0 100%)',
           p: { xs: 1.5, md: 2.5 },
         }}
       >

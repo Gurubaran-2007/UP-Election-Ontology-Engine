@@ -1,7 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, Paper, Typography, Chip, Button } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { getRegionDistricts, getConstituencies, getConstituencyAnalysis, getBoothAnalysis } from '../../api';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import PeopleIcon from '@mui/icons-material/People';
+import ThermostatIcon from '@mui/icons-material/Thermostat';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import { getRegionDistricts, getConstituencies, getConstituencyAnalysis, getBoothAnalysis, getUPDashboard, getUPWeather } from '../../api';
 
 type View = 'regions' | 'districts' | 'constituencies' | 'analysis' | 'booth';
 
@@ -10,6 +14,13 @@ const REGIONS = [
   { id: 'central',     name: 'Central UP',              color: '#e9d5ff', accent: '#a855f7', desc: 'Heart of political power and governance.' },
   { id: 'eastern',     name: 'Eastern UP (Purvanchal)', color: '#bbf7d0', accent: '#22c55e', desc: 'Densely populated belt with diverse demographics.' },
   { id: 'bundelkhand', name: 'Bundelkhand',             color: '#fecaca', accent: '#ef4444', desc: 'Historic plateau region with unique issues.' },
+];
+
+const KPI_CARDS = [
+  { label: 'Total Voters', value: '15.03 Cr', delta: 'Registered 2022', color: '#f97316', Icon: PeopleIcon },
+  { label: 'Assembly Seats', value: '403', delta: 'UP Legislature', color: '#1d4ed8', Icon: AccountBalanceIcon },
+  { label: 'Districts', value: '75', delta: 'Administrative', color: '#16a34a', Icon: TrendingUpIcon },
+  { label: 'Constituencies', value: '403', delta: 'Vidhan Sabha', color: '#7c3aed', Icon: AccountBalanceIcon },
 ];
 
 export default function ConstituencyBooth() {
@@ -23,7 +34,16 @@ export default function ConstituencyBooth() {
   const [constituencies, setConstituencies] = useState<string[]>([]);
   const [analysis, setAnalysis]     = useState<any>(null);
   const [boothData, setBoothData]   = useState<any>(null);
+  const [schemes, setSchemes]       = useState<any>(null);
+  const [weather, setWeather]       = useState<any>(null);
+  const [commandLoading, setCommandLoading] = useState(true);
   const [stack, setStack]           = useState<View[]>([]);
+
+  useEffect(() => {
+    Promise.all([getUPDashboard(), getUPWeather()])
+      .then(([s, w]) => { setSchemes(s); setWeather(w); })
+      .finally(() => setCommandLoading(false));
+  }, []);
 
   const push = (next: View) => { setStack(s => [...s, view]); setView(next); };
   const pop  = () => { const s = [...stack]; const prev = s.pop()!; setStack(s); setView(prev); };
@@ -58,6 +78,8 @@ export default function ConstituencyBooth() {
 
   return (
     <Box>
+      <OperationalSnapshot schemes={schemes} weather={weather} loading={commandLoading} />
+
       <Paper elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: 2, p: 2, mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
         {stack.length > 0 && (
           <Button variant="outlined" size="small" startIcon={<ArrowBackIcon />} onClick={pop} sx={{ textTransform: 'none' }}>Back</Button>
@@ -114,6 +136,112 @@ export default function ConstituencyBooth() {
           {view === 'booth' && boothData && <BoothView data={boothData} />}
         </>
       )}
+    </Box>
+  );
+}
+
+function OperationalSnapshot({ schemes, weather, loading }: { schemes: any; weather: any; loading: boolean }) {
+  const recentSchemes = schemes?.recent?.slice(0, 2) || [];
+  const futureSchemes = schemes?.future?.slice(0, 2) || [];
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 2 }}>
+      <Paper
+        elevation={0}
+        sx={{
+          borderRadius: 2,
+          overflow: 'hidden',
+          background: 'linear-gradient(135deg, #0B1220 0%, #111C33 58%, #1D4ED8 170%)',
+          border: '1px solid rgba(148,163,184,0.22)',
+          boxShadow: '0 18px 42px rgba(15,23,42,0.20)',
+        }}
+      >
+        <Box sx={{ p: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+          <Box>
+            <Typography sx={{ color: '#94a3b8', fontSize: '0.68rem', letterSpacing: 1.8, textTransform: 'uppercase', fontWeight: 800, mb: 0.8 }}>
+              Constituency Command
+            </Typography>
+            <Typography sx={{ color: '#fff', fontWeight: 900, fontSize: { xs: '1.25rem', md: '1.55rem' }, lineHeight: 1.15 }}>
+              Ground-level analysis with statewide operating context.
+            </Typography>
+            <Typography sx={{ color: '#cbd5e1', fontSize: '0.82rem', mt: 0.7 }}>
+              Governance signals, climate context, regions, constituencies, and booth intelligence in one workflow.
+            </Typography>
+          </Box>
+          {weather && (
+            <Box sx={{ background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.20)', borderRadius: 2, px: 2, py: 1.4, textAlign: 'right' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'flex-end' }}>
+                <ThermostatIcon sx={{ color: '#f97316', fontSize: 18 }} />
+                <Typography sx={{ color: '#fff', fontWeight: 900, fontSize: '1.3rem' }}>
+                  {weather.temp || '-'}°C
+                </Typography>
+              </Box>
+              <Typography sx={{ color: '#cbd5e1', fontSize: '0.72rem' }}>{weather.condition || 'Clear'}</Typography>
+              <Typography sx={{ color: '#94a3b8', fontSize: '0.66rem' }}>{weather.city || 'Lucknow'}</Typography>
+            </Box>
+          )}
+        </Box>
+      </Paper>
+
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 1.5 }}>
+        {KPI_CARDS.map(({ label, value, delta, color, Icon }) => (
+          <Paper key={label} elevation={0} sx={{ background: '#fff', border: '1px solid #d8e0ea', borderRadius: 2, p: 1.7, boxShadow: '0 10px 26px rgba(15,23,42,0.06)' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.4 }}>
+              <Typography sx={{ color: '#64748b', fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.7 }}>
+                {label}
+              </Typography>
+              <Box sx={{ width: 32, height: 32, borderRadius: 1.2, background: `${color}18`, display: 'grid', placeItems: 'center' }}>
+                <Icon sx={{ fontSize: 17, color }} />
+              </Box>
+            </Box>
+            <Typography sx={{ color: '#0f172a', fontWeight: 900, fontSize: '1.45rem', lineHeight: 1 }}>
+              {value}
+            </Typography>
+            <Typography sx={{ color: '#64748b', fontSize: '0.68rem', mt: 0.6 }}>{delta}</Typography>
+          </Paper>
+        ))}
+      </Box>
+
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 1.5 }}>
+        <SchemeSummary title="Recent Schemes" color="#f97316" loading={loading} schemes={recentSchemes} empty="No recent schemes available" />
+        <SchemeSummary title="Upcoming Schemes" color="#16a34a" loading={loading} schemes={futureSchemes} empty="No upcoming schemes available" />
+      </Box>
+    </Box>
+  );
+}
+
+function SchemeSummary({ title, color, loading, schemes, empty }: { title: string; color: string; loading: boolean; schemes: any[]; empty: string }) {
+  return (
+    <Paper elevation={0} sx={{ background: '#fff', border: '1px solid #d8e0ea', borderRadius: 2, overflow: 'hidden', boxShadow: '0 10px 26px rgba(15,23,42,0.06)' }}>
+      <Box sx={{ px: 2, py: 1.25, borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ width: 4, height: 18, borderRadius: 4, background: color }} />
+        <Typography sx={{ color: '#0f172a', fontWeight: 850, fontSize: '0.82rem' }}>{title}</Typography>
+      </Box>
+      <Box sx={{ p: 1.5, display: 'grid', gap: 1 }}>
+        {loading ? (
+          <Typography sx={{ color: '#94a3b8', fontSize: '0.76rem' }}>Loading signals...</Typography>
+        ) : schemes.length ? (
+          schemes.map((scheme, index) => <SchemeCard key={index} scheme={scheme} color={color} />)
+        ) : (
+          <Typography sx={{ color: '#94a3b8', fontSize: '0.76rem' }}>{empty}</Typography>
+        )}
+      </Box>
+    </Paper>
+  );
+}
+
+function SchemeCard({ scheme, color }: { scheme: any; color: string }) {
+  return (
+    <Box sx={{ border: '1px solid #e2e8f0', borderLeft: `3px solid ${color}`, borderRadius: '0 10px 10px 0', p: 1.2, background: '#f8fafc' }}>
+      <Typography sx={{ fontWeight: 800, fontSize: '0.8rem', color: '#0f172a', mb: 0.35 }}>
+        {scheme.title || scheme.name}
+      </Typography>
+      {scheme.category && (
+        <Chip label={scheme.category} size="small" sx={{ mb: 0.5, fontSize: '0.6rem', height: 18, background: `${color}12`, color, border: `1px solid ${color}30`, fontWeight: 700 }} />
+      )}
+      <Typography sx={{ fontSize: '0.72rem', color: '#64748b', lineHeight: 1.5 }}>
+        {scheme.description || scheme.summary}
+      </Typography>
     </Box>
   );
 }

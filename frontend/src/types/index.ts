@@ -51,7 +51,6 @@ export interface NewsItem {
 export type TabId =
   | 'home'
   | 'map'
-  | 'dashboard'
   | 'booth'
   | 'strategy'
   | 'ai-search'

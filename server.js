@@ -33,7 +33,7 @@ setInterval(async () => {
 // ==========================================
 const uri      = process.env.NEO4J_URI      || 'neo4j://localhost:7687';
 const user     = process.env.NEO4J_USER     || 'neo4j';
-const password = process.env.NEO4J_PASSWORD || 'guru@9114';
+const password = process.env.NEO4J_PASSWORD;
 
 // Auto-detect encryption: AuraDB uses neo4j+s:// (TLS), local uses neo4j://
 const isCloud  = uri.startsWith('neo4j+s') || uri.startsWith('bolt+s');
@@ -1278,30 +1278,201 @@ Write a 3-bullet CONCISE analysis. Then produce the JSON.
 });
 
 // Advanced AI Search (Real-Time News RAG)
+// ── AI Search: Neo4j graph context fetcher ──────────────────────────────────
+async function fetchGraphContext(query) {
+    const session = driver.session();
+    const q = query.toLowerCase();
+
+    // Keep all tokens ≥2 chars — catches BJP, SP, UP, etc.
+    const keywords = [...new Set(q.split(/\s+/).filter(w => w.length >= 2))];
+    const lines = [];
+    const seen = new Set(); // deduplicate across keyword iterations
+
+    const add = (line) => { if (!seen.has(line)) { seen.add(line); lines.push(line); } };
+
+    try {
+        for (const kw of keywords) {
+
+            // 1. Leaders — name, party, constituency, AND aliases array
+            const leaders = await session.run(
+                `MATCH (l:LeaderEntity)
+                 WHERE toLower(l.name) CONTAINS $kw
+                    OR toLower(l.party) CONTAINS $kw
+                    OR toLower(l.constituency) CONTAINS $kw
+                    OR any(a IN coalesce(l.aliases, []) WHERE a CONTAINS $kw)
+                 RETURN l.name AS name, l.party AS party,
+                        l.designation AS role, l.constituency AS constituency,
+                        l.since AS since, l.vote_share AS vs,
+                        l.election_year AS year
+                 LIMIT 6`,
+                { kw }
+            );
+            leaders.records.forEach(r => add(
+                `[LEADER] ${r.get('name')} | ${r.get('role') || 'Leader'} | Party: ${r.get('party')} | Constituency: ${r.get('constituency')} | Since: ${r.get('since') || 'N/A'} | Vote Share: ${r.get('vs') || 'N/A'}% (${r.get('year') || 'N/A'})`
+            ));
+
+            // 2. Parties — name AND aliases
+            const parties = await session.run(
+                `MATCH (p:Party)
+                 WHERE toLower(p.name) CONTAINS $kw
+                    OR any(a IN coalesce(p.aliases, []) WHERE a CONTAINS $kw)
+                 RETURN p.name AS name, p.entity_id AS id
+                 LIMIT 3`,
+                { kw }
+            );
+            parties.records.forEach(r => add(`[PARTY] ${r.get('name')} (${r.get('id')})`));
+
+            // 3. Party seat count aggregation (handles "BJP seats", "SP winners")
+            const seats = await session.run(
+                `MATCH (l:LeaderEntity)
+                 WHERE toLower(l.party) CONTAINS $kw
+                    OR any(a IN coalesce(l.aliases, []) WHERE a CONTAINS $kw)
+                 WITH l.party AS party, l.election_year AS yr, count(*) AS seats
+                 RETURN party, yr, seats
+                 ORDER BY yr DESC, seats DESC
+                 LIMIT 5`,
+                { kw }
+            );
+            seats.records.forEach(r => add(
+                `[SEATS] ${r.get('party')} won ${r.get('seats')} seats in ${r.get('yr') || 'N/A'}`
+            ));
+
+            // 4. District → all its constituencies + winners (traversal)
+            const distConst = await session.run(
+                `MATCH (vs:VidhanSabhaConstituency)-[:IN_DISTRICT]->(d:District)
+                 WHERE toLower(d.name) CONTAINS $kw
+                 OPTIONAL MATCH (l:LeaderEntity)-[:REPRESENTS]->(vs)
+                 RETURN d.name AS district, vs.name AS constituency,
+                        l.name AS winner, l.party AS party,
+                        l.election_year AS year
+                 ORDER BY vs.name
+                 LIMIT 10`,
+                { kw }
+            );
+            distConst.records.forEach(r => add(
+                `[DISTRICT→CONST] ${r.get('district')} | ${r.get('constituency')} | Winner: ${r.get('winner') || 'N/A'} (${r.get('party') || 'N/A'}) ${r.get('year') || ''}`
+            ));
+
+            // 5. Constituency → leader + district + LS link
+            const constInfo = await session.run(
+                `MATCH (vs:VidhanSabhaConstituency)
+                 WHERE toLower(vs.name) CONTAINS $kw
+                    OR toLower(vs.vs_name) CONTAINS $kw
+                 OPTIONAL MATCH (vs)-[:WITHIN_LS]->(ls:LokSabhaConstituency)
+                 OPTIONAL MATCH (vs)-[:IN_DISTRICT]->(d:District)
+                 OPTIONAL MATCH (l:LeaderEntity)-[:REPRESENTS]->(vs)
+                 RETURN vs.name AS vs, ls.name AS ls, d.name AS district,
+                        l.name AS mla, l.party AS party,
+                        vs.total_electors AS electors, vs.turnout_pct AS turnout
+                 LIMIT 5`,
+                { kw }
+            );
+            constInfo.records.forEach(r => add(
+                `[CONSTITUENCY] ${r.get('vs')} | District: ${r.get('district') || 'N/A'} | LS: ${r.get('ls') || 'N/A'} | MLA: ${r.get('mla') || 'N/A'} (${r.get('party') || 'N/A'}) | Electors: ${r.get('electors') || 'N/A'} | Turnout: ${r.get('turnout') || 'N/A'}%`
+            ));
+
+            // 6. Lok Sabha constituencies + MPs
+            const lsInfo = await session.run(
+                `MATCH (ls:LokSabhaConstituency)
+                 WHERE toLower(ls.name) CONTAINS $kw
+                 OPTIONAL MATCH (l:LeaderEntity)-[:REPRESENTS]->(ls)
+                 RETURN ls.name AS ls, ls.winning_party AS party,
+                        l.name AS mp, ls.election_year AS year
+                 LIMIT 3`,
+                { kw }
+            );
+            lsInfo.records.forEach(r => add(
+                `[LOK SABHA] ${r.get('ls')} | MP: ${r.get('mp') || 'N/A'} | Party: ${r.get('party') || 'N/A'} | Year: ${r.get('year') || 'N/A'}`
+            ));
+
+            // 7. Strategies — title, description, AND aliases
+            const strats = await session.run(
+                `MATCH (s:Strategy)
+                 WHERE toLower(s.title) CONTAINS $kw
+                    OR toLower(s.description) CONTAINS $kw
+                 RETURN s.title AS title, s.outcome AS outcome,
+                        s.positive_impact AS pos, s.negative_impact AS neg,
+                        s.year AS year
+                 LIMIT 3`,
+                { kw }
+            );
+            strats.records.forEach(r => add(
+                `[STRATEGY] "${r.get('title')}" (${r.get('year') || 'N/A'}) | Outcome: ${r.get('outcome')} | Positive: ${r.get('pos') || 'N/A'}% | Resistance: ${r.get('neg') || 'N/A'}%`
+            ));
+
+            // 8. Sentiment observations — entity name AND aliases
+            const sentiment = await session.run(
+                `MATCH (obs:SentimentObservation)
+                 WHERE toLower(obs.content) CONTAINS $kw
+                    OR toLower(obs.entity_name) CONTAINS $kw
+                 RETURN obs.entity_name AS entity, obs.sentiment_label AS sentiment,
+                        obs.sentiment_score AS score, obs.source AS source,
+                        obs.source_date AS date
+                 ORDER BY obs.source_date DESC
+                 LIMIT 5`,
+                { kw }
+            );
+            sentiment.records.forEach(r => add(
+                `[SENTIMENT] Entity: ${r.get('entity')} | ${r.get('sentiment')} (score: ${r.get('score')}) | Source: ${r.get('source')} | Date: ${r.get('date')}`
+            ));
+        }
+
+    } catch (e) {
+        console.warn('[GRAPH CONTEXT] Neo4j query partial failure:', e.message);
+    } finally {
+        await session.close();
+    }
+
+    return lines.length > 0 ? lines.join('\n') : null;
+}
+
 app.post('/api/search', async (req, res) => {
     const { query } = req.body;
     try {
-        let webContext = "";
-        try {
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 8000);
-            const res = await fetch(`https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&q=${encodeURIComponent(query)}&country=in&language=en&size=8`, { signal: controller.signal });
-            clearTimeout(timeout);
-            if (res.ok) {
-                const data = await res.json();
-                webContext = (data.results || []).slice(0, 6).map(a => a.title).join('\n');
-            }
-        } catch (e) {}
+        // Run news fetch and Neo4j graph context in parallel
+        const [webContext, graphContext] = await Promise.all([
+            // News context
+            (async () => {
+                try {
+                    const controller = new AbortController();
+                    const timeout = setTimeout(() => controller.abort(), 8000);
+                    const r = await fetch(`https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&q=${encodeURIComponent(query)}&country=in&language=en&size=8`, { signal: controller.signal });
+                    clearTimeout(timeout);
+                    if (r.ok) {
+                        const data = await r.json();
+                        return (data.results || []).slice(0, 6).map(a => a.title).join('\n');
+                    }
+                } catch (e) {}
+                return "";
+            })(),
+            // Neo4j graph context
+            fetchGraphContext(query).catch(() => null),
+        ]);
 
-        const prompt = `Assistant: You have access to real-time Indian news. 
-        QUERY: "${query}"
-        NEWS CONTEXT:
-        ${webContext}
-        
-        Answer professionally using the news context provided. If no news is found, use your general knowledge.`;
+        const prompt = `You are an expert Indian political intelligence analyst for Uttar Pradesh.
+
+QUERY: "${query}"
+
+${graphContext ? `KNOWLEDGE GRAPH CONTEXT (from Neo4j ontology database):
+${graphContext}
+
+` : ''}${webContext ? `LIVE NEWS CONTEXT:
+${webContext}
+
+` : ''}Instructions:
+- Prioritise the knowledge graph context as ground truth when answering.
+- Supplement with live news where relevant.
+- If neither source has relevant data, use your general knowledge about Indian politics.
+- Be specific, factual, and concise. Cite graph data points where applicable.`;
 
         const rawText = await callAI(prompt);
-        res.json({ ai_response: rawText });
+        res.json({
+            result: rawText,
+            sources: {
+                graph: graphContext ? graphContext.split('\n').length + ' graph records' : 'none',
+                news: webContext ? 'live headlines' : 'none',
+            }
+        });
     } catch (error) {
         res.status(500).json({ error: "Search failed." });
     }
