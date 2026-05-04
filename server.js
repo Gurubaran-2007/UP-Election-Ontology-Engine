@@ -225,47 +225,35 @@ app.get('/api/up/constituency/:constName/analysis', async (req, res) => {
     try {
         // 1. Fetch Candidates & Aggregate Votes from all Booths
         const voteResult = await session.run(`
-            MATCH (can:Candidate)-[r:CONTESTED_IN]->(c:Constituency)
+            MATCH (c:Constituency)
             WHERE toLower(c.name) CONTAINS toLower($name)
+            WITH c LIMIT 1
+            MATCH (can:Candidate)-[:CONTESTED_IN]->(c)
             OPTIONAL MATCH (can)-[rv:RECEIVED_VOTES]->(b:Booth)-[:PART_OF]->(c)
-            RETURN can.name AS name, can.party AS party, coalesce(sum(rv.count), 0) AS totalVotes
+            RETURN can.name AS name, can.party AS party, toInteger(coalesce(sum(rv.count), 0)) AS totalVotes
             ORDER BY totalVotes DESC
         `, { name });
 
-        // 2. Fetch Booths and Total Electors
         const boothResult = await session.run(`
-            MATCH (b:Booth)-[:PART_OF]->(c:Constituency)
+            MATCH (c:Constituency)
             WHERE toLower(c.name) CONTAINS toLower($name)
-            RETURN b.name AS name, b.electors AS electors, b.turnout AS turnout
+            WITH c LIMIT 1
+            MATCH (b:Booth)-[:PART_OF]->(c)
+            RETURN b.name AS name, toInteger(coalesce(b.electors, 0)) AS electors, toInteger(coalesce(b.turnout, 0)) AS turnout
             ORDER BY b.name
         `, { name });
 
         const candidates = voteResult.records.map(record => ({
-            name: record.get('name'),
+            name: record.get('name') || "N/A",
             party: record.get('party') || "Independent",
-            votes: record.get('totalVotes') ? record.get('totalVotes').toInt() : 0,
-            education: "N/A",
-            assets: "N/A"
+            votes: record.get('totalVotes') || 0
         }));
-
-        if (candidates.length === 0) {
-            return res.json({
-                basic: { total_voters: "Syncing...", urban_rural: "Ground Level Data" },
-                results: { winner: "Calculating...", party: "N/A", vote_share: 0, chart_data: [] },
-                candidates: [],
-                demographics: { dominant_caste: "N/A", religion_dist: "N/A", youth_pop: "N/A" },
-                issues: [],
-                trends: { graph_explanation: "Data is currently being synced for this region." },
-                alerts: ["Ground Truth Sync in Progress"],
-                booths: []
-            });
-        }
 
         const booths = boothResult.records.map(record => ({
             id: record.get('name'),
             name: record.get('name'),
-            electors: record.get('electors').toInt(),
-            turnout: record.get('turnout').toInt()
+            electors: record.get('electors') || 0,
+            turnout: record.get('turnout') || 0
         }));
 
         const totalVotes = candidates.reduce((sum, c) => sum + (c.votes || 0), 0);
