@@ -7,23 +7,23 @@ import { getIndiaGeo, getStateDistrictGeo, getDistrictData } from '../../api';
 import type { DistrictData, MapSelection } from '../../types';
 import { CONFIGURED_STATES } from '../../types';
 
-// ── Region colours for UP ─────────────────────────────────────────────────────
-const UP_REGIONS: Record<string, { color: string; districts: string[] }> = {
-  'Western U.P.': { color: '#fef08a', districts: ['Saharanpur','Muzaffarnagar','Shamli','Baghpat','Meerut','Ghaziabad','Hapur','Gautam Buddha Nagar','Bulandshahr','Aligarh','Hathras','Mathura','Agra','Firozabad','Etah','Kasganj','Mainpuri','Etawah','Auraiya','Kannauj','Farrukhabad'] },
-  'Rohilkhand':   { color: '#bfdbfe', districts: ['Bijnor','Amroha','Moradabad','Rampur','Sambhal','Budaun','Bareilly','Pilibhit','Shahjahanpur'] },
-  'Awadh':        { color: '#e9d5ff', districts: ['Kheri','Sitapur','Hardoi','Unnao','Lucknow','Rae Bareli','Barabanki','Ayodhya','Amethi','Sultanpur','Ambedkar Nagar','Gonda','Bahraich','Shravasti','Balrampur','Fatehpur'] },
-  'Bundelkhand':  { color: '#fecaca', districts: ['Jalaun','Jhansi','Lalitpur','Hamirpur','Mahoba','Banda','Chitrakoot'] },
-  'Purvanchal':   { color: '#bbf7d0', districts: ['Siddharthnagar','Maharajganj','Kushinagar','Basti','Sant Kabir Nagar','Gorakhpur','Deoria','Azamgarh','Mau','Ballia','Jaunpur','Ghazipur','Varanasi','Mirzapur','Chandauli','Sonbhadra','Prayagraj','Kaushambi','Pratapgarh'] },
+// ── Region colours for configured state drill-down ───────────────────────────
+const STATE_REGIONS: Record<string, { color: string; districts: string[] }> = {
+  'Western Cluster': { color: '#fef08a', districts: ['Saharanpur','Muzaffarnagar','Shamli','Baghpat','Meerut','Ghaziabad','Hapur','Gautam Buddha Nagar','Bulandshahr','Aligarh','Hathras','Mathura','Agra','Firozabad','Etah','Kasganj','Mainpuri','Etawah','Auraiya','Kannauj','Farrukhabad'] },
+  'Northwest Cluster': { color: '#bfdbfe', districts: ['Bijnor','Amroha','Moradabad','Rampur','Sambhal','Budaun','Bareilly','Pilibhit','Shahjahanpur'] },
+  'Governance Cluster': { color: '#e9d5ff', districts: ['Kheri','Sitapur','Hardoi','Unnao','Lucknow','Rae Bareli','Barabanki','Ayodhya','Amethi','Sultanpur','Ambedkar Nagar','Gonda','Bahraich','Shravasti','Balrampur','Fatehpur'] },
+  'Dryland Cluster': { color: '#fecaca', districts: ['Jalaun','Jhansi','Lalitpur','Hamirpur','Mahoba','Banda','Chitrakoot'] },
+  'Eastern Cluster': { color: '#bbf7d0', districts: ['Siddharthnagar','Maharajganj','Kushinagar','Basti','Sant Kabir Nagar','Gorakhpur','Deoria','Azamgarh','Mau','Ballia','Jaunpur','Ghazipur','Varanasi','Mirzapur','Chandauli','Sonbhadra','Prayagraj','Kaushambi','Pratapgarh'] },
 };
 
-function getUPRegion(name: string) {
-  for (const [region, { color, districts }] of Object.entries(UP_REGIONS)) {
+function getStateRegion(name: string) {
+  for (const [region, { color, districts }] of Object.entries(STATE_REGIONS)) {
     if (districts.some(d => name.includes(d) || d.includes(name))) return { region, color };
   }
   return { region: 'Other', color: '#e2e8f0' };
 }
 
-function getUPDistrictColor(name: string) { return getUPRegion(name).color; }
+function getStateDistrictColor(name: string) { return getStateRegion(name).color; }
 
 function getIndiaStateColor(name: string) {
   return CONFIGURED_STATES[name] ? 'rgba(249,115,22,0.28)' : '#1e293b';
@@ -164,10 +164,6 @@ export default function DistrictMap() {
   // Tracks currently-selected feature name so mouseout handlers can restore highlight
   const selectedRef = useRef<string | undefined>(undefined);
 
-  // Stored per-render so highlightOnMap can restore non-selected fills
-  const getFillRef  = useRef<((name: string) => string) | null>(null);
-  const getNameRef  = useRef<((d: any) => string) | null>(null);
-
   // ── Shared D3 draw ────────────────────────────────────────────────────────
   const renderMap = useCallback((
     geo: any,
@@ -293,13 +289,13 @@ export default function DistrictMap() {
         setMapLoading(false);
         const items: ListItem[] = geo.features.map((f: any) => {
           const name = f.properties.name || f.properties.DISTRICT || '';
-          const { region, color } = stateCode === 'UP' ? getUPRegion(name) : { region: '', color: '#1e3a5f' };
+          const { region, color } = stateCode === 'UP' ? getStateRegion(name) : { region: '', color: '#1e3a5f' };
           return { name, sub: region || undefined, color };
         }).sort((a: ListItem, b: ListItem) => a.name.localeCompare(b.name));
         setListItems(items);
 
         renderMap(geo, true,
-          name => stateCode === 'UP' ? getUPDistrictColor(name) : '#1e3a5f',
+          name => stateCode === 'UP' ? getStateDistrictColor(name) : '#1e3a5f',
           (d: any) => d.properties.name || d.properties.DISTRICT || '',
           (districtName: string) => selectDistrict(districtName),
           (name: string) => name === selectedRef.current,
@@ -366,7 +362,7 @@ export default function DistrictMap() {
     );
     if (sel.stateCode === 'UP') return (
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-        {Object.entries(UP_REGIONS).map(([name, { color }]) => <LegendDot key={name} color={color} label={name} />)}
+        {Object.entries(STATE_REGIONS).map(([name, { color }]) => <LegendDot key={name} color={color} label={name} />)}
       </Box>
     );
     return null;

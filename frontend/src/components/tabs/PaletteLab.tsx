@@ -220,7 +220,7 @@ function PalettePreview({ palette }: { palette: PaletteOption }) {
               </Box>
               <Box>
                 <Typography sx={{ color: palette.text, fontSize: '0.82rem', fontWeight: 850 }}>
-                  UP Intelligence
+                  National Intelligence
                 </Typography>
                 <Typography sx={{ color: palette.muted, fontSize: '0.62rem' }}>
                   Analyst workspace
@@ -299,7 +299,7 @@ function PalettePreview({ palette }: { palette: PaletteOption }) {
                 Media narrative rising
               </Typography>
               <Typography sx={{ color: palette.muted, fontSize: '0.66rem', lineHeight: 1.45, mt: 0.25 }}>
-                Agriculture pricing mentions increased across eastern UP coverage.
+                Agriculture pricing mentions increased across eastern state coverage.
               </Typography>
             </Box>
           </Box>

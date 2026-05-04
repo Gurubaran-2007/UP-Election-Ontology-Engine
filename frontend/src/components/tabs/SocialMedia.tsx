@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Box, Paper, Typography, Button, Chip } from '@mui/material';
-import { getUPNews, getChannelLive } from '../../api';
+import { getPoliticalNews, getChannelLive } from '../../api';
 import type { NewsItem } from '../../types';
 
 const TV_CHANNELS = [
   { name: 'Aaj Tak',        desc: 'Hindi · #1 live news India',         handle: 'aajtak',          color: '#e63946' },
-  { name: 'NDTV India',     desc: 'Hindi · National · UP coverage',     handle: 'NDTVIndia',       color: '#457b9d' },
+  { name: 'NDTV India',     desc: 'Hindi · National · state coverage',  handle: 'NDTVIndia',       color: '#457b9d' },
   { name: 'ABP News',       desc: 'Hindi · Politics · Ground reports',  handle: 'abpnewsabhitak',  color: '#2a9d8f' },
-  { name: 'Zee News',       desc: 'Hindi · Breaking · UP focus',        handle: 'zeenews',         color: '#6a0572' },
+  { name: 'Zee News',       desc: 'Hindi · Breaking · state focus',     handle: 'zeenews',         color: '#6a0572' },
   { name: 'India TV',       desc: 'Hindi · Live breaking news',         handle: 'IndiaTV',         color: '#f4a261' },
-  { name: 'TV9 Bharatvarsh',desc: 'Hindi · UP & Bihar · Ground news',   handle: 'tv9bharatvarsh',  color: '#e9c46a' },
+  { name: 'TV9 Bharatvarsh',desc: 'Hindi · Regional ground news',       handle: 'tv9bharatvarsh',  color: '#e9c46a' },
   { name: 'News18 India',   desc: 'Hindi/English · National coverage',  handle: 'News18India',     color: '#264653' },
   { name: 'Republic Bharat',desc: 'Hindi · Debates · Investigative',    handle: 'RepublicBharat',  color: '#8338ec' },
   { name: 'NDTV 24x7',      desc: 'English · India · International',    handle: 'ndtv',            color: '#3a86ff' },
@@ -38,7 +38,7 @@ export default function SocialMedia() {
   const [notLive, setNotLive]     = useState<{ name: string; url: string } | null>(null);
 
   useEffect(() => {
-    getUPNews()
+    getPoliticalNews()
       .then(d => setNews(d.results || []))
       .finally(() => setNewsLoading(false));
   }, []);
@@ -67,15 +67,15 @@ export default function SocialMedia() {
       {/* Header */}
       <Paper elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: 2, p: 0, overflow: 'hidden' }}>
         <Box sx={{ p: 2.5, pb: 0, borderBottom: '1px solid #e2e8f0' }}>
-          <Typography fontWeight={800} fontSize="1.2rem" mb={0.3}>UP Social Media</Typography>
-          <Typography color="text.secondary" fontSize="0.875rem" mb={1.5}>Real-time Uttar Pradesh news and live TV channels</Typography>
+          <Typography fontWeight={800} fontSize="1.2rem" mb={0.3}>Media Monitor</Typography>
+          <Typography color="text.secondary" fontSize="0.875rem" mb={1.5}>Real-time political news and live TV channels</Typography>
           <Box sx={{ display: 'flex', gap: 0 }}>
             {(['news', 'tv'] as const).map(t => (
               <Button key={t} onClick={() => setTab(t)}
                 sx={{ borderRadius: t === 'news' ? '8px 0 0 0' : '0 8px 0 0', textTransform: 'none', fontWeight: 700, px: 3,
                   background: tab === t ? '#FF6B35' : 'transparent', color: tab === t ? '#fff' : '#64748b',
                   '&:hover': { background: tab === t ? '#e85d2a' : '#f8fafc' }, border: '1px solid #e2e8f0', borderBottom: 'none' }}>
-                {t === 'news' ? '📰 UP News' : '📺 Live TV'}
+                {t === 'news' ? '📰 Political News' : '📺 Live TV'}
               </Button>
             ))}
           </Box>

@@ -14,7 +14,7 @@ export default function LoginPage() {
         </Box>
 
         <Typography variant="h5" sx={{ fontWeight: 800, color: '#1a1a2e', letterSpacing: '-0.5px', mb: 0.5 }}>
-          UP Election Ontology Engine
+          National Political Ontology Engine
         </Typography>
         <Typography variant="body2" sx={{ color: 'text.secondary', mb: 4 }}>
           Political Strategy &amp; Predictive Intelligence Platform
@@ -35,7 +35,7 @@ export default function LoginPage() {
         </Button>
 
         <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mt: 3 }}>
-          Secured by Auth0 &nbsp;|&nbsp; Government of Uttar Pradesh
+          Secured by Auth0 &nbsp;|&nbsp; National Intelligence Workspace
         </Typography>
       </Paper>
     </Box>

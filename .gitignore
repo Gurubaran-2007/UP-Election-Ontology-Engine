@@ -29,3 +29,6 @@ Thumbs.db
 # virtial environment
 .venv/
 venv/
+
+# Booth-level raw XLS files (large, backed up in Google Drive zips)
+data/booths/raw/

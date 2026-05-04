@@ -72,22 +72,22 @@ const STATS: StatCardProps[] = [
     label: 'District coverage',
     value: '75',
     detail: 'Political, demographic, and media layers',
-    trend: 'Full UP grid',
+    trend: 'State grid live',
     Icon: LocationCityIcon,
     tone: 'blue',
   },
   {
     label: 'Electorate base',
     value: '15.03 Cr',
-    detail: 'Registered voters across UP regions',
+    detail: 'Registered voters across configured states',
     trend: 'Region ready',
     Icon: PeopleIcon,
     tone: 'violet',
   },
   {
-    label: 'Regional theatres',
+    label: 'Political regions',
     value: '5',
-    detail: 'West, Central, Awadh, Bundelkhand, Purvanchal',
+    detail: 'Configured regional clusters for the active state',
     trend: 'Live filters',
     Icon: PublicIcon,
     tone: 'green',
@@ -97,8 +97,8 @@ const STATS: StatCardProps[] = [
 const MODULES: ModuleCard[] = [
   {
     id: 'map',
-    title: 'District Map',
-    description: 'Locate volatility, party strength, and demographic shifts by district.',
+    title: 'National Map',
+    description: 'Locate volatility, party strength, and demographic shifts by state and district.',
     action: 'Open Map',
     metric: '75 districts',
     preview: ['Heat layer ready', 'District drilldown', 'Leadership context'],
@@ -161,18 +161,18 @@ const TRENDING_DISTRICTS = [
   { name: 'Varanasi', signal: 'Media velocity', score: 82, tone: 'orange' as const },
   { name: 'Azamgarh', signal: 'Seat volatility', score: 74, tone: 'violet' as const },
   { name: 'Gorakhpur', signal: 'Governance interest', score: 68, tone: 'green' as const },
-  { name: 'Lucknow', signal: 'Policy chatter', score: 63, tone: 'blue' as const },
+  { name: 'Patna', signal: 'Policy chatter', score: 63, tone: 'blue' as const },
 ];
 
 const MEDIA_ALERTS = [
-  { source: 'Regional press', title: 'Agriculture pricing narrative rising in eastern belt', level: 'High' },
+  { source: 'Regional press', title: 'Agriculture pricing narrative rising across rural belts', level: 'High' },
   { source: 'Broadcast scan', title: 'Law and order mentions clustered around urban seats', level: 'Medium' },
   { source: 'Social signal', title: 'Youth employment query volume increased after rally coverage', level: 'Medium' },
 ];
 
 const STRATEGY_SIGNALS = [
-  'Bundelkhand water and irrigation messaging is outperforming generic welfare copy.',
-  'Purvanchal seats show higher sensitivity to candidate reputation than statewide swing.',
+  'Water and irrigation messaging is outperforming generic welfare copy in drought-prone clusters.',
+  'High-density seats show higher sensitivity to candidate reputation than statewide swing.',
   'Urban constituencies need separate media framing for law, jobs, and mobility issues.',
 ];
 
@@ -329,12 +329,12 @@ export default function Home({ onNavigate }: Props) {
         <Box sx={{ position: 'relative', display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.35fr) minmax(320px, 0.65fr)' }, gap: 3 }}>
           <Box>
             <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1, mb: 2 }}>
-              <Chip icon={<ShieldIcon />} label="UP political intelligence" size="small" sx={{ color: '#e2e8f0', background: 'rgba(15,23,42,0.82)', border: '1px solid rgba(148,163,184,0.22)', fontWeight: 800 }} />
+              <Chip icon={<ShieldIcon />} label="National political intelligence" size="small" sx={{ color: '#e2e8f0', background: 'rgba(15,23,42,0.82)', border: '1px solid rgba(148,163,184,0.22)', fontWeight: 800 }} />
               <Chip icon={<NotificationsActiveIcon />} label="Live monitoring" size="small" sx={{ color: '#fed7aa', background: 'rgba(249,115,22,0.16)', border: '1px solid rgba(249,115,22,0.35)', fontWeight: 800 }} />
             </Stack>
 
             <Typography sx={{ color: '#f8fafc', fontSize: { xs: '1.85rem', md: '2.65rem' }, fontWeight: 950, lineHeight: 1.05, maxWidth: 760 }}>
-              Political intelligence command center for Uttar Pradesh.
+              National political intelligence command center.
             </Typography>
             <Typography sx={{ color: '#94a3b8', fontSize: { xs: '0.92rem', md: '1rem' }, lineHeight: 1.7, maxWidth: 700, mt: 1.6 }}>
               Track seats, surface risk signals, search institutional memory, and move from statewide context to booth-level action without leaving the analyst workspace.
@@ -392,7 +392,7 @@ export default function Home({ onNavigate }: Props) {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, background: 'rgba(15,23,42,0.92)', border: '1px solid rgba(148,163,184,0.16)', borderRadius: 1.5, px: 1.4, py: 1.2 }}>
               <SearchIcon sx={{ color: '#64748b', fontSize: 19 }} />
               <Typography sx={{ color: '#e2e8f0', fontSize: '0.84rem', lineHeight: 1.4 }}>
-                Show vulnerable seats in eastern UP
+                Show vulnerable seats in eastern India
               </Typography>
             </Box>
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 1.4 }}>

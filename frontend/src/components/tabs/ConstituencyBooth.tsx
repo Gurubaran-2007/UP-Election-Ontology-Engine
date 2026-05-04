@@ -5,22 +5,22 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import PeopleIcon from '@mui/icons-material/People';
 import ThermostatIcon from '@mui/icons-material/Thermostat';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import { getRegionDistricts, getConstituencies, getConstituencyAnalysis, getBoothAnalysis, getUPDashboard, getUPWeather } from '../../api';
+import { getRegionDistricts, getConstituencies, getConstituencyAnalysis, getBoothAnalysis, getOperationalSnapshot, getActiveStateWeather } from '../../api';
 
 type View = 'regions' | 'districts' | 'constituencies' | 'analysis' | 'booth';
 
 const REGIONS = [
-  { id: 'western',     name: 'Western UP',              color: '#fef08a', accent: '#eab308', desc: 'Industrial & agricultural hub of the West.' },
-  { id: 'central',     name: 'Central UP',              color: '#e9d5ff', accent: '#a855f7', desc: 'Heart of political power and governance.' },
-  { id: 'eastern',     name: 'Eastern UP (Purvanchal)', color: '#bbf7d0', accent: '#22c55e', desc: 'Densely populated belt with diverse demographics.' },
-  { id: 'bundelkhand', name: 'Bundelkhand',             color: '#fecaca', accent: '#ef4444', desc: 'Historic plateau region with unique issues.' },
+  { id: 'western',     name: 'Western Cluster',       color: '#fef08a', accent: '#eab308', desc: 'Industrial and agricultural constituencies.' },
+  { id: 'central',     name: 'Central Cluster',       color: '#e9d5ff', accent: '#a855f7', desc: 'Governance, capital, and administrative seats.' },
+  { id: 'eastern',     name: 'Eastern Cluster',       color: '#bbf7d0', accent: '#22c55e', desc: 'High-density constituencies with diverse demographics.' },
+  { id: 'bundelkhand', name: 'Dryland Cluster',       color: '#fecaca', accent: '#ef4444', desc: 'Water, agrarian, and terrain-sensitive seats.' },
 ];
 
 const KPI_CARDS = [
   { label: 'Total Voters', value: '15.03 Cr', delta: 'Registered 2022', color: '#f97316', Icon: PeopleIcon },
-  { label: 'Assembly Seats', value: '403', delta: 'UP Legislature', color: '#1d4ed8', Icon: AccountBalanceIcon },
+  { label: 'Assembly Seats', value: '403', delta: 'Active state legislature', color: '#1d4ed8', Icon: AccountBalanceIcon },
   { label: 'Districts', value: '75', delta: 'Administrative', color: '#16a34a', Icon: TrendingUpIcon },
-  { label: 'Constituencies', value: '403', delta: 'Vidhan Sabha', color: '#7c3aed', Icon: AccountBalanceIcon },
+  { label: 'Constituencies', value: '403', delta: 'Assembly constituencies', color: '#7c3aed', Icon: AccountBalanceIcon },
 ];
 
 export default function ConstituencyBooth() {
@@ -40,7 +40,7 @@ export default function ConstituencyBooth() {
   const [stack, setStack]           = useState<View[]>([]);
 
   useEffect(() => {
-    Promise.all([getUPDashboard(), getUPWeather()])
+    Promise.all([getOperationalSnapshot(), getActiveStateWeather()])
       .then(([s, w]) => { setSchemes(s); setWeather(w); })
       .finally(() => setCommandLoading(false));
   }, []);
@@ -69,7 +69,7 @@ export default function ConstituencyBooth() {
   };
 
   const headers: Record<View, { title: string; subtitle: string }> = {
-    regions:         { title: 'UP Constituency & Booth',   subtitle: 'Select a region to begin deep-dive analysis' },
+    regions:         { title: 'Constituency & Booth Intelligence',   subtitle: 'Select a configured region to begin deep-dive analysis' },
     districts:       { title: regionName,                  subtitle: `Districts in ${regionName}` },
     constituencies:  { title: district,                    subtitle: `Constituencies in ${district}` },
     analysis:        { title: constituency,                subtitle: 'Intelligent Analysis & Booth Data' },
@@ -177,7 +177,7 @@ function OperationalSnapshot({ schemes, weather, loading }: { schemes: any; weat
                 </Typography>
               </Box>
               <Typography sx={{ color: '#cbd5e1', fontSize: '0.72rem' }}>{weather.condition || 'Clear'}</Typography>
-              <Typography sx={{ color: '#94a3b8', fontSize: '0.66rem' }}>{weather.city || 'Lucknow'}</Typography>
+              <Typography sx={{ color: '#94a3b8', fontSize: '0.66rem' }}>{weather.city || 'Active state capital'}</Typography>
             </Box>
           )}
         </Box>

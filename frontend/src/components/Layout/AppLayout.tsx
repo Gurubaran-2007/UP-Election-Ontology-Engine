@@ -27,7 +27,7 @@ interface NavItem { id: TabId; label: string; Icon: SvgIconComponent }
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'home',           label: 'Home',             Icon: HomeIcon },
-  { id: 'map',            label: 'District Map',     Icon: MapIcon },
+  { id: 'map',            label: 'National Map',     Icon: MapIcon },
   { id: 'booth',          label: 'Constituency',     Icon: AccountBalanceIcon },
   { id: 'strategy',       label: 'Strategy Builder', Icon: AutoGraphIcon },
   { id: 'ai-search',      label: 'AI Search',        Icon: ManageSearchIcon },
@@ -94,7 +94,7 @@ export default function AppLayout() {
           </Box>
           <Box>
             <Typography sx={{ color: '#f1f5f9', fontWeight: 900, fontSize: '0.78rem', letterSpacing: 1.8, textTransform: 'uppercase', lineHeight: 1 }}>
-              UP Ontology Engine
+              National Political Ontology
             </Typography>
             <Typography sx={{ color: '#94a3b8', fontSize: '0.56rem', letterSpacing: 1.5, textTransform: 'uppercase' }}>
               Intelligence workspace

@@ -1,0 +1,305 @@
+Party Type,Party Name,Party Abbreviation
+N,Bharatiya Janata Party,BJP
+N,Bahujan Samaj Party,BSP
+N,Communist Party of India,CPI
+N,Communist Party of India  (Marxist),CPM
+N,Indian National Congress,INC
+N,Nationalist Congress Party,NCP
+O,All India Forward Bloc,AIFB
+O,All India Majlis-E-Ittehadul Muslimeen,AIMIM
+O,Rashtriya Lok Samta Party,BLSP
+O,Indian Union Muslim League,IUML
+O,Shivsena,SHS
+S,Rashtriya Lok Dal,RLD
+S,Samajwadi Party,SP
+U,Aajad Bharat Party (Democratic),AABHAP
+U,Adarshwaadi Congress Party,AACP
+U,Aam Janata Party,AAMJP
+U,Aadhi Aabadi Party,AAPA
+U,Aadim Samaj Party,AaSamP
+U,Abhay Samaj Party,ABHASP
+U,Akhil Bharat Hindu Mahasabha,ABHM
+U,Akhil Bharatiya Jan Sangh,ABJS
+U,Akhil Bharat Samagra Kranti Party,ABSKP
+U,Akhil Bhartiya Vikas Congress Party,ABVCP
+U,Apna Dal,AD
+U,Apna Dal (Soneylal),ADAL
+U,Adhikar Party,ADHIKAR
+U,Apna Desh Party,ADPT
+U,Adarsh Samaj Party,ADRSP
+U,Apna Dal United Party,ADUP
+U,Adarsh Vyawastha Party,AdVP
+U,New All India Congress Party,aicp
+U,All India Jan Congress Party,AIJCP
+U,All India Minorities Front,AIMF
+U,All India Peoples' Front (Radical),AIPF
+U,All India Pichhada Jan Samaj Party,AIPJSP
+U,Aam Janta Party Rashtriya,AJPR
+U,Akhil Bhartiya Swarajya Dal,AkBSD
+U,Akhand Samaj Party,AKSP
+U,Adarsh Lok Dal,ALD
+U,Al-Hind Party,ALHP
+U,Azad Mazdoor Kissan Party,AMKP
+U,Ambedkar National Congress,ANC
+U,Ambedkarite Party of India,APoI
+U,Akhand Rashtrawadi Party,ARK
+U,Awami Samta Party,ASaP
+U,Ambedkar Samaj Party,ASP
+U,Asankhya Samaj Party,ASSP
+U,AARAKSHAN VIRODHI PARTY,AVIRP
+U,Awami Vikas Party,AwVP
+U,Ambedkar Yug Party,AYP
+U,Apni Zindgi Apna Dal,AZAD
+U,Bhartiya Harit Party,BaHaP
+U,Bahujan Maha Party,BAHUMP
+U,Bhartiya Janta Dal,BaJD
+U,Bhartiya  Sarvjan Party,BaSaP
+U,Bhartiya Sarvodaya Party,BaSaPa
+U,Bhartiya Vanchitsamaj Party,BaVaP
+U,Bahujan Awam Party,BAWPA
+U,Bharatiya Bahujan Parivartan  Party,BBPP
+U,Bharatiya Chhatrasangh Bharat,BCB
+U,Bharatrashtra Democratic Party,BDPty
+U,Bharatiya Democratic  Socialist Alliance  Party,BDSAP
+U,Bharatiya Eklavya Party,BEP
+U,Bhartiya Bhaichara Party,BHABHAPA
+U,Bhartiya Insan Party,BHAIP
+U,Bhartiya Jan Sahyog Party,BHAJSP
+U,Bharat Kalyan Party,BHAKALP
+U,Bhartiya Nav Vikas Party,BHANVIP
+U,Bharat Nyay Dal,BHANYD
+U,Bhartiya Sangam Party,BHASAP
+U,Bharti Samudaya Party,BhaSP
+U,Bharatiya Samrat Subhash  Sena,BHASSS
+U,Bhartiya Tarak Samaj Party,BHATARSP
+U,Bhartiya Imaandar Party,BHIP
+U,Bhagidari Kranti Dal,BHKRDL
+U,Bahujan Samaj Vikas Party,BHSVP
+U,Bharat (Integrated) Rakshak Party,BIRK
+U,Bharatiya Jan Berojgar Chhatra Dal,BJBCD
+U,Bharat Janta Dal (Tughlaq),BJD(T)
+U,Bhartiya Janta Dal (Integrated),bjdi
+U,Bharatiya Jan Kranti Dal (Democratic),BJKD
+U,Bharatiya Jan Sabha,BJS
+U,Bharatiya Janvadi Party,BJVP
+U,Bhartiya Kisan Janshakti Party,BKJP
+U,Bharatiya Kisan Parivartan Party,BKPP
+U,Bhartiya Krishak Dal,BKrD
+U,Bharat Kranti Rakshak Party,BKRP
+U,Bharatiya Karyasth Sena,BKS
+U,Bharatiya Kisan Sena Loktantrik,BKSL
+U,Bharat Lok Sewak Party,BLokSP
+U,Dr. Bhimrao Ambedkar Dal,bmd
+U,Bharatiya Momin Front,BMF
+U,Bharat Mata Party,BMtP
+U,Bahujan Mukti Party,BMUP
+U,Bhartiya Navodaya Party,BNavP
+U,Bhartiya Naujawan Inklav Party,BNIP
+U,Bahujan Party,BPA
+U,Bharatiya Rashtriya Bahujan Samaj Vikas Party,BRABSVP
+U,Bhartiya Rashtriya Jansatta,BRJ
+U,Brij Kranti Dal,BRKD
+U,Bhartiya Republican Party (Insan),BRPI
+U,Bhartiya Shakti Chetna Party,BSCP
+U,Bharatiya Samaj Dal,BSD
+U,Bhartiya Samajik Kranti Dal,BSKD
+U,Bharatiya Swajivi Nagrik Party,BSNPty
+U,Bahujan Sangharsh Party (Kanshiram),BSP(K)
+U,Bharatiya Subhash Sena,BSRD
+U,Bundelkhand Kranti Dal,BUNKD
+U,Communist Party of India  (Marxist-Leninist)  (Liberation),CPI(ML)(L)
+U,Desh Shakti Party,DESP
+U,Deshbhakt Nirman Party,DNP
+U,Eklavya Samaj Party,EKSP
+U,Federal Democratic Party,FDDP
+U,Fauji Janta Party,FJP
+U,Gandhi Ekta Party,GEkP
+U,Gondvana Gantantra Party,GGP
+U,Gareeb Kranti Party,GKP
+U,Hamari Apni Party,HAPa
+U,Hind Congress Party,HCP
+U,Hind Vikas Party,HDVP
+U,Hindustan Utthan Party,HINUP
+U,Hindustan Janmorcha,HJ
+U,Hind Jan Congress,hjc
+U,Hindustan Krantikari Dal,HKRD
+U,Hindusthan Nirman Dal,HND
+U,Hum Sabki Party,HuSP
+U,Ittehad-E-Millait Council,IEMC
+U,Islam Party Hind,IPH
+U,Indian Savarn Samaj Party,ISSP
+U,Inqalab Vikas Dal,IVD
+U,Jan Adhikar Manch,JAM
+U,Jan Adhikar Party,JANADIP
+U,Jan Jan Party,JANJAN
+U,Jan Kalyan Party,JANKP
+U,Jan Adhikar Party (Loktantrik),JAPL
+U,Jan Shakti Dal,JaSD
+U,Jan Seva Sahayak Party,JaSSP
+U,Jay Hind Jay Bharat Party,JHJBP
+U,Jai Hind Samaj Party,jhspt
+U,Janvadi Party(Socialist),JPS
+U,Janta Raj Party,JRPa
+U,Jan Shakti Ekta Party,JSEP
+U,Jan Sevak Party,JSK
+U,Jansatta Party,JSP
+U,Jan Sangharsh Virat Party,JSVP
+U,Justice Party,JUSTIP
+U,Kalyankari Jantantrik Party,kajp
+U,Kisan Samaj Party(S),KiSP
+U,Kisan Majdoor Berojgar Sangh,KMBS
+U,Kisan Majdoor Suraksha Party,KMSUP
+U,KIsan Shakti Jantantrik Party,KSJP
+U,Kisan Kranti Dal,KTKD
+U,Krantikari Yuva Party,KYP
+U,Lok Dal,LD
+U,Lok Ekta Party,LEP
+U,Lok Gathbandhan Party,LOGAP
+U,Loktantrik Manavatavadi Party,LOMP
+U,Labour Party of India (V.V. Prasad),LPI(V)
+U,Lokpriya Samaj Party,LPSP
+U,Lok Raksha Party,LRAP
+U,Lok Shahi Party (Secular),LSPS
+U,Loktantrik Samajwadi Party,LSWP
+U,Moulik Adhikar Party,MADP
+U,Mahakranti Dal,MAHAD
+U,Mahila Sashaktikaran Party,MAHISAP
+U,Manavadhikar Janshakti Party,MaJP
+U,Manavtawadi Kranti Dal,MaKDL
+U,Manav Kalyan Munch,makm
+U,Manviya Bharat Party,MANBP
+U,Manav Kranti Party,ManKP
+U,Manvadhikar National Party,MaNPa
+U,Mahila Swabhiman Party,MaSPa
+U,Most Backward Classes Of India,MBCOI
+U,Mahan Dal,MD
+U,Mahamukti Dal,MHD
+U,Manav Hit Party,MHP
+U,Majdoor Kisan Union Party,MKUP
+U,Minorities Democratic Party,MNDP
+U,Manuvadi Party,MNVP
+U,Moderate Party,MOP
+U,Manavtawadi Samaj Party,MwSP
+U,National Aman Party,NaAP
+U,National Democratic Front,NADEF
+U,National Lokmat Party,NaLP
+U,Naitik Party,NAP
+U,National Apni Party,NAPt
+U,Nasha Mukt Bharat Party,NASHMBP
+U,Naveen Samajwadi Dal,NAVSAD
+U,National Democratic Peoples Front,NDPF
+U,Nagrik Ekta Party,NEP
+U,Nirbal Indian Shoshit Hamara Aam Dal,NINSHAD
+U,Nav Jankranti Party,NJaP
+U,Nirmal India Party,NLIP
+U,National Peace Party Secular,NPPS
+U,Nirdhan Samaj Party of India,NSPI
+U,National Youth Party,NYP
+U,Ojaswi Party,OP
+U,Purvanchal Janta Dal,PAJD
+U,"Proutist Bloc, India",PBI
+U,Param Digvijay Dal,PDD
+U,Peace Party,PECP
+U,Pragatisheel Samaj Party,PGSP
+U,Pragatisheel Lok Manch,PLM
+U,Pichhravarg Mahapanchayat Party,PMhP
+U,Pragatisheel Manav Samaj Party,PMSP
+U,Poorvanchal People's Party,POOPEP
+U,Parcham Party of India,PPI
+U,Prajashakti Party Samdarshi,pps
+U,Pichhada Samanya Alpsankhyak Vyapari Kisan Party,PSAVKP
+U,Parivartan Samaj Party,PSJP
+U,Poorna Swaraj Manch,PSWAM
+U,Public Political Party,PuPP
+U,Pashchimi Uttar Pradesh Vikas Party,PUPVP
+U,Rashtriya Bandhutwa Party,RaBaP
+U,Rashtriya Congress (Babu Jagjivanram),RAC
+U,Rashtriya Congress(J) Party,RaCP
+U,Rastriya Insaaf Party,RaIP
+U,Rashtriya Jan  Adhikar Party,RAJADP
+U,Rashtriya Janadhar  Party,RAJAP
+U,Rajlok Party,RAJP
+U,Rastriya Aam Jan Seva Party,RAJSPty
+U,Rashtriya Lokshakti Party,RaLoPa
+U,Rashtriya Shahri Vikas Party,RASHVIP
+U,Rashtrawadi Janwadi Manch,RasJM
+U,Rashtriya Bahujan Congress Party,RBCP
+U,Rashtriya Garib Dal,RGD
+U,Rashtriya Janadhikar Party,RJAP
+U,Rashtriya Jantantrik Bharat Vikas Party,RJBVP
+U,Rashtriya Janhit Sangharsh Party,RJSNP
+U,Rashtriya Kisan Vikas Party,RKIVP
+U,Rashtriya Kisan Majdoor Party,RKMP
+U,Rashtriya Krantikari Samajwadi Party,RKSP
+U,Rashtriya Lokraj Party,RLrP
+U,Rashtriya Mazdoor Ekta Party,RMEP
+U,Rashtriya mahan Gantantra Party,RMGP
+U,Rashtriya Mahila Janshakti Party,RMJP
+U,Rashtriya Parivartan Dal,RPD
+U,Rashtrawadi Praja Dal,RPDl
+U,Republican Party of India,RPI
+U,Republican Party of India (A),RPI(A)
+U,Republican Party of India Ektavadi,RPIE
+U,Republican Sena,rpsn
+U,Rashtriya Sarvajan Party,RrSP
+U,Rashtriya Apna Dal,RsAD
+U,Rashtriya Sawarn Dal,RSD
+U,Rashtriya Janshanti Party,RshJP
+U,Rashtravadi Pratap Sena,RSHP
+U,Rashtravyapi Janta Party,RsJnP
+U,Rashtriya Samanta Dal,RSMD
+U,Rashtriya Shoshit Samaj Party,RSOSP
+U,Rashtriya Samajwadi Party  (Secular),RSP(S)
+U,Rashtriya Samaj Paksha,RSPS
+U,Rashtriya Janpriya Party,RtJP
+U,Rashtriya Kranti Party,RTKP
+U,Rashtriya Janta Party,RtrJP
+U,Rashtriya Samajwadi Jankranti Party,RtSJP
+U,Rashtriya Ulama Council,RUC
+U,Rashtriya Vikalp Party,RViP
+U,RASHTRIYA VIKLANG PARTY,RVLP
+U,Rashtriya Vikas Manch Party,RVMP
+U,Rashtravadi Janata Party,RVNP
+U,Sarvodaya Bharat Party,SABHP
+U,Sarvshreshth Dal,SaDa
+U,Samajwadi Janata Party (ChandraShekhar),SaJPCs
+U,Saman Adhikar Party,SamAP
+U,Sampoorna Samaj Party,SAMSAMPA
+U,Sanyukt Vikas Party,SANVP
+U,Samaj Parivartan Party,SaPP
+U,Samtawadi Republican Party,SARP
+U,Sarv Sambhaav Party,SARSAMP
+U,Samajwadi Samaj Party,SaSaP
+U,Samaj Seva Party,SASEP
+U,Samaj Sevak Party,SASEPA
+U,Sarvjan Samta Party,SaSPa
+U,Satya Kranti Party,SATKP
+U,Satya Shikhar Party,SATSHIP
+U,Suheldev Bhartiya Samaj Party,SBSP
+U,Sabka Dal United,SDU
+U,Shoshit Sandesh Party,shsap
+U,Shoshit Samaj Party,SHSP
+U,Sarvajan Kalyan Loktantrik Party,SKLP
+U,Socialist Party (India),SP(I)
+U,Sanyukt Samajwadi Dal,SSAD
+U,Samta Samjwadi Congress Party,SSCP
+U,Shoshit Samaj Dal,SSD
+U,Sarva Samaj Kalyan Party,SSKP
+U,Swachh Swasth Swawlambijan Party,SSSP
+U,SOCIALIST UNITY CENTRE OF INDIA (COMMUNIST),SUCI
+U,Suraksha Samaj Party,SURSAP
+U,Swatantra Jantaraj Party,SWAJANPA
+U,Swabhiman Party,SWAP
+U,Samajwadi Jan Parishad,SWJP
+U,Swarajya Party Of India,SWPI
+U,United Democratic Front Secular,UDFS
+U,Uttarakhand Kranti Dal,UKKD
+U,United National Party,UNP
+U,Uttar Pradesh Republican Party,UPRP
+U,VANCHITSAMAJ INSAAF PARTY,VIP
+U,Vaicharik Kranti Party,VKP
+U,Vikas Party,VP
+U,Voters Party  International,VPI
+U,Yuva Vikas Party,YVP
+Z,Independent,IND
+Z1,None of the Above,NOTA

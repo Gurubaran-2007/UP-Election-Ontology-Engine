@@ -129,7 +129,7 @@ export default function Sidebar({ active, onChange, serverOnline, dbOnline }: Pr
             </Box>
           ))}
         </Box>
-        <Tooltip title="UP Political Ontology Engine — MVP v1.0">
+        <Tooltip title="National Political Ontology Engine — MVP v1.0">
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
             <Typography sx={{ color: '#1e293b', fontSize: '0.65rem' }}>v1.0 MVP</Typography>
             <Box sx={{ display: 'flex', gap: '3px' }}>

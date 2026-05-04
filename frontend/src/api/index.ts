@@ -16,6 +16,7 @@ export const getStateDistrictGeo = (stateCode: string) =>
   api.get(`/up/geo/districts/${stateCode}`).then(r => r.data);
 
 export const getUPNews = () => api.get<{ status: string; results: NewsItem[] }>('/up/news').then(r => r.data);
+export const getPoliticalNews = getUPNews;
 
 export const getChannelLive = (handle: string) =>
   api.get<{ videoId?: string; embedUrl?: string; channelUrl?: string }>(`/up/channel-live/${encodeURIComponent(handle)}`).then(r => r.data);
@@ -39,5 +40,7 @@ export const aiSearch = (query: string) =>
   api.post<{ result: string }>('/search', { query }).then(r => r.data);
 
 export const getUPDashboard = () => api.get('/up/schemes').then(r => r.data);
+export const getOperationalSnapshot = getUPDashboard;
 
 export const getUPWeather = () => api.get('/up/weather').then(r => r.data);
+export const getActiveStateWeather = getUPWeather;

@@ -1840,7 +1840,67 @@ app.get('/api/up/channel-live/:handle', async (req, res) => {
 });
 
 
+let _indiaGeoCache = null;
 let _upGeoCache = null;
+
+app.get('/api/up/geo/india', async (req, res) => {
+    if (_indiaGeoCache) {
+        console.log('[GEO] Serving India states from cache');
+        return res.json(_indiaGeoCache);
+    }
+
+    const sources = [
+        'https://raw.githubusercontent.com/geohacker/india/master/state/india_telengana.geojson',
+        'https://raw.githubusercontent.com/datameet/maps/master/States/Admin2.geojson'
+    ];
+
+    for (const url of sources) {
+        try {
+            console.log('[GEO] Trying India states:', url);
+            const controller = new AbortController();
+            const t = setTimeout(() => controller.abort(), 15000);
+            const r = await fetch(url, { signal: controller.signal });
+            clearTimeout(t);
+            if (!r.ok) continue;
+
+            const geo = await r.json();
+            if (!geo.features || geo.features.length < 10) continue;
+
+            geo.features = geo.features.map(f => {
+                const p = f.properties || {};
+                const stateName =
+                    p.ST_NM || p.st_nm || p.NAME_1 || p.NAME || p.name || p.State_Name || p.state || '';
+                return {
+                    ...f,
+                    properties: {
+                        ...p,
+                        ST_NM: stateName,
+                        name: stateName,
+                    }
+                };
+            }).filter(f => f.properties.ST_NM);
+
+            if (geo.features.length > 10) {
+                _indiaGeoCache = geo;
+                console.log(`[GEO] Loaded ${geo.features.length} India states`);
+                return res.json(geo);
+            }
+        } catch (e) {
+            console.warn('[GEO] India states source failed:', e.message);
+        }
+    }
+
+    res.status(503).json({ error: 'India state GeoJSON unavailable. Check server internet connection.' });
+});
+
+app.get('/api/up/geo/districts/:stateCode', async (req, res) => {
+    const stateCode = String(req.params.stateCode || '').toUpperCase();
+    if (stateCode !== 'UP') {
+        return res.status(404).json({ error: `District GeoJSON is not configured for state ${stateCode}` });
+    }
+    return res.redirect(307, '/api/up/geo');
+});
+
 app.get('/api/up/geo', async (req, res) => {
     if (_upGeoCache) {
         console.log('[GEO] Serving from cache');

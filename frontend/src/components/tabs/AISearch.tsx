@@ -6,9 +6,9 @@ import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import { aiSearch } from '../../api';
 
 const QUICK_QUERIES = [
-  'BJP vote share trend in UP 2012–2022',
-  'Caste composition of Purvanchal',
-  'Major infrastructure projects UP 2017–2022',
+  'BJP vote share trend across configured states',
+  'Caste composition of eastern India seats',
+  'Major infrastructure projects by state, 2017-2022',
   'SP vs BJP swing voters analysis',
   'Yogi Adityanath governance impact',
 ];
@@ -78,7 +78,7 @@ export default function AISearch() {
             <SearchIcon sx={{ color: 'rgba(255,255,255,0.3)', m: 1.5, fontSize: 20 }} />
             <InputBase
               fullWidth
-              placeholder="e.g. What is the BJP's vote share trend in Purvanchal since 2012?"
+              placeholder="e.g. What is the BJP's vote share trend in eastern India since 2012?"
               value={query}
               onChange={e => setQuery(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
