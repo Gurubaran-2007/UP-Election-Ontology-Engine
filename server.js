@@ -228,7 +228,7 @@ app.get('/api/up/constituency/:constName/analysis', async (req, res) => {
             MATCH (can:Candidate)-[r:CONTESTED_IN]->(c:Constituency)
             WHERE toLower(c.name) CONTAINS toLower($name)
             OPTIONAL MATCH (can)-[rv:RECEIVED_VOTES]->(b:Booth)-[:PART_OF]->(c)
-            RETURN can.name AS name, can.party AS party, sum(rv.count) AS totalVotes
+            RETURN can.name AS name, can.party AS party, coalesce(sum(rv.count), 0) AS totalVotes
             ORDER BY totalVotes DESC
         `, { name });
 
