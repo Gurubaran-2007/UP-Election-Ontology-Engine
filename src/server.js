@@ -15,7 +15,13 @@ app.use(cors());
 const { apiKeyAuth } = require('./middleware/auth');
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '..', 'public')));
+
+// Serve built frontend — run `npm run build` inside frontend/ first
+const FRONTEND_DIST = path.join(__dirname, '..', 'frontend', 'dist');
+const fs = require('fs');
+app.use(express.static(FRONTEND_DIST));
+// Serve public/maps (GeoJSON assets) at /maps/*
+app.use('/maps', express.static(path.join(__dirname, '..', 'public', 'maps')));
 
 // ==========================================
 // Self-Ping: Keep Render free tier awake
@@ -84,6 +90,16 @@ function runSentimentPipeline() {
 
 const SENTIMENT_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
 setInterval(runSentimentPipeline, SENTIMENT_INTERVAL_MS);
+
+// SPA fallback — serve React index.html for all non-API routes
+app.get('*', (req, res) => {
+    const index = path.join(FRONTEND_DIST, 'index.html');
+    if (fs.existsSync(index)) {
+        res.sendFile(index);
+    } else {
+        res.status(503).send('Frontend not built. Run: cd frontend && npm run build');
+    }
+});
 
 process.on('SIGINT', async () => {
     await driver.close();

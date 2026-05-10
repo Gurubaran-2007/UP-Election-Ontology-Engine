@@ -18,12 +18,15 @@
 - [ ] DecisionRecommendation + EvidenceBundle nodes
 - [ ] TRIGGERED_BY relationship from DecisionRecommendation → RuleDefinition
 
+## Auth
+
+- [ ] Create the Auth0 login page (currently behind LoginPage.tsx stub)
+
 ## Data / Imports (user-executed)
 
-- [ ] Run `node scripts/import_all.js`
-- [ ] Run `node scripts/import_tcpd.js` (LS2019, VS2022, LS2024)
+- [ ] Run `node scripts/load_all_data.js` (boots, VS2022, TCPD AE/GE — one-shot loader)
 - [ ] Run `.venv/bin/python scripts/load_entities_to_neo4j.py`
-- [ ] Run `.venv/bin/python run_sentiment_pipeline.py`
+- [ ] Run `.venv/bin/python scripts/run_sentiment_pipeline.py`
 
 ## API Routes (not yet added)
 

@@ -214,47 +214,25 @@ router.get('/constituency/:constName/analysis', async (req, res) => {
     }
 });
 
+const UP_GEO_LOCAL = path.join(__dirname, '..', '..', 'public', 'maps', 'up_districts.geojson');
 let _upGeoCache = null;
 // /api/up/geo
-router.get('/geo', async (req, res) => {
+router.get('/geo', (req, res) => {
     if (_upGeoCache) {
         console.log('[GEO] Serving from cache');
         return res.json(_upGeoCache);
     }
-    const sources = [
-        'https://raw.githubusercontent.com/datameet/maps/master/Districts/uttar-pradesh.geojson',
-        'https://raw.githubusercontent.com/geohacker/india/master/district/india_district.geojson'
-    ];
-    for (const url of sources) {
-        try {
-            console.log('[GEO] Trying:', url);
-            const controller = new AbortController();
-            const t = setTimeout(() => controller.abort(), 15000);
-            const r = await fetch(url, { signal: controller.signal });
-            clearTimeout(t);
-            if (!r.ok) continue;
-            let geo = await r.json();
-            // If it's the all-India file, filter to UP only
-            if (geo.features && geo.features.length > 200) {
-                geo = {
-                    type: 'FeatureCollection',
-                    features: geo.features.filter(f =>
-                        f.properties.STATE === '09' ||
-                        (f.properties.NAME_1 || '').toLowerCase().includes('uttar pradesh') ||
-                        (f.properties.st_nm || '').toLowerCase().includes('uttar pradesh')
-                    )
-                };
-            }
-            if (geo.features && geo.features.length > 10) {
-                _upGeoCache = geo;
-                console.log(`[GEO] Loaded ${geo.features.length} UP districts`);
-                return res.json(geo);
-            }
-        } catch (e) {
-            console.warn('[GEO] Source failed:', e.message);
-        }
+    if (!fs.existsSync(UP_GEO_LOCAL)) {
+        return res.status(503).json({ error: 'UP district GeoJSON not found at public/maps/up_districts.geojson' });
     }
-    res.status(503).json({ error: 'GeoJSON unavailable. Check server internet connection.' });
+    try {
+        const geo = JSON.parse(fs.readFileSync(UP_GEO_LOCAL, 'utf8'));
+        _upGeoCache = geo;
+        console.log(`[GEO] Loaded ${geo.features.length} UP districts from local file`);
+        return res.json(geo);
+    } catch (e) {
+        return res.status(500).json({ error: 'Failed to read UP GeoJSON: ' + e.message });
+    }
 });
 
 // /api/geo/india — India states GeoJSON

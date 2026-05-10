@@ -376,15 +376,15 @@ async function printSummary(session) {
   const result = await session.run(`
     CALL {
       MATCH (n:VidhanSabhaConstituency) RETURN 'VidhanSabhaConstituency' AS label, count(n) AS cnt
-      UNION ALL MATCH (n:Booth) RETURN 'Booth', count(n)
-      UNION ALL MATCH (n:CandidateResult) RETURN 'CandidateResult', count(n)
-      UNION ALL MATCH (n:HistoricalResult) RETURN 'HistoricalResult', count(n)
-      UNION ALL MATCH (n:LokSabhaConstituency) RETURN 'LokSabhaConstituency', count(n)
-      UNION ALL MATCH (n:District) RETURN 'District', count(n)
-      UNION ALL MATCH (n:LeaderEntity) RETURN 'LeaderEntity', count(n)
-      UNION ALL MATCH (n:Party) RETURN 'Party', count(n)
-      UNION ALL MATCH (n:Strategy) RETURN 'Strategy', count(n)
-      UNION ALL MATCH (n:SentimentObservation) RETURN 'SentimentObservation', count(n)
+      UNION ALL MATCH (n:Booth) RETURN 'Booth' AS label, count(n) AS cnt
+      UNION ALL MATCH (n:CandidateResult) RETURN 'CandidateResult' AS label, count(n) AS cnt
+      UNION ALL MATCH (n:HistoricalResult) RETURN 'HistoricalResult' AS label, count(n) AS cnt
+      UNION ALL MATCH (n:LokSabhaConstituency) RETURN 'LokSabhaConstituency' AS label, count(n) AS cnt
+      UNION ALL MATCH (n:District) RETURN 'District' AS label, count(n) AS cnt
+      UNION ALL MATCH (n:LeaderEntity) RETURN 'LeaderEntity' AS label, count(n) AS cnt
+      UNION ALL MATCH (n:Party) RETURN 'Party' AS label, count(n) AS cnt
+      UNION ALL MATCH (n:Strategy) RETURN 'Strategy' AS label, count(n) AS cnt
+      UNION ALL MATCH (n:SentimentObservation) RETURN 'SentimentObservation' AS label, count(n) AS cnt
     }
     RETURN label, cnt ORDER BY cnt DESC
   `);

@@ -42,7 +42,7 @@ function getStateRegion(name: string) {
 }
 function getStateDistrictColor(name: string) { return getStateRegion(name).color; }
 function getIndiaStateColor(name: string) {
-  return CONFIGURED_STATES[name] ? 'rgba(249,115,22,0.28)' : '#1e293b';
+  return CONFIGURED_STATES[name] ? 'rgba(249,115,22,0.28)' : '#e2e8f0';
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -57,14 +57,14 @@ function Breadcrumb({ sel, onBack }: { sel: MapSelection; onBack: () => void }) 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
       {sel.level !== 'india' && (
-        <IconButton size="small" onClick={onBack} sx={{ color: '#94a3b8', mr: 0.25 }}>
+        <IconButton size="small" onClick={onBack} sx={{ color: '#64748b', mr: 0.25 }}>
           <ArrowBackIcon sx={{ fontSize: 16 }} />
         </IconButton>
       )}
       {crumbs.map((c, i) => (
         <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           {i > 0 && <Typography sx={{ color: '#475569', fontSize: '0.72rem' }}>›</Typography>}
-          <Typography sx={{ fontSize: '0.8rem', fontWeight: c.active ? 800 : 500, color: c.active ? '#f1f5f9' : '#64748b' }}>
+          <Typography sx={{ fontSize: '0.8rem', fontWeight: c.active ? 800 : 500, color: c.active ? '#1e293b' : '#64748b' }}>
             {c.label}
           </Typography>
         </Box>
@@ -85,12 +85,12 @@ function ListPanel({ items, selected, onSelect, placeholder }: {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Box sx={{ px: 1.25, py: 1, borderBottom: '1px solid rgba(148,163,184,0.12)', flexShrink: 0 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(148,163,184,0.15)', borderRadius: 1.5, px: 1, py: 0.5 }}>
-          <SearchIcon sx={{ color: '#475569', fontSize: 15, flexShrink: 0 }} />
+      <Box sx={{ px: 1.25, py: 1, borderBottom: '1px solid rgba(100,116,139,0.15)', flexShrink: 0 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: 1.5, px: 1, py: 0.5 }}>
+          <SearchIcon sx={{ color: '#64748b', fontSize: 15, flexShrink: 0 }} />
           <InputBase value={query} onChange={e => setQuery(e.target.value)} placeholder={placeholder}
-            sx={{ fontSize: '0.78rem', color: '#cbd5e1', flex: 1, '& input::placeholder': { color: '#475569' } }} />
-          {query && <Typography onClick={() => setQuery('')} sx={{ color: '#475569', fontSize: '0.7rem', cursor: 'pointer', '&:hover': { color: '#94a3b8' } }}>✕</Typography>}
+            sx={{ fontSize: '0.78rem', color: '#334155', flex: 1, '& input::placeholder': { color: '#94a3b8' } }} />
+          {query && <Typography onClick={() => setQuery('')} sx={{ color: '#94a3b8', fontSize: '0.7rem', cursor: 'pointer', '&:hover': { color: '#475569' } }}>✕</Typography>}
         </Box>
       </Box>
       <Box sx={{ px: 1.5, py: 0.6, flexShrink: 0 }}>
@@ -108,14 +108,14 @@ function ListPanel({ items, selected, onSelect, placeholder }: {
               background: isSel ? 'rgba(249,115,22,0.18)' : 'transparent',
               border: isSel ? '1px solid rgba(249,115,22,0.4)' : '1px solid transparent',
               transition: 'background 0.15s',
-              '&:hover': { background: isSel ? 'rgba(249,115,22,0.22)' : 'rgba(255,255,255,0.05)' },
+              '&:hover': { background: isSel ? 'rgba(249,115,22,0.12)' : 'rgba(0,0,0,0.04)' },
             }}>
-              {item.color && <Box sx={{ width: 9, height: 9, borderRadius: '50%', background: item.color, flexShrink: 0, border: '1px solid rgba(255,255,255,0.2)' }} />}
+              {item.color && <Box sx={{ width: 9, height: 9, borderRadius: '50%', background: item.color, flexShrink: 0, border: '1px solid rgba(0,0,0,0.1)' }} />}
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography sx={{ fontSize: '0.8rem', fontWeight: isSel ? 700 : 500, color: isSel ? '#f97316' : item.configured === false ? '#475569' : '#cbd5e1', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <Typography sx={{ fontSize: '0.8rem', fontWeight: isSel ? 700 : 500, color: isSel ? '#f97316' : item.configured === false ? '#94a3b8' : '#334155', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {item.name}
                 </Typography>
-                {item.sub && <Typography sx={{ fontSize: '0.65rem', color: '#475569', mt: 0.1 }}>{item.sub}</Typography>}
+                {item.sub && <Typography sx={{ fontSize: '0.65rem', color: '#64748b', mt: 0.1 }}>{item.sub}</Typography>}
               </Box>
               {item.configured && <Box sx={{ width: 6, height: 6, borderRadius: '50%', background: '#f97316', flexShrink: 0 }} />}
             </Box>
@@ -134,11 +134,11 @@ function SeatRow({ stat, total }: { stat: SeatStat; total: number }) {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
           <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: stat.color, flexShrink: 0 }} />
-          <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1' }}>{stat.label}</Typography>
+          <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569' }}>{stat.label}</Typography>
         </Box>
-        <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: '#f1f5f9' }}>{stat.seats}</Typography>
+        <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: '#1e293b' }}>{stat.seats}</Typography>
       </Box>
-      <Box sx={{ height: 5, background: 'rgba(255,255,255,0.07)', borderRadius: 99, overflow: 'hidden' }}>
+      <Box sx={{ height: 5, background: 'rgba(0,0,0,0.07)', borderRadius: 99, overflow: 'hidden' }}>
         <Box sx={{ height: '100%', width: `${pct}%`, background: stat.color, borderRadius: 99, transition: 'width 0.4s ease' }} />
       </Box>
     </Box>
@@ -155,7 +155,7 @@ function IndiaMetricsPanel({ stats, total }: { stats: SeatStat[]; total: number 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Title */}
-      <Box sx={{ px: 2, py: 1.25, borderBottom: '1px solid rgba(148,163,184,0.12)', background: 'rgba(249,115,22,0.06)', flexShrink: 0 }}>
+      <Box sx={{ px: 2, py: 1.25, borderBottom: '1px solid rgba(100,116,139,0.15)', background: 'rgba(249,115,22,0.06)', flexShrink: 0 }}>
         <Typography fontWeight={800} fontSize="0.95rem" color="#f97316">India LS 2024</Typography>
         <Typography variant="caption" color="#64748b">{total} seats · Majority: {majority}</Typography>
       </Box>
@@ -164,7 +164,7 @@ function IndiaMetricsPanel({ stats, total }: { stats: SeatStat[]; total: number 
 
         {/* Alliance blocs */}
         <Box sx={{ border: '1px solid rgba(148,163,184,0.1)', borderRadius: 1.5, overflow: 'hidden' }}>
-          <Box sx={{ background: 'rgba(255,255,255,0.03)', px: 1.25, py: 0.6, borderBottom: '1px solid rgba(148,163,184,0.08)' }}>
+          <Box sx={{ background: 'rgba(0,0,0,0.03)', px: 1.25, py: 0.6, borderBottom: '1px solid rgba(148,163,184,0.08)' }}>
             <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, color: '#475569' }}>Alliance Blocs</Typography>
           </Box>
           <Box sx={{ p: 1.1, display: 'flex', gap: 1 }}>
@@ -173,7 +173,7 @@ function IndiaMetricsPanel({ stats, total }: { stats: SeatStat[]; total: number 
               { label: 'I.N.D.I.A', seats: indiaSeats, color: '#2563eb' },
               { label: 'Others', seats: total - ndaSeats - indiaSeats, color: '#475569' },
             ].map(a => (
-              <Box key={a.label} sx={{ flex: 1, background: 'rgba(255,255,255,0.04)', borderRadius: 1.25, p: 0.75, textAlign: 'center', border: `1px solid ${a.color}22` }}>
+              <Box key={a.label} sx={{ flex: 1, background: 'rgba(0,0,0,0.04)', borderRadius: 1.25, p: 0.75, textAlign: 'center', border: `1px solid ${a.color}22` }}>
                 <Typography sx={{ fontSize: '1.1rem', fontWeight: 800, color: a.color }}>{a.seats}</Typography>
                 <Typography sx={{ fontSize: '0.62rem', color: '#64748b', fontWeight: 600 }}>{a.label}</Typography>
               </Box>
@@ -184,7 +184,7 @@ function IndiaMetricsPanel({ stats, total }: { stats: SeatStat[]; total: number 
             <Box sx={{ display: 'flex', height: 8, borderRadius: 99, overflow: 'hidden', border: '1px solid rgba(148,163,184,0.1)' }}>
               <Box sx={{ flex: ndaSeats, background: '#f97316' }} />
               <Box sx={{ flex: indiaSeats, background: '#2563eb' }} />
-              <Box sx={{ flex: Math.max(0, total - ndaSeats - indiaSeats), background: '#334155' }} />
+              <Box sx={{ flex: Math.max(0, total - ndaSeats - indiaSeats), background: '#94a3b8' }} />
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 0.4 }}>
               <Typography sx={{ fontSize: '0.6rem', color: '#475569' }}>▲ majority at {majority}</Typography>
@@ -194,7 +194,7 @@ function IndiaMetricsPanel({ stats, total }: { stats: SeatStat[]; total: number 
 
         {/* Per-party breakdown */}
         <Box sx={{ border: '1px solid rgba(148,163,184,0.1)', borderRadius: 1.5, overflow: 'hidden' }}>
-          <Box sx={{ background: 'rgba(255,255,255,0.03)', px: 1.25, py: 0.6, borderBottom: '1px solid rgba(148,163,184,0.08)' }}>
+          <Box sx={{ background: 'rgba(0,0,0,0.03)', px: 1.25, py: 0.6, borderBottom: '1px solid rgba(148,163,184,0.08)' }}>
             <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, color: '#475569' }}>Party Breakdown</Typography>
           </Box>
           <Box sx={{ p: 1.1 }}>
@@ -221,7 +221,7 @@ function StateMetricsPanel({ stats, total, stateName }: { stats: SeatStat[]; tot
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Box sx={{ px: 2, py: 1.25, borderBottom: '1px solid rgba(148,163,184,0.12)', background: 'rgba(249,115,22,0.06)', flexShrink: 0 }}>
+      <Box sx={{ px: 2, py: 1.25, borderBottom: '1px solid rgba(100,116,139,0.15)', background: 'rgba(249,115,22,0.06)', flexShrink: 0 }}>
         <Typography fontWeight={800} fontSize="0.95rem" color="#f97316">{stateName} LS 2024</Typography>
         <Typography variant="caption" color="#64748b">{total} seats · Majority: {majority}</Typography>
       </Box>
@@ -231,12 +231,12 @@ function StateMetricsPanel({ stats, total, stateName }: { stats: SeatStat[]; tot
         {/* Top-2 face-off */}
         {stats.length >= 2 && (
           <Box sx={{ border: '1px solid rgba(148,163,184,0.1)', borderRadius: 1.5, overflow: 'hidden' }}>
-            <Box sx={{ background: 'rgba(255,255,255,0.03)', px: 1.25, py: 0.6, borderBottom: '1px solid rgba(148,163,184,0.08)' }}>
+            <Box sx={{ background: 'rgba(0,0,0,0.03)', px: 1.25, py: 0.6, borderBottom: '1px solid rgba(148,163,184,0.08)' }}>
               <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, color: '#475569' }}>Head to Head</Typography>
             </Box>
             <Box sx={{ p: 1.1, display: 'flex', gap: 1 }}>
               {stats.slice(0, 2).map(s => (
-                <Box key={s.partyId} sx={{ flex: 1, background: 'rgba(255,255,255,0.04)', borderRadius: 1.25, p: 0.85, textAlign: 'center', border: `1px solid ${s.color}33` }}>
+                <Box key={s.partyId} sx={{ flex: 1, background: 'rgba(0,0,0,0.04)', borderRadius: 1.25, p: 0.85, textAlign: 'center', border: `1px solid ${s.color}33` }}>
                   <Typography sx={{ fontSize: '1.6rem', fontWeight: 800, color: s.color }}>{s.seats}</Typography>
                   <Typography sx={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 700 }}>{s.label}</Typography>
                 </Box>
@@ -253,7 +253,7 @@ function StateMetricsPanel({ stats, total, stateName }: { stats: SeatStat[]; tot
 
         {/* Full breakdown */}
         <Box sx={{ border: '1px solid rgba(148,163,184,0.1)', borderRadius: 1.5, overflow: 'hidden' }}>
-          <Box sx={{ background: 'rgba(255,255,255,0.03)', px: 1.25, py: 0.6, borderBottom: '1px solid rgba(148,163,184,0.08)' }}>
+          <Box sx={{ background: 'rgba(0,0,0,0.03)', px: 1.25, py: 0.6, borderBottom: '1px solid rgba(148,163,184,0.08)' }}>
             <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, color: '#475569' }}>All Parties</Typography>
           </Box>
           <Box sx={{ p: 1.1 }}>
@@ -306,7 +306,7 @@ export default function DistrictMap() {
     getFillRef.current = getFill;
     getNameRef.current = getName;
 
-    const svg = d3.select(svgRef.current).attr('viewBox', `0 0 ${W} ${H}`).style('background', '#020617');
+    const svg = d3.select(svgRef.current).attr('viewBox', `0 0 ${W} ${H}`).style('background', '#f8fafc');
     svg.selectAll('*').remove();
 
     const g = svg.append('g');
@@ -325,7 +325,7 @@ export default function DistrictMap() {
       .enter().append('path')
       .attr('d', path as any)
       .attr('fill', (d: any) => getFill(getName(d)))
-      .attr('stroke', '#0f172a')
+      .attr('stroke', '#94a3b8')
       .attr('stroke-width', 0.7)
       .style('cursor', 'pointer')
       .on('mouseover', function (_: MouseEvent, d: any) {
@@ -344,7 +344,7 @@ export default function DistrictMap() {
         const active = isActive && isActive(name);
         d3.select(this)
           .attr('fill',         active ? '#f97316' : getFill(name))
-          .attr('stroke',       active ? '#ea580c' : '#0f172a')
+          .attr('stroke',       active ? '#ea580c' : '#94a3b8')
           .attr('stroke-width', active ? 1.5       : 0.7);
         setTooltip(null);
       })
@@ -358,7 +358,7 @@ export default function DistrictMap() {
       .attr('text-anchor', 'middle').attr('dy', '.35em')
       .style('pointer-events', 'none')
       .style('font-size', '0.5rem').style('font-weight', '700')
-      .style('fill', (d: any) => isActive && isActive(getName(d)) ? '#fff' : '#334155')
+      .style('fill', (d: any) => isActive && isActive(getName(d)) ? '#1e293b' : '#64748b')
       .style('paint-order', 'stroke').style('stroke', 'rgba(0,0,0,0.7)').style('stroke-width', '0.5px')
       .text((d: any) => {
         const n = getName(d);
@@ -373,7 +373,7 @@ export default function DistrictMap() {
     const gf = getFillRef.current;
     d3.select(svgRef.current).selectAll('path')
       .attr('fill',         (d: any) => gn(d) === name ? '#f97316' : gf(gn(d)))
-      .attr('stroke',       (d: any) => gn(d) === name ? '#ea580c' : '#0f172a')
+      .attr('stroke',       (d: any) => gn(d) === name ? '#ea580c' : '#94a3b8')
       .attr('stroke-width', (d: any) => gn(d) === name ? 1.5 : 0.7);
   }, []);
 
@@ -514,7 +514,7 @@ export default function DistrictMap() {
     if (sel.level === 'india') return (
       <Box sx={{ display: 'flex', gap: 1.5 }}>
         <LegendDot color="rgba(249,115,22,0.4)" label="Data available" />
-        <LegendDot color="#1e293b" label="Coming soon" border />
+        <LegendDot color="#e2e8f0" label="Coming soon" border />
       </Box>
     );
     if (sel.stateCode === 'UP') return (
@@ -534,7 +534,7 @@ export default function DistrictMap() {
     if (sel.level === 'district' && sel.districtName) {
       return (
         <>
-          <Box sx={{ px: 2, py: 1.25, borderBottom: '1px solid rgba(148,163,184,0.12)', background: 'rgba(249,115,22,0.07)', flexShrink: 0 }}>
+          <Box sx={{ px: 2, py: 1.25, borderBottom: '1px solid rgba(100,116,139,0.15)', background: 'rgba(249,115,22,0.07)', flexShrink: 0 }}>
             <Typography fontWeight={800} fontSize="1rem" color="#f97316">{sel.districtName}</Typography>
             <Typography variant="caption" color="#64748b">{sel.stateName}, India</Typography>
           </Box>
@@ -574,8 +574,8 @@ export default function DistrictMap() {
     <Box sx={{ height: 'calc(100vh - 104px)', display: 'flex', gap: 1.5 }}>
 
       {/* ── LEFT LIST PANEL ── */}
-      <Paper elevation={0} sx={{ width: 220, minWidth: 220, border: '1px solid rgba(148,163,184,0.15)', borderRadius: 2, overflow: 'hidden', display: 'flex', flexDirection: 'column', background: '#0f172a' }}>
-        <Box sx={{ px: 1.5, py: 1, borderBottom: '1px solid rgba(148,163,184,0.12)', flexShrink: 0 }}>
+      <Paper elevation={0} sx={{ width: 220, minWidth: 220, border: '1px solid rgba(100,116,139,0.2)', borderRadius: 2, overflow: 'hidden', display: 'flex', flexDirection: 'column', background: '#ffffff' }}>
+        <Box sx={{ px: 1.5, py: 1, borderBottom: '1px solid rgba(100,116,139,0.15)', flexShrink: 0 }}>
           <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: 1 }}>
             {listLabel}
           </Typography>
@@ -584,8 +584,8 @@ export default function DistrictMap() {
       </Paper>
 
       {/* ── MAP PANEL ── */}
-      <Paper elevation={0} sx={{ flex: 1, border: '1px solid rgba(148,163,184,0.15)', borderRadius: 2, overflow: 'hidden', display: 'flex', flexDirection: 'column', background: '#0f172a' }}>
-        <Box sx={{ px: 2, py: 1.1, borderBottom: '1px solid rgba(148,163,184,0.12)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(15,23,42,0.92)', flexShrink: 0 }}>
+      <Paper elevation={0} sx={{ flex: 1, border: '1px solid rgba(100,116,139,0.2)', borderRadius: 2, overflow: 'hidden', display: 'flex', flexDirection: 'column', background: '#ffffff' }}>
+        <Box sx={{ px: 2, py: 1.1, borderBottom: '1px solid rgba(100,116,139,0.15)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(248,250,252,0.95)', flexShrink: 0 }}>
           <Breadcrumb sel={sel} onBack={goBack} />
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             {renderLegend()}
@@ -595,7 +595,7 @@ export default function DistrictMap() {
 
         <Box ref={containerRef} sx={{ flex: 1, position: 'relative' }}>
           {mapLoading && (
-            <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1.5, background: '#020617', zIndex: 5 }}>
+            <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1.5, background: '#f8fafc', zIndex: 5 }}>
               <Box sx={{ width: 34, height: 34, border: '3px solid rgba(249,115,22,0.15)', borderTopColor: '#f97316', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
               <Typography sx={{ color: '#64748b', fontSize: '0.8rem' }}>
                 {sel.level === 'india' ? 'Loading India map...' : `Loading ${sel.stateName || 'state'} districts...`}
@@ -608,7 +608,7 @@ export default function DistrictMap() {
             </Box>
           )}
           {tooltip && (
-            <Box sx={{ position: 'absolute', left: tooltip.x + 14, top: tooltip.y - 36, background: 'rgba(15,23,42,0.97)', color: '#f1f5f9', px: 1.5, py: 0.6, borderRadius: 1, border: '1px solid rgba(249,115,22,0.3)', fontSize: '0.78rem', fontWeight: 600, pointerEvents: 'none', zIndex: 10, whiteSpace: 'nowrap', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+            <Box sx={{ position: 'absolute', left: tooltip.x + 14, top: tooltip.y - 36, background: 'rgba(255,255,255,0.97)', color: '#1e293b', px: 1.5, py: 0.6, borderRadius: 1, border: '1px solid rgba(249,115,22,0.4)', fontSize: '0.78rem', fontWeight: 600, pointerEvents: 'none', zIndex: 10, whiteSpace: 'nowrap', boxShadow: '0 4px 20px rgba(0,0,0,0.12)' }}>
               {tooltip.name}
               {sel.level === 'india' && CONFIGURED_STATES[tooltip.name] && (
                 <Typography component="span" sx={{ color: '#f97316', fontSize: '0.7rem', ml: 0.8 }}>click →</Typography>
@@ -620,7 +620,7 @@ export default function DistrictMap() {
       </Paper>
 
       {/* ── RIGHT METRICS / DETAIL PANEL ── */}
-      <Paper elevation={0} sx={{ width: 320, minWidth: 320, border: '1px solid rgba(148,163,184,0.15)', borderRadius: 2, overflow: 'hidden', display: 'flex', flexDirection: 'column', background: '#0f172a' }}>
+      <Paper elevation={0} sx={{ width: 320, minWidth: 320, border: '1px solid rgba(100,116,139,0.2)', borderRadius: 2, overflow: 'hidden', display: 'flex', flexDirection: 'column', background: '#ffffff' }}>
         {renderRightPanel()}
       </Paper>
 
@@ -664,21 +664,21 @@ function DistrictPanel({ data, lsResults }: { data: DistrictData; lsResults: any
             <Box key={seg.ls_id} sx={{ mb: 1.25, pb: 1.25, borderBottom: '1px solid rgba(148,163,184,0.08)', '&:last-child': { mb: 0, pb: 0, border: 'none' } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.4 }}>
                 <Typography sx={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 600 }}>{seg.ls_name}</Typography>
-                {seg.election_id && <Typography sx={{ fontSize: '0.6rem', color: '#475569', background: 'rgba(255,255,255,0.06)', px: 0.8, py: 0.2, borderRadius: 0.75 }}>{seg.election_id}</Typography>}
+                {seg.election_id && <Typography sx={{ fontSize: '0.6rem', color: '#475569', background: 'rgba(0,0,0,0.05)', px: 0.8, py: 0.2, borderRadius: 0.75 }}>{seg.election_id}</Typography>}
               </Box>
               {seg.winner ? (
                 <>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                     <Box sx={{ width: 10, height: 10, borderRadius: '50%', background: PARTY_COLORS[seg.party_id] ?? '#475569', flexShrink: 0 }} />
-                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#f1f5f9', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {seg.winner}
                     </Typography>
                     <Chip label={PARTY_LABELS[seg.party_id] ?? seg.party_id?.toUpperCase() ?? 'N/A'} size="small"
                       sx={{ background: `${PARTY_COLORS[seg.party_id] ?? '#475569'}33`, color: PARTY_COLORS[seg.party_id] ?? '#94a3b8', fontSize: '0.62rem', height: 18, fontWeight: 700 }} />
                   </Box>
                   <Box sx={{ display: 'flex', gap: 1.5, mt: 0.4 }}>
-                    {seg.vote_share != null && <Typography sx={{ fontSize: '0.65rem', color: '#64748b' }}>Vote share <b style={{ color: '#cbd5e1' }}>{Number(seg.vote_share).toFixed(1)}%</b></Typography>}
-                    {seg.margin_pct != null && <Typography sx={{ fontSize: '0.65rem', color: '#64748b' }}>Margin <b style={{ color: Number(seg.margin_pct) < 5 ? '#fbbf24' : '#cbd5e1' }}>{Number(seg.margin_pct).toFixed(1)}%</b></Typography>}
+                    {seg.vote_share != null && <Typography sx={{ fontSize: '0.65rem', color: '#64748b' }}>Vote share <b style={{ color: '#475569' }}>{Number(seg.vote_share).toFixed(1)}%</b></Typography>}
+                    {seg.margin_pct != null && <Typography sx={{ fontSize: '0.65rem', color: '#64748b' }}>Margin <b style={{ color: Number(seg.margin_pct) < 5 ? '#d97706' : '#475569' }}>{Number(seg.margin_pct).toFixed(1)}%</b></Typography>}
                     {seg.margin_votes != null && <Typography sx={{ fontSize: '0.65rem', color: '#64748b' }}>({Number(seg.margin_votes).toLocaleString('en-IN')} votes)</Typography>}
                   </Box>
                 </>
@@ -695,7 +695,7 @@ function DistrictPanel({ data, lsResults }: { data: DistrictData; lsResults: any
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.4 }}>
                     {seg.vidhan_sabha_segments.map((vs: any) => (
                       <Chip key={vs.vs_id} label={vs.name} size="small"
-                        sx={{ fontSize: '0.58rem', height: 16, background: 'rgba(255,255,255,0.05)', color: '#94a3b8',
+                        sx={{ fontSize: '0.58rem', height: 16, background: 'rgba(0,0,0,0.04)', color: '#94a3b8',
                           ...(vs.reservation && vs.reservation !== 'GEN' ? { border: '1px solid rgba(249,115,22,0.3)', color: '#fb923c' } : {}) }} />
                     ))}
                   </Box>
@@ -727,7 +727,7 @@ function DistrictPanel({ data, lsResults }: { data: DistrictData; lsResults: any
               { label: 'Rural',     value: fmt(population.rural) },
               { label: 'Urban',     value: fmt(population.urban) },
             ].map(s => (
-              <Box key={s.label} sx={{ background: 'rgba(255,255,255,0.04)', borderRadius: 1, p: 0.65, textAlign: 'center' }}>
+              <Box key={s.label} sx={{ background: 'rgba(0,0,0,0.04)', borderRadius: 1, p: 0.65, textAlign: 'center' }}>
                 <Typography fontWeight={700} fontSize="0.82rem" color="#f1f5f9">{s.value}</Typography>
                 <Typography sx={{ fontSize: '0.62rem', color: '#64748b' }}>{s.label}</Typography>
               </Box>
@@ -747,10 +747,10 @@ function DistrictPanel({ data, lsResults }: { data: DistrictData; lsResults: any
           {demographics.map(d => (
             <Box key={d.label} mb={0.75}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.2 }}>
-                <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#cbd5e1' }}>{d.label}</Typography>
-                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#f1f5f9' }}>{d.percent}%</Typography>
+                <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#475569' }}>{d.label}</Typography>
+                <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#1e293b' }}>{d.percent}%</Typography>
               </Box>
-              <Box sx={{ height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 99, overflow: 'hidden' }}>
+              <Box sx={{ height: 6, background: 'rgba(0,0,0,0.06)', borderRadius: 99, overflow: 'hidden' }}>
                 <Box sx={{ height: '100%', width: `${d.percent}%`, background: d.color || '#f97316', borderRadius: 99 }} />
               </Box>
             </Box>
@@ -763,7 +763,7 @@ function DistrictPanel({ data, lsResults }: { data: DistrictData; lsResults: any
           {headlines.map((h, i) => (
             <Box key={i} sx={{ display: 'flex', gap: 0.75, mb: 0.65 }}>
               <Chip label={i + 1} size="small" sx={{ background: '#f97316', color: '#000', fontSize: '0.6rem', minWidth: 18, height: 17 }} />
-              <Typography sx={{ fontSize: '0.72rem', color: '#cbd5e1', lineHeight: 1.5 }}>{h}</Typography>
+              <Typography sx={{ fontSize: '0.72rem', color: '#475569', lineHeight: 1.5 }}>{h}</Typography>
             </Box>
           ))}
         </SectionCard>
@@ -779,7 +779,7 @@ function DistrictPanel({ data, lsResults }: { data: DistrictData; lsResults: any
 function SectionCard({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
   return (
     <Box sx={{ border: '1px solid rgba(148,163,184,0.1)', borderRadius: 1.5, overflow: 'hidden' }}>
-      <Box sx={{ background: 'rgba(255,255,255,0.03)', px: 1.25, py: 0.6, borderBottom: '1px solid rgba(148,163,184,0.08)' }}>
+      <Box sx={{ background: 'rgba(0,0,0,0.03)', px: 1.25, py: 0.6, borderBottom: '1px solid rgba(148,163,184,0.08)' }}>
         <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, color: '#475569' }}>
           {icon} {title}
         </Typography>

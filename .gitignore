@@ -26,9 +26,12 @@ Thumbs.db
 *.swp
 
 
-# virtial environment
+# Virtual environment
 .venv/
 venv/
 
-# Booth-level raw XLS files (large, backed up in Google Drive zips)
-data/booths/raw/
+# Python compiled cache
+__pycache__/
+*.pyc
+*.pyo
+
