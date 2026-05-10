@@ -1,0 +1,740 @@
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:x='urn:schemas-microsoft-com:office:excel' xmlns='http://www.w3.org/TR/REC-html40'><head><meta http-equiv="Content-type" content="text/html;charset=utf-8" /><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Scheme Wise Receipt Statistics</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><div class='table-responsive' id='DetailTable'>
+								<table class='table table-bordered'>
+									<thead>
+										<!-- ngIf: finYear!=null --><tr data-ng-if='finYear!=null' class='ng-scope'>
+											<th colspan='8' class='text-center ng-binding' style='display: none;'>Financial Year : 2025-2026</th>
+										</tr><!-- end ngIf: finYear!=null -->
+										<!-- ngIf: stateName!=null --><tr data-ng-if='stateName!=null' class='ng-scope'>
+											<th colspan='8' class='text-center ng-binding' style='display: none;'>State : Uttar Pradesh</th>
+										</tr><!-- end ngIf: stateName!=null -->
+										<!-- ngIf: stateTier=='A' || stateTier == 'AB' || stateTier == 'ZG' --><tr data-ng-if='stateTier=='A' || stateTier == 'AB' || stateTier == 'ZG'' class='ng-scope'>
+											<td colspan='8' class='text-left' style='font-weight:bold; display: none;'>** Consolidated at District level </td>
+										</tr><!-- end ngIf: stateTier=='A' || stateTier == 'AB' || stateTier == 'ZG' -->
+										<!-- ngIf: stateTier=='IG' -->
+										<tr></tr>
+										<tr> 
+											<th></th>
+											<th></th>
+											<th colspan='2' class='text-center' style='vertical-align: top;'>Central Schemes</th>
+											<th colspan='2' class='text-center' style='vertical-align: top;'>State Schemes</th>
+											<th colspan='2' class='text-center' style='vertical-align: top;'>Own Resources</th>
+										</tr>
+										<tr>
+											<th class='text-center' style='vertical-align: top;'>S.No.</th>
+											<!-- ngIf: stateTier=='A' || stateTier=='AB' || stateTier=='ZG' --><th data-ng-if='stateTier=='A' || stateTier=='AB' || stateTier=='ZG'' class='text-center ng-scope' style='vertical-align: top;'>District Name</th><!-- end ngIf: stateTier=='A' || stateTier=='AB' || stateTier=='ZG' -->
+											<!-- ngIf: stateTier=='IG' -->
+											<!-- ngIf: stateTier=='GP' -->
+											<th class='text-center' style='vertical-align: top;'>Receipts<br>(in Cr.)</th>
+											<th class='text-center' style='vertical-align: top;'>Expenditures<br>(in Cr.)</th>
+											<th class='text-center' style='vertical-align: top;'>Receipts<br>(in Cr.)</th>
+											<th class='text-center' style='vertical-align: top;'>Expenditures<br>(in Cr.)</th>
+											<th class='text-center' style='vertical-align: top;'>Receipts<br>(in Cr.)</th>
+											<th class='text-center' style='vertical-align: top;'>Expenditures<br>(in Cr.)</th>
+										</tr>			
+									</thead>
+									<tbody>
+									<!-- ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>1</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Agra</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>217.272</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>118.220</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>278.002</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>188.535</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>21.741</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>8.692</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>2</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Aligarh</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>176.216</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>100.756</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>271.044</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>174.434</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>22.396</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>2.981</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>3</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Ambedkar Nagar</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>247.820</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>98.523</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>367.808</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>169.863</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>17.466</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>4.227</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>4</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Amethi</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>150.883</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>89.147</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>201.166</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>140.180</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>14.246</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>1.515</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>5</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Amroha</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>87.768</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>51.709</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>136.341</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>96.564</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>14.476</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>3.349</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>6</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Auraiya</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>97.303</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>49.896</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>180.891</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>86.573</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>9.242</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>1.712</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>7</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Ayodhya</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>174.123</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>86.655</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>326.477</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>147.663</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>23.567</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>1.790</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>8</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Azamgarh</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>376.090</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>187.692</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>509.310</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>300.850</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>46.415</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>8.897</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>9</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Baghpat</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>103.359</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>45.017</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>120.702</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>77.739</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>22.911</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>3.553</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>10</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Bahraich</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>343.257</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>141.939</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>590.241</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>249.887</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>27.967</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>7.363</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>11</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Ballia</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>242.891</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>125.179</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>352.773</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>218.734</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>8.778</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>1.314</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>12</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Balrampur</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>308.952</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>92.773</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>318.803</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>155.668</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>21.735</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>2.266</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>13</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Banda</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>163.994</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>70.724</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>217.151</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>117.867</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>68.484</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>13.970</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>14</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Barabanki</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>279.227</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>142.348</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>359.396</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>222.557</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>50.935</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>5.032</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>15</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Bareilly</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>265.140</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>131.181</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>333.608</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>227.054</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>39.034</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>12.878</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>16</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Basti</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>199.071</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>105.865</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>247.342</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>174.206</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>29.796</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>3.778</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>17</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Bijnor</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>194.897</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>114.710</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>284.119</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>209.710</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>10.326</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>4.576</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>18</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Budaun</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>264.023</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>123.461</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>343.554</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>209.354</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>16.112</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>3.863</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>19</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Bulandshahr</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>182.912</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>114.357</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>264.051</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>202.330</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>18.581</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>10.224</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>20</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Chandauli</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>159.290</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>84.106</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>845.628</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>136.116</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>16.262</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>0.154</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>21</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Chitrakoot</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>93.090</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>37.889</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>155.741</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>75.415</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>10.724</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>5.606</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>22</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Deoria</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>287.642</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>117.044</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>348.251</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>194.385</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>53.259</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>2.772</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>23</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Etah</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>154.792</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>83.154</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>193.664</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>122.039</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>14.643</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>2.965</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>24</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Etawah</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>135.764</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>65.279</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>186.563</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>104.991</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>12.096</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>4.339</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>25</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Farrukhabad</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>171.362</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>73.633</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>301.457</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>108.685</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>15.606</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>3.556</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>26</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Fatehpur</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>183.497</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>98.853</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>479.159</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>180.881</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>22.383</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>3.217</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>27</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Firozabad</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>116.820</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>75.087</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>206.274</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>130.425</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>8.612</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>1.049</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>28</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Gautam Buddha Nagar</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>23.041</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>11.628</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>43.979</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>23.003</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>26.519</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>5.340</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>29</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Ghaziabad</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>33.470</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>19.514</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>54.448</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>40.093</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>10.762</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>3.515</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>30</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Ghazipur</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>315.782</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>168.879</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>409.709</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>260.440</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>15.368</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>5.051</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>31</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Gonda</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>313.986</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>163.143</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>407.056</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>252.888</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>17.872</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>5.323</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>32</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Gorakhpur</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>347.271</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>160.782</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>480.752</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>254.141</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>82.958</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>17.869</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>33</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Hamirpur</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>87.704</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>43.681</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>148.338</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>75.720</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>24.952</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>14.641</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>34</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Hapur</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>70.173</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>35.619</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>95.759</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>64.098</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>25.370</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>5.461</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>35</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Hardoi</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>333.247</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>189.842</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>428.925</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>283.085</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>19.372</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>2.777</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>36</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Hathras</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>103.510</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>57.630</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>154.642</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>93.435</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>5.532</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>1.606</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>37</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Jalaun</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>139.001</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>62.575</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>171.151</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>106.454</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>32.252</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>7.878</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>38</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Jaunpur</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>323.469</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>183.816</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>505.017</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>316.219</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>38.399</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>3.558</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>39</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Jhansi</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>177.850</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>68.943</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>236.507</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>103.849</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>42.855</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>9.121</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>40</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Kannauj</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>143.075</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>68.761</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>190.221</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>110.147</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>16.563</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>3.619</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>41</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Kanpur Dehat</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>177.041</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>84.860</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>231.406</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>143.538</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>17.552</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>3.889</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>42</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Kanpur Nagar</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>213.213</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>106.323</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>222.308</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>144.701</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>30.299</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>7.421</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>43</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Kasganj</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>150.736</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>49.253</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>297.455</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>92.951</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>16.545</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>2.990</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>44</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Kaushambi</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>171.068</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>55.373</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>255.137</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>97.899</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>7.988</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>3.376</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>45</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Kheri</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>288.399</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>171.242</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>452.180</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>278.655</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>18.640</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>6.297</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>46</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Kushi Nagar</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>288.402</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>144.732</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>501.004</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>227.684</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>17.722</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>7.684</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>47</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Lalitpur</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>102.297</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>57.725</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>167.268</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>97.416</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>6.140</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>0.000</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>48</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Lucknow</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>139.277</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>49.092</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>238284.917</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>89.562</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>23.322</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>8.339</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>49</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Maharajganj</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>214.456</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>112.779</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>332.990</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>181.745</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>70.589</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>14.383</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>50</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Mahoba</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>94.201</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>35.984</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>4455.195</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>63.566</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>69.273</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>13.699</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>51</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Mainpuri</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>154696.394</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>76.084</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>412.426</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>129.002</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>47.013</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>0.720</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>52</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Mathura</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>121.230</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>75.777</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>175.000</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>131.422</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>23.779</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>6.861</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>53</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Mau</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>143.847</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>71.842</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>197.735</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>120.409</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>12.956</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>2.059</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>54</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Meerut</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>136.804</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>73.628</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>192.451</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>136.646</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>18.940</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>6.400</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>55</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Mirzapur</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>199.313</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>109.415</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>271.923</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>178.290</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>19.323</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>9.172</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>56</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Moradabad</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>145.333</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>77.222</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>231.795</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>144.233</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>17.253</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>2.355</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>57</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Muzaffarnagar</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>148.295</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>85.882</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>210.206</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>150.480</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>17.808</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>4.837</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>58</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Pilibhit</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>276.753</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>86.473</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>2258.775</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>141.413</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>28.781</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>4.781</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>59</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Pratapgarh</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>287.701</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>120.432</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>647.027</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>215.279</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>69.689</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>4.129</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>60</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Prayagraj</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>467.638</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>193.571</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>60828.011</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>342.367</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>22.649</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>0.000</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>61</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Rae Bareli</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>432.429</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>117.203</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>401.848</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>199.739</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>66.648</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>2.959</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>62</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Rampur</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>131.324</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>63.767</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>233.216</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>119.942</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>16.693</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>2.631</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>63</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Saharanpur</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>202.093</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>102.045</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>309.664</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>208.694</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>192.600</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>38.068</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>64</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Sambhal</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>166.200</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>72.228</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>296.784</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>127.920</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>31.514</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>1.510</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>65</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Sant Kabeer Nagar</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>145.747</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>63.422</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>209.308</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>110.808</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>16.785</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>4.809</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>66</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Sant Ravidas Nagar</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>112.845</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>63.235</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>140.885</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>99.896</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>17.619</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>4.871</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>67</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Shahjahanpur</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>222.791</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>111.082</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>335.398</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>193.116</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>10.345</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>0.226</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>68</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Shamli</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>70.211</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>39.186</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>114.223</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>69.154</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>12.868</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>2.923</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>69</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Shravasti</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>117.325</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>46.980</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>165.583</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>84.821</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>13.017</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>2.107</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>70</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Siddharth Nagar</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>217.856</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>105.215</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>6795.322</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>179.656</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>10.236</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>0.000</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>71</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Sitapur</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>629.373</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>209.028</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>660.033</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>340.898</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>19.378</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>2.266</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>72</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Sonbhadra</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>211.646</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>97.345</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>277.451</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>147.626</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>103.650</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>35.724</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>73</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Sultanpur</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>197.340</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>110.003</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>262.204</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>178.349</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>38.166</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>5.747</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>74</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Unnao</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>309.808</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>124.071</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>426.026</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>198.102</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>39.641</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>2.366</td>
+                                    </tr><!-- end ngRepeat: d in details --><tr data-ng-repeat='d in details' class='ng-scope'>
+                                       <td class='ng-binding'>75</td>
+                                       <td data-ng-bind='d.name' class='ng-binding'>Varanasi</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_c'>192.119</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_c'>91.833</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_s'>247.623</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_s'>143.114</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.receipt_amount_o'>29.730</td>
+                                       <td class='text-right ng-binding' data-ng-bind='d.expenditure_amount_o'>5.131</td>
+                                    </tr><!-- end ngRepeat: d in details -->
+                                    <!-- ngIf: loader == true -->
+                                    <tr>
+                                       <td colspan='2' style='font-weight:bold'> Total Count</td>
+                                       <td class='text-right ng-binding' style='font-weight:bold' data-ng-bind='sumReceipt_amount_c'>169610.539</td>
+                                       <td class='text-right ng-binding' style='font-weight:bold' data-ng-bind='sumExpenditure_amount_c'>7114.342</td>
+                                       <td class='text-right ng-binding' style='font-weight:bold' data-ng-bind='sumReceipt_amount_s'>333246.797</td>
+                                       <td class='text-right ng-binding' style='font-weight:bold' data-ng-bind='sumExpenditure_amount_s'>11915.370</td>
+                                        <td class='text-right ng-binding' style='font-weight:bold' data-ng-bind='sumReceipt_amount_o'>2171.718</td>
+                                       <td class='text-right ng-binding' style='font-weight:bold' data-ng-bind='sumExpenditure_amount_o'>432.127</td>
+                                    </tr>
+								</tbody>
+								<!-- ngIf: loader == false --><tfoot data-ng-if='loader == false' class='ng-scope'>
+									<tr>
+										<th colspan='8' class='text-center' style='border: none;font-size:10%;'>&nbsp; <br>
+										</th>		
+									</tr>
+									<tr>
+										<th colspan='8' class='text-center' style='border: none;font-size:80%;'>
+											Report generated through eGramSwaraj (http://egramswaraj.gov.in) on Mon, May 04, 2026 13:49:05 PM
+										</th>
+									</tr>
+									<tr>
+										<th colspan='8' class='text-center' style='display: none;font-size:80%;'>
+											Designed &amp; Developed by Panchayat Informatics Division, National Informatics Centre
+										</th>
+									</tr>
+								</tfoot><!-- end ngIf: loader == false -->
+							</table>
+							</div></body></html>

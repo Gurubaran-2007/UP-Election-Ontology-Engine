@@ -1,0 +1,377 @@
+{
+  "schemes": [
+    {
+      "code": "MGNREGA",
+      "name": "MGNREGA - Mahatma Gandhi National Rural Employment Guarantee Act",
+      "type": "Central"
+    },
+    {
+      "code": "PMGSY",
+      "name": "PMGSY - Pradhan Mantri Gram Sadak Yojana",
+      "type": "Central"
+    },
+    {
+      "code": "PMAY",
+      "name": "PMAY - Pradhan Mantri Awas Yojana (Rural)",
+      "type": "Central"
+    },
+    {
+      "code": "PMAY-Urban",
+      "name": "PMAY - Pradhan Mantri Awas Yojana (Urban)",
+      "type": "Central"
+    },
+    {
+      "code": "JJM",
+      "name": "JJM - Jal Jeevan Mission",
+      "type": "Central"
+    },
+    {
+      "code": "SBM-G",
+      "name": "SBM - Swachh Bharat Mission (Gramin)",
+      "type": "Central"
+    },
+    {
+      "code": "SBM-U",
+      "name": "SBM - Swachh Bharat Mission (Urban)",
+      "type": "Central"
+    },
+    {
+      "code": "PM-KISAN",
+      "name": "PM-KISAN - Pradhan Mantri Kisan Samman Nidhi",
+      "type": "Central"
+    },
+    {
+      "code": "KCC",
+      "name": "KCC - Kisan Credit Card",
+      "type": "Central"
+    },
+    {
+      "code": "PMFBY",
+      "name": "PMFBY - Pradhan Mantri Fasal Bima Yojana",
+      "type": "Central"
+    },
+    {
+      "code": "SCD",
+      "name": "SCD - Saansad Adarsh Gram Yojana",
+      "type": "Central"
+    },
+    {
+      "code": "NSAP",
+      "name": "NSAP - National Social Assistance Programme",
+      "type": "Central"
+    },
+    {
+      "code": "ICDS",
+      "name": "ICDS - Integrated Child Development Services",
+      "type": "Central"
+    },
+    {
+      "code": "NFSA",
+      "name": "NFSA - National Food Security Act",
+      "type": "Central"
+    },
+    {
+      "code": "MDM",
+      "name": "MDM - Mid Day Meal",
+      "type": "Central"
+    },
+    {
+      "code": "NRLM",
+      "name": "NRLM - National Rural Livelihood Mission",
+      "type": "Central"
+    },
+    {
+      "code": "DAY-NRLM",
+      "name": "DAY-NRLM - Deendayal Antyodaya Yojana",
+      "type": "Central"
+    },
+    {
+      "code": "PM-Dev",
+      "name": "PM-Dev - Prime Minister's Development Initiative",
+      "type": "State"
+    },
+    {
+      "code": "Kanya",
+      "name": "Kanya Sumangala Yojana",
+      "type": "State"
+    },
+    {
+      "code": "Ladli",
+      "name": "Ladli Laxmi Yojana",
+      "type": "State"
+    },
+    {
+      "code": "RGGVY",
+      "name": "Rajiv Gandhi Gramin Vidyutikaran Yojana",
+      "type": "State"
+    },
+    {
+      "code": "SP",
+      "name": "Sadak Pension Yojana",
+      "type": "State"
+    },
+    {
+      "code": "VR",
+      "name": "Vidrang Yojana",
+      "type": "State"
+    }
+  ],
+  "mgnrega": [],
+  "fc_grants": [],
+  "pfms": [
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "Amethi",
+      "sanctioned_lakhs": "2,392.72",
+      "expenditure_lakhs": "773.8",
+      "utilization_pct": "32.34"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "AMROHA",
+      "sanctioned_lakhs": "1,118.04",
+      "expenditure_lakhs": "259.03",
+      "utilization_pct": "23.17"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "AZAMGARH",
+      "sanctioned_lakhs": "1,088.56",
+      "expenditure_lakhs": "296.93",
+      "utilization_pct": "27.28"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "BAGHPAT",
+      "sanctioned_lakhs": "2,200.00",
+      "expenditure_lakhs": "624.01",
+      "utilization_pct": "28.36"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "BAREILLY",
+      "sanctioned_lakhs": "2,178.66",
+      "expenditure_lakhs": "370.89",
+      "utilization_pct": "17.02"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "BIJNOR",
+      "sanctioned_lakhs": "2,209.46",
+      "expenditure_lakhs": "769.2",
+      "utilization_pct": "34.81"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "BUDAUN",
+      "sanctioned_lakhs": "2,200.00",
+      "expenditure_lakhs": "453.14",
+      "utilization_pct": "20.6"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "BULANDSHAHR",
+      "sanctioned_lakhs": "1,090.76",
+      "expenditure_lakhs": "360",
+      "utilization_pct": "33.0"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "CHITRAKOOT",
+      "sanctioned_lakhs": "1,276.00",
+      "expenditure_lakhs": "452.53",
+      "utilization_pct": "35.46"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "DEORIA",
+      "sanctioned_lakhs": "1,034.00",
+      "expenditure_lakhs": "344.15",
+      "utilization_pct": "33.28"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "ETAH",
+      "sanctioned_lakhs": "1,100.00",
+      "expenditure_lakhs": "355.19",
+      "utilization_pct": "32.29"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "ETAWAH",
+      "sanctioned_lakhs": "1,067.00",
+      "expenditure_lakhs": "322.88",
+      "utilization_pct": "30.26"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "FATEHPUR",
+      "sanctioned_lakhs": "1,644.72",
+      "expenditure_lakhs": "488.8",
+      "utilization_pct": "29.72"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "HAMIRPUR",
+      "sanctioned_lakhs": "2,290.20",
+      "expenditure_lakhs": "573.22",
+      "utilization_pct": "25.03"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "HAPUR",
+      "sanctioned_lakhs": "2,061.40",
+      "expenditure_lakhs": "611.56",
+      "utilization_pct": "29.67"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "JAUNPUR",
+      "sanctioned_lakhs": "2,229.04",
+      "expenditure_lakhs": "643.7",
+      "utilization_pct": "28.88"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "KANNAUJ",
+      "sanctioned_lakhs": "902.00",
+      "expenditure_lakhs": "332.81",
+      "utilization_pct": "36.9"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "KANPUR NAGAR",
+      "sanctioned_lakhs": "2,200.00",
+      "expenditure_lakhs": "387.58",
+      "utilization_pct": "17.62"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "KAUSHAMBI",
+      "sanctioned_lakhs": "1,201.20",
+      "expenditure_lakhs": "308.52",
+      "utilization_pct": "25.68"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "KUSHI NAGAR",
+      "sanctioned_lakhs": "1,201.20",
+      "expenditure_lakhs": "394.04",
+      "utilization_pct": "32.8"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "LUCKNOW",
+      "sanctioned_lakhs": "1,100.00",
+      "expenditure_lakhs": "831.66",
+      "utilization_pct": "75.61"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "MAHOBA",
+      "sanctioned_lakhs": "2,156.00",
+      "expenditure_lakhs": "720.35",
+      "utilization_pct": "33.41"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "MAINPURI",
+      "sanctioned_lakhs": "1,067.00",
+      "expenditure_lakhs": "271.62",
+      "utilization_pct": "25.46"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "MATHURA",
+      "sanctioned_lakhs": "1,155.00",
+      "expenditure_lakhs": "280.12",
+      "utilization_pct": "24.25"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "MIRZAPUR",
+      "sanctioned_lakhs": "2,420.00",
+      "expenditure_lakhs": "324.58",
+      "utilization_pct": "13.41"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "MORADABAD",
+      "sanctioned_lakhs": "1,109.24",
+      "expenditure_lakhs": "332.89",
+      "utilization_pct": "30.01"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "PRATAPGARH",
+      "sanctioned_lakhs": "2,219.14",
+      "expenditure_lakhs": "543.18",
+      "utilization_pct": "24.48"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "PRAYAGRAJ",
+      "sanctioned_lakhs": "2,264.24",
+      "expenditure_lakhs": "951.81",
+      "utilization_pct": "42.04"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "RAE BARELI",
+      "sanctioned_lakhs": "1,110.34",
+      "expenditure_lakhs": "274.14",
+      "utilization_pct": "24.69"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "RAMPUR",
+      "sanctioned_lakhs": "1,071.84",
+      "expenditure_lakhs": "280.33",
+      "utilization_pct": "26.15"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "SAHARANPUR",
+      "sanctioned_lakhs": "2,301.20",
+      "expenditure_lakhs": "679.85",
+      "utilization_pct": "29.54"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "SAMBHAL",
+      "sanctioned_lakhs": "2,192.30",
+      "expenditure_lakhs": "697",
+      "utilization_pct": "31.79"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "SONBHADRA",
+      "sanctioned_lakhs": "2,915.00",
+      "expenditure_lakhs": "975.85",
+      "utilization_pct": "33.48"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "VARANASI",
+      "sanctioned_lakhs": "2,301.20",
+      "expenditure_lakhs": "586.12",
+      "utilization_pct": "25.47"
+    },
+    {
+      "scheme": "WDC-PMKSY",
+      "district": "Grand Total",
+      "sanctioned_lakhs": "58,067.46",
+      "expenditure_lakhs": "16,871.49",
+      "utilization_pct": "29.05"
+    }
+  ],
+  "beneficiaries": [
+    {
+      "district": "{{d.name}} {{d.code}}",
+      "fc_fund_cr": "{{d.name}} ({{d.code}})",
+      "expenditure_cr": "",
+      "expenditure_pct": "",
+      "man_days": "{{d.ttlGPExpPercentage}}%"
+    }
+  ]
+}

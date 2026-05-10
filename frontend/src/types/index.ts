@@ -14,6 +14,15 @@ export interface ConstituencyResult {
   margin_votes?: number | null;
   total_votes?: number | null;
   vidhan_sabha_segments?: { vs_id: string; name: string; reservation?: string }[];
+  results?: {
+    election_id?: string;
+    winner?: string;
+    party_id?: string;
+    vote_share?: number | null;
+    margin_pct?: number | null;
+    margin_votes?: number | null;
+    total_votes?: number | null;
+  }[];
 }
 
 export interface DistrictData {
